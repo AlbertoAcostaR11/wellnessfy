@@ -1,13 +1,6 @@
-
-import { AppState, loadUserData, saveUserData } from './utils/state.js';
-import './utils/diagnostico_seguro.js';
-import './utils/analisis_google_health.js';
-import { navigateTo } from './router.js';
-
 // ...
-
-// Initialize Application - LIMPIEZA FASE 2
-// (Bloque init duplicado eliminado)
+import { AppState, loadUserData, saveUserData } from './utils/state.js';
+import { navigateTo } from './router.js';
 import { showCreateChallengeModal } from './pages/challenges.js';
 import { showCreateCircleModal, showCircleDetail, searchFriends } from './pages/circles.js';
 import { showEditProfile } from './pages/profile.js';
@@ -17,11 +10,7 @@ import { initGoogleIdentity, autoSyncIfReady } from './utils/googleHealth.js';
 import './utils/weeklyCharts.js'; // Auto-renderiza gráficas semanales
 import './utils/exploreMap.js'; // Google Maps para Explorar
 import * as activityAggregator from './utils/activityAggregator.js'; // Agregador de deportes
-import './utils/debugActivityDetector.js'; // Script de debugging de actividades
 import { initializeHealthProvider, healthProviderManager } from './utils/healthSync.js'; // Multi-platform health sync
-import './utils/fitbitDiagnostics.js'; // Herramienta de diagnóstico
-import './utils/debugFitbitData.js'; // Diagnóstico detallado de datos Fitbit
-import './utils/debugDataPersistence.js'; // Diagnóstico de persistencia de datos
 
 // Exponer agregador globalmente para sportsData.js
 window.activityAggregatorModule = activityAggregator;
@@ -141,18 +130,14 @@ window.onload = async () => {
     try {
         console.log('🚀 Iniciando Wellnessfy (Modo Transición - Conversor Universal)...');
 
-        // --- BLOQUE DESACTIVADO: Inicialización de Proveedores Legacy ---
-        /*
+        // 1. Cargar estado de aplicación (Usuario, pero sin datos de salud complejos)
+        loadUserData();
+
+        // 1.1 Inicializar Proveedores
         const activeProvider = await initializeHealthProvider();
         if (activeProvider === 'googleFit') {
             initGoogleIdentity();
-            autoSyncIfReady();
         }
-        */
-
-        // 1. Cargar estado de aplicación (Usuario, pero sin datos de salud complejos)
-        // (Limpieza forzada removida para permitir flujo real de Switches)
-        loadUserData();
 
         // 2. Inicializar Router y UI - CORREGIDO
         const startPage = localStorage.getItem('wellnessfy_last_page') || 'feed';

@@ -6,7 +6,7 @@ export const AppState = {
         id: '',
         name: '',
         username: '',
-        avatar: 'https://i.pravatar.cc/300?img=12',
+        avatar: '',
         bio: '',
         isPublic: true,
         interests: [],

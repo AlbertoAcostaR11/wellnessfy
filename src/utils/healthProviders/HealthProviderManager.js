@@ -77,10 +77,6 @@ export class HealthProviderManager {
             throw new Error('No active provider set');
         }
 
-        if (!provider.isAuthenticated) {
-            throw new Error('Provider not authenticated');
-        }
-
         console.log(`🔄 Sincronizando datos de ${provider.name}...`);
 
         const now = new Date();

@@ -95,8 +95,11 @@ export async function renderProfilePage(userId = null) {
             <!-- Avatar -->
             <div class="flex flex-col items-center mb-4">
                 <div class="size-32 rounded-full bg-gradient-to-tr from-[#00f5d4] to-[#00d2ff] p-[3px] mb-3 shadow-[0_0_30px_rgba(0,245,212,0.2)]">
-                    <div class="bg-[#020617] rounded-full size-full overflow-hidden relative">
-                         <div class="bg-center bg-no-repeat bg-cover size-full" style="background-image: url('${user.avatar || 'https://i.pravatar.cc/300?img=12'}');"></div>
+                     <div class="bg-[#020617] rounded-full size-full overflow-hidden relative flex items-center justify-center">
+                        ${user.avatar ?
+            `<div class="bg-center bg-no-repeat bg-cover size-full animate-fade-in" style="background-image: url('${user.avatar}');"></div>` :
+            `<span class="material-symbols-outlined text-white/20 text-6xl">person</span>`
+        }
                     </div>
                 </div>
             </div>

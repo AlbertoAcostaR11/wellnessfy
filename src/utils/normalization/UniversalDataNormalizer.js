@@ -39,6 +39,8 @@ export class UniversalDataNormalizer {
      * Procesa una única actividad
      */
     processSingleActivity(provider, rawData) {
+        if (!rawData) return null;
+
         // 1. Identificar el Deporte (ID Mapping)
         const rawId = this.extractRawId(provider, rawData);
         let sportKey = this.reverseMap[`${provider}_${rawId}`] || 'unknown';
@@ -58,6 +60,8 @@ export class UniversalDataNormalizer {
                 sportKey = 'running';
             } else if (nameHint.includes('yoga')) {
                 sportKey = 'yoga';
+            } else if (nameHint.includes('relax') || nameHint.includes('breath') || nameHint.includes('respiraci') || nameHint.includes('mindfulness')) {
+                sportKey = 'guided_breathing';
             } else if (nameHint.includes('pilates')) {
                 sportKey = 'pilates';
             } else if (nameHint.includes('swim') || nameHint.includes('nadar')) {

@@ -5,42 +5,49 @@
  * (Google Fit, Fitbit, Apple Health, etc.) de forma unificada
  */
 
-import { HealthProviderManager } from './healthProviders/HealthProviderManager.js';
+import { healthProviderManager } from './healthProviders/HealthProviderManager.js';
+export { healthProviderManager };
 import { FEATURES, debugLog, isProviderEnabled } from '../config/features.js';
 import { getSportByPlatformId, normalizeSportName } from './sportsDictionaryMaster.js';
-
-// Inicializar manager global
-export const healthProviderManager = new HealthProviderManager();
 
 /**
  * Inicializar proveedor de salud
  * Carga el proveedor guardado o usa Google Fit por defecto
  */
 export async function initializeHealthProvider() {
-    const savedProvider = localStorage.getItem('selectedHealthProvider');
+    let savedProvider = localStorage.getItem('selectedHealthProvider');
 
     if (!savedProvider) {
-        debugLog('⚪ Ningún proveedor de salud configurado previamente.');
-        // Asegurarnos de que no haya ninguno activo en el manager
-        healthProviderManager.activeProvider = null;
-        return null;
+        // Auto-detección: Si no hay selección pero hay tokens, elegir fitbit o googleFit
+        if (localStorage.getItem('fitbit_access_token')) {
+            savedProvider = 'fitbit';
+        } else if (localStorage.getItem('google_access_token')) {
+            savedProvider = 'googleFit';
+        }
+
+        if (savedProvider) {
+            debugLog(`✨ Auto-detectado proveedor con token: ${savedProvider}`);
+            localStorage.setItem('selectedHealthProvider', savedProvider);
+        } else {
+            debugLog('⚪ Ningún proveedor de salud configurado previamente.');
+            healthProviderManager.activeProvider = null;
+            return null;
+        }
     }
 
-    debugLog(`🔍 Proveedor guardado: ${savedProvider}`);
+    debugLog(`🔍 Proveedor activo: ${savedProvider}`);
 
-    // Verificar si el proveedor está habilitado
     if (!isProviderEnabled(savedProvider)) {
-        console.warn(`⚠️ Proveedor ${savedProvider} no está habilitado.`);
+        console.warn(`⚠️ Proveedor ${savedProvider} está deshabilitado.`);
         return null;
     }
 
-    // Cargar proveedor
     try {
-        await healthProviderManager.setActiveProvider(savedProvider);
-        debugLog(`✅ Proveedor activo cargado: ${savedProvider}`);
+        healthProviderManager.setActiveProvider(savedProvider);
+        debugLog(`✅ Proveedor activo configurado: ${savedProvider}`);
         return savedProvider;
-    } catch (error) {
-        console.error('Error inicializando proveedor guardado:', error);
+    } catch (e) {
+        console.error('Error inicializando proveedor:', e);
         return null;
     }
 }
@@ -59,7 +66,19 @@ const normalizer = new UniversalDataNormalizer();
 // ...
 
 export async function syncHealthData(startDate, endDate) {
-    const provider = healthProviderManager.getActiveProvider();
+    let provider = healthProviderManager.getActiveProvider();
+
+    // Si no hay proveedor activo, intentar cargar el último usado o usar fitbit por defecto
+    if (!provider) {
+        debugLog('⚠️ No hay proveedor activo. Intentando inicializar...');
+        await initializeHealthProvider();
+        provider = healthProviderManager.getActiveProvider();
+    }
+
+    if (!provider) {
+        throw new Error('No se ha seleccionado ningún proveedor de salud (Fitbit/Google Fit)');
+    }
+
     const providerName = provider.name.toLowerCase().includes('google') ? 'googleFit' : provider.name.toLowerCase();
 
     debugLog(`📥 Sincronizando desde: ${providerName} (Motor V2)`, { startDate, endDate });
