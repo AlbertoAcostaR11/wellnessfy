@@ -1,0 +1,23 @@
+
+/* Neon Glass Theme Additions */
+:root {
+    --neon-teal: #00f5d4;
+    --neon-turquoise: #00d2ff;
+    --neon-purple: #7000ff;
+}
+
+.neon-text-glow {
+    text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+}
+
+.neon-box-glow {
+    box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 1s ease-in-out;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 0 4px var(--neon-teal));
+}
+

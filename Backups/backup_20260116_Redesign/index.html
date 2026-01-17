@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Wellnessfy - Tu Compañero de Bienestar</title>
+    <link rel="icon" href="logo-icon.png" />
+    <meta name="description"
+        content="Conecta tu app de fitness, crea desafíos con amigos y alcanza tus metas de bienestar" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/styles/activity-tabs.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9K_nqcTRPGtTpUfWDvkFhnAESaJ3I7Vs&libraries=places"
+        async defer></script>
+</head>
+
+<body class="text-white min-h-screen pb-24">
+    <!-- App Container -->
+    <div id="app" class="flex min-h-screen bg-navy-900 text-white font-inter">
+
+        <!-- Desktop Sidebar (Hidden on Mobile) -->
+        <aside
+            class="hidden lg:flex flex-col w-64 glass-card border-r border-white/10 fixed h-full z-50 p-6 bg-navy-900/40 backdrop-blur-xl">
+            <!-- Sidebar Logo -->
+            <div class="mb-10 px-2">
+                <img src="logo-full.png" alt="Wellnessfy" class="h-10 w-auto object-contain">
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav class="flex-1 space-y-2">
+                <button
+                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
+                    data-page="feed" onclick="navigateTo('feed')">
+                    <span
+                        class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">home</span>
+                    <span class="font-bold text-sm tracking-wide">Inicio</span>
+                </button>
+
+                <button
+                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
+                    data-page="activity" onclick="navigateTo('activity')">
+                    <span
+                        class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">monitor_heart</span>
+                    <span class="font-bold text-sm tracking-wide">Actividad</span>
+                </button>
+
+                <button
+                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
+                    data-page="challenges" onclick="navigateTo('challenges')">
+                    <span
+                        class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">emoji_events</span>
+                    <span class="font-bold text-sm tracking-wide">Desafíos</span>
+                </button>
+                <button
+                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
+                    data-page="circles" onclick="navigateTo('circles')">
+                    <span
+                        class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">groups</span>
+                    <span class="font-bold text-sm tracking-wide">Círculos</span>
+                </button>
+
+                <div class="pt-4 mt-4 border-t border-white/10">
+
+                    <button
+                        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop opacity-60 cursor-not-allowed">
+                        <span
+                            class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">apps</span>
+                        <span class="font-bold text-sm tracking-wide">Más Apps (Próximamente)</span>
+                    </button>
+
+                    <div class="h-px bg-white/10 my-2 mx-4"></div> <!-- Divisor -->
+
+                    <button
+                        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
+                        onclick="showProfile()">
+                        <div class="size-7 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]">
+                            <div class="bg-navy-900 rounded-full size-full flex items-center justify-center">
+                                <div class="bg-center bg-no-repeat bg-cover rounded-full size-full" id="sidebarAvatar">
+                                </div>
+                            </div>
+                        </div>
+                        <span class="font-bold text-sm tracking-wide">Perfil</span>
+                    </button>
+                    <!-- Sub-menu Edit -->
+                    <button onclick="showEditProfile()"
+                        class="w-full text-left pl-[3.25rem] py-1 text-[10px] font-bold text-white/40 hover:text-[#00f5d4] transition-colors uppercase tracking-wider flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">edit</span>
+                        Editar
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="mt-auto pt-6 px-2 relative">
+                <!-- Popover Menu (Hidden by default) -->
+                <div id="moreMenu"
+                    class="absolute bottom-16 left-2 w-56 glass-card bg-[#0f172a]/95 backdrop-blur-xl rounded-2xl border border-white/10 p-2 hidden z-[60] flex flex-col gap-1 shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all origin-bottom-left animate-fade-in">
+                    <button
+                        onclick="navigateTo('settings'); document.getElementById('moreMenu').classList.add('hidden')"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 text-white transition-colors text-left w-full group">
+                        <div
+                            class="p-1.5 rounded-lg bg-white/5 border border-white/10 group-hover:border-[#00f5d4]/50 transition-colors">
+                            <span class="material-symbols-outlined text-lg text-[#00f5d4]">settings</span>
+                        </div>
+                        <span class="text-sm font-bold">Configuración</span>
+                    </button>
+                    <div class="h-px bg-white/5 my-1 mx-2"></div>
+                    <button onclick="logout()"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-colors text-left w-full group">
+                        <div
+                            class="p-1.5 rounded-lg bg-rose-500/5 border border-rose-500/10 group-hover:border-rose-500/50 transition-colors">
+                            <span class="material-symbols-outlined text-lg">logout</span>
+                        </div>
+                        <span class="text-sm font-bold">Salir</span>
+                    </button>
+                </div>
+
+                <button onclick="document.getElementById('moreMenu').classList.toggle('hidden')"
+                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-white/50 hover:text-white active:scale-95">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                    <span class="font-bold text-sm tracking-wide">Más</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
+
+            <!-- Main Content Area -->
+            <main id="mainContent"
+                class="flex-1 w-full max-w-3xl mx-auto px-4 py-6 pb-28 lg:pb-8 lg:pt-8 transition-all">
+                <!-- Content will be dynamically loaded here -->
+            </main>
+        </div>
+
+        <!-- Bottom Navigation (Visible only on Mobile) -->
+        <nav
+            class="fixed bottom-0 left-0 right-0 glass-card bg-navy-900/90 backdrop-blur-2xl border-t border-white/10 px-6 py-3 flex justify-between items-end z-50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] lg:hidden">
+            <button class="nav-btn" data-page="feed" onclick="navigateTo('feed')">
+                <span class="material-symbols-outlined text-2xl">home</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Inicio</span>
+            </button>
+            <button class="nav-btn" data-page="activity" onclick="navigateTo('activity')">
+                <span class="material-symbols-outlined text-2xl">monitor_heart</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Actividad</span>
+            </button>
+            <button class="nav-btn" data-page="challenges" onclick="navigateTo('challenges')">
+                <span class="material-symbols-outlined text-2xl">emoji_events</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Desafíos</span>
+            </button>
+            <button class="nav-btn" data-page="circles" onclick="navigateTo('circles')">
+                <span class="material-symbols-outlined text-2xl">groups</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Círculos</span>
+            </button>
+            <button class="nav-btn" data-page="profile" onclick="navigateTo('profile')">
+                <span class="material-symbols-outlined text-2xl">person</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Perfil</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modalsContainer"></div>
+
+    <script type="module" src="./src/main.js"></script>
+</body>
+
+</html>
