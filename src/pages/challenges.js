@@ -1,6 +1,7 @@
 import { AppState } from '../utils/state.js';
 import { navigateTo } from '../router.js';
 import { ExploreModule } from '../utils/challengesExplore.js';
+import { mountSportSelector } from '../utils/sportSelectorInit.js';
 
 // ==========================================
 // 1. PÁGINA DE LISTADO (TABBED INTERFACE)
@@ -15,32 +16,38 @@ const PUBLIC_CHALLENGES = [
 
 export function renderChallenges() {
     return `
-        <div class="flex flex-col h-full">
-            <!-- Header Fijo + Tabs -->
-            <div class="glass-header sticky top-0 z-50 bg-[#050b12]/80 backdrop-blur-xl border-b border-white/5 pb-0">
-                <div class="flex items-center justify-between py-4 px-4">
-                    <h1 class="text-2xl font-bold tracking-tight text-white">Desafíos</h1>
-                    <button class="btn-primary-sm flex items-center gap-2 bg-[#00f5d4] text-[#0f172a] px-3 py-1.5 rounded-lg font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,245,212,0.3)] hover:scale-105 transition-transform" onclick="showCreateChallengeModal()">
-                        <span class="material-symbols-outlined text-sm">add</span>
-                        Crear
-                    </button>
-                </div>
+        <div class="space-y-6">
+            <!-- Header Standard -->
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold tracking-tight text-white">Desafíos</h1>
+            <div class="flex items-center gap-3">
+                <button class="btn-primary-sm flex items-center gap-2 bg-[#00f5d4] text-[#0f172a] px-3 py-1.5 rounded-lg font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,245,212,0.3)] hover:scale-105 transition-transform" onclick="showCreateChallengeModal()">
+                    <span class="material-symbols-outlined text-sm">add</span>
+                    Crear
+                </button>
+                <button class="relative p-2 rounded-full hover:bg-white/5 transition-all text-white/80 hover:text-white lg:hidden" onclick="navigateTo('notifications')">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                    <div id="notifBadgeMobile" class="absolute top-1.5 right-1.5 min-w-[1rem] h-4 px-1 bg-[#00f5d4] rounded-full hidden flex items-center justify-center shadow-[0_0_8px_#00f5d4]">
+                        <span class="text-[9px] font-black text-[#0f172a]" id="notifCountMobile">0</span>
+                    </div>
+                </button>
+            </div>
+            </div>
 
-                <!-- Tabs de Navegación -->
-                <div class="flex w-full px-4 border-b border-white/5">
-                    <button class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest transition-all ${currentTab === 'mine' ? 'text-[#00f5d4] border-b-2 border-[#00f5d4]' : 'text-gray-500 hover:text-white'}" 
-                            onclick="switchChallengeTab('mine')">
-                        Mis Desafíos
-                    </button>
-                    <button class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest transition-all ${currentTab === 'explore' ? 'text-[#00f5d4] border-b-2 border-[#00f5d4]' : 'text-gray-500 hover:text-white'}" 
-                            onclick="switchChallengeTab('explore')">
-                        Explorar
-                    </button>
-                </div>
+            <!-- Tabs de Navegación -->
+            <div class="flex w-full border-b border-white/5">
+                <button class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest transition-all ${currentTab === 'mine' ? 'text-[#00f5d4] border-b-2 border-[#00f5d4]' : 'text-gray-500 hover:text-white'}" 
+                        onclick="switchChallengeTab('mine')">
+                    Mis Desafíos
+                </button>
+                <button class="flex-1 pb-3 text-sm font-bold uppercase tracking-widest transition-all ${currentTab === 'explore' ? 'text-[#00f5d4] border-b-2 border-[#00f5d4]' : 'text-gray-500 hover:text-white'}" 
+                        onclick="switchChallengeTab('explore')">
+                    Explorar
+                </button>
             </div>
 
             <!-- Contenedor Dinámico -->
-            <div id="challengesContent" class="flex-1 p-4 pb-24 overflow-y-auto">
+            <div id="challengesContent" class="pb-24">
                 ${currentTab === 'mine' ? renderMyChallengesTab() : renderExploreTab()}
             </div>
         </div>
@@ -368,25 +375,51 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
     editingChallengeId = challengeIdToEdit;
 
     let initialData = {
-        name: '', desc: '', image: CHALLENGE_IMAGES[0], sport: 'run',
-        unit: 'km', goal: '', start: today, end: '', type: 'personal', privacy: 'private'
+        name: '', desc: '', image: CHALLENGE_IMAGES[0], sports: ['run'],
+        unit: 'km', goal: '', start: today, end: '', type: 'personal', privacy: 'private',
+        goalType: 'cumulative', dailyThreshold: '', targetDays: ''
     };
 
     if (editingChallengeId) {
         const challenge = AppState.challenges.find(c => c.id === editingChallengeId);
         if (challenge) {
             const [qty, unit] = challenge.metric.split(' ');
+
+            // Compatibilidad: Si es un desafío viejo con category string, lo convertimos a array
+            // Si es nuevo, ya tendrá array allowedSports O category será 'MIXED' y buscaremos en otro lado.
+            // Para este MVP, asumimos que category puede ser una lista o un solo deporte.
+            let loadedSports = [];
+            if (challenge.allowedSports && Array.isArray(challenge.allowedSports)) {
+                loadedSports = challenge.allowedSports;
+            } else {
+                loadedSports = [challenge.category.toLowerCase()];
+            }
+
+            // Detectar si es frecuencia
+            let gType = challenge.goalType || 'cumulative';
+            let tDays = '';
+            let dThreshold = '';
+
+            if (gType === 'frequency') {
+                // metric: "10 days", dailyThreshold: 1, unit: 'km'
+                tDays = challenge.metric.split(' ')[0]; // "10"
+                dThreshold = challenge.dailyThreshold;
+            }
+
             initialData = {
                 name: challenge.name,
                 desc: challenge.description,
                 image: challenge.imageGradient.match(/url\(['"]?(.*?)['"]?\)/)[1],
-                sport: challenge.category.toLowerCase(),
-                unit: unit,
-                goal: qty,
+                sports: loadedSports,
+                unit: unit, // Unidad base (ej: km)
+                goal: qty,  // Si es cumulative, es la meta. Si es frequency, ignorar (usar tDays)
                 start: challenge.startDate.split('T')[0],
                 end: challenge.endDate.split('T')[0],
                 type: challenge.type,
-                privacy: challenge.privacy
+                privacy: challenge.privacy,
+                goalType: gType,
+                dailyThreshold: dThreshold,
+                targetDays: tDays
             };
         }
     }
@@ -400,7 +433,7 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
             safeSelect('startDate', initialData.start);
             safeSelect('endDate', initialData.end); // Fecha fin no se auto-rellenaba antes porque safeSelect estaba missing
 
-            window.selectSport(initialData.sport, document.querySelector(`[data-sport-id="${initialData.sport}"]`));
+            // window.selectSport(initialData.sport, ...); // Ya no se llama aqui manualmente, se hace via selector init
             const unitSelect = document.getElementById('challengeUnit');
             if (unitSelect) unitSelect.value = initialData.unit;
 
@@ -409,8 +442,30 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
             if (initialData.type === 'group') {
                 window.selectPrivacy(initialData.privacy, document.getElementById(initialData.privacy === 'private' ? 'btnPrivPrivate' : 'btnPrivPublic'));
             }
+            // Restaurar Tipo de Meta
+            if (initialData.goalType) {
+                window.setGoalType(initialData.goalType);
+                if (initialData.goalType === 'frequency') {
+                    safeSelect('challengeDays', initialData.targetDays);
+                    safeSelect('challengeDailyMin', initialData.dailyThreshold);
+                    const dailyUnit = document.getElementById('challengeDailyUnit');
+                    if (dailyUnit) dailyUnit.value = initialData.unit;
+                }
+            }
             window.validateDates();
         }
+
+        // Montar Sport Selector (Universal)
+        // Montar Sport Selector (Universal - Modo Múltiple)
+        mountSportSelector('create-challenge-sport-selector', {
+            mode: 'multiple',
+            initialSelection: initialData.sports,
+            placeholder: 'Elige uno o más deportes (ej: Correr y Bici)...',
+            maxSelections: 5,
+            onSelect: (selectedSports) => {
+                window.updateChallengeUnits(selectedSports);
+            }
+        });
     }, 100);
 
     return `
@@ -474,19 +529,32 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
                 <label class="section-label">2. Elige tu Deporte y Meta</label>
                 
                 <!-- Selector Visual de Deportes -->
-                <div class="grid grid-cols-3 gap-3 mb-4">
-                     ${renderSportOption('run', 'Running', 'directions_run', true)}
-                     ${renderSportOption('bike', 'Ciclismo', 'directions_bike')}
-                     ${renderSportOption('walk', 'Caminata', 'directions_walk')}
-                     ${renderSportOption('gym', 'Gimnasio', 'fitness_center')}
-                     ${renderSportOption('yoga', 'Yoga', 'self_improvement')}
-                     ${renderSportOption('swim', 'Natación', 'pool')}
+                <!-- Selector Universal de Deportes -->
+                <div id="create-challenge-sport-selector" class="mb-4">
+                    <div class="h-12 bg-white/5 rounded-xl animate-pulse"></div>
                 </div>
-                <input type="hidden" id="selectedSport" value="run">
+                <!-- Input oculto para guardar array como JSON -->
+                <input type="hidden" id="selectedSports" value='["run"]'>
+                
+                <!-- Feedback visual de Multideporte -->
+                <div id="multiSportFeedback" class="hidden text-xs text-[#00f5d4] font-bold mb-4 bg-[#00f5d4]/10 p-3 rounded-lg border border-[#00f5d4]/20">
+                    <span class="material-symbols-outlined text-sm align-bottom mr-1">layers</span>
+                    Desafío Multideporte activado
+                </div>
+
+                <!-- Meta Configurador -->
+                <!-- Tipo de Meta Toggle -->
+                <div class="flex bg-white/5 p-1 rounded-xl mb-4">
+                   <button id="btnGoalCumulative" onclick="setGoalType('cumulative')" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all text-[#00f5d4] bg-white/10 shadow">Acumular Total</button>
+                   <button id="btnGoalFrequency" onclick="setGoalType('frequency')" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all text-gray-500 hover:bg-white/5">Crear Hábito</button>
+                </div>
+                <input type="hidden" id="goalType" value="cumulative">
 
                 <!-- Meta Configurador -->
                 <div class="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
-                    <div class="grid grid-cols-2 gap-4">
+                    
+                    <!-- BLOQUE ACUMULATIVO -->
+                    <div id="goal-cumulative" class="grid grid-cols-2 gap-4 animate-fade-in">
                         <div class="space-y-2">
                             <label class="text-[10px] font-bold text-gray-500 uppercase">Unidad</label>
                             <select id="challengeUnit" class="input-field bg-[#0f172a]" onchange="updateGoalPlaceholder()">
@@ -495,10 +563,35 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase">Cantidad</label>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase">Meta Total</label>
                             <input type="number" id="challengeGoal" placeholder="00" class="input-field font-mono text-xl font-bold text-right text-[#00f5d4]">
                         </div>
                     </div>
+
+                    <!-- BLOQUE FRECUENCIA (HÁBITO) -->
+                    <div id="goal-frequency" class="hidden space-y-4 animate-fade-in">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-gray-500 uppercase">Días a Completar</label>
+                            <div class="relative">
+                                <input type="number" id="challengeDays" placeholder="Ej: 10" class="input-field font-mono text-xl font-bold text-right text-[#00f5d4]">
+                                <span class="absolute left-3 top-3 text-xs font-bold text-gray-500 uppercase">Días</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 border-t border-white/5 pt-3">
+                            <label class="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                Mínimo Diario para contar
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <select id="challengeDailyUnit" class="input-field bg-[#0f172a]">
+                                    <!-- Se llena igual que challengeUnit -->
+                                </select>
+                                <input type="number" id="challengeDailyMin" placeholder="Mínimo" class="input-field font-mono text-lg font-bold text-right text-white">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -550,13 +643,13 @@ export function renderCreateChallengePage(challengeIdToEdit = null) {
                 <div id="privacyOptions" class="hidden animate-fade-in mt-2 ml-1 border-l-2 border-white/10 pl-4">
                     <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">Visibilidad del Grupo</label>
                     <div class="flex gap-3">
-                        <button class="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/10 text-white text-xs font-bold transition-all"
-                             onclick="selectPrivacy('private', this)" id="btnPrivPrivate">
+                        <button type="button" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#00f5d4] bg-[#00f5d4]/20 text-[#00f5d4] text-xs font-bold transition-all shadow-[0_0_10px_rgba(0,245,212,0.2)]"
+                             onclick="selectChallengePrivacy('private', this)" id="btnPrivPrivate">
                             <span class="material-symbols-outlined text-sm">lock</span>
                             Privado
                         </button>
-                        <button class="flex items-center gap-2 px-3 py-2 rounded-lg border border-transparent text-gray-500 text-xs font-bold hover:bg-white/5 transition-all"
-                             onclick="selectPrivacy('public', this)" id="btnPrivPublic">
+                        <button type="button" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-transparent text-gray-500 text-xs font-bold hover:bg-white/5 transition-all opacity-60"
+                             onclick="selectChallengePrivacy('public', this)" id="btnPrivPublic">
                             <span class="material-symbols-outlined text-sm">public</span>
                             Público
                         </button>
@@ -619,11 +712,11 @@ window.selectChallengeType = function (type, el) {
     }
 };
 
-window.selectPrivacy = function (privacy, el) {
+window.selectChallengePrivacy = function (privacy, el) {
     document.getElementById('challengePrivacy').value = privacy;
     const privBtn = document.getElementById('btnPrivPrivate');
     const pubBtn = document.getElementById('btnPrivPublic');
-    const activeClass = "flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/10 text-white text-xs font-bold transition-all shadow-inner";
+    const activeClass = "flex items-center gap-2 px-3 py-2 rounded-lg border border-[#00f5d4] bg-[#00f5d4]/20 text-[#00f5d4] text-xs font-bold transition-all shadow-[0_0_10px_rgba(0,245,212,0.2)]";
     const inactiveClass = "flex items-center gap-2 px-3 py-2 rounded-lg border border-transparent text-gray-500 text-xs font-bold hover:bg-white/5 transition-all opacity-60";
 
     if (privacy === 'private') {
@@ -635,30 +728,123 @@ window.selectPrivacy = function (privacy, el) {
     }
 };
 
-window.selectSport = function (sportId, el) {
-    document.getElementById('selectedSport').value = sportId;
-    document.querySelectorAll('[data-sport-id]').forEach(b => {
-        b.className = "flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all bg-white/5 border-white/5 text-gray-400 hover:bg-white/10";
-    });
-    if (el) {
-        el.className = "flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all bg-[#00f5d4]/20 border-[#00f5d4] text-[#00f5d4]";
+window.setGoalType = function (type) {
+    document.getElementById('goalType').value = type;
+    const btnCum = document.getElementById('btnGoalCumulative');
+    const btnFreq = document.getElementById('btnGoalFrequency');
+    const divCum = document.getElementById('goal-cumulative');
+    const divFreq = document.getElementById('goal-frequency');
+
+    const activeClass = "flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all text-[#00f5d4] bg-white/10 shadow";
+    const inactiveClass = "flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all text-gray-500 hover:bg-white/5";
+
+    if (type === 'cumulative') {
+        btnCum.className = activeClass;
+        btnFreq.className = inactiveClass;
+        divCum.classList.remove('hidden');
+        divFreq.classList.add('hidden');
+    } else {
+        btnFreq.className = activeClass;
+        btnCum.className = inactiveClass;
+        divFreq.classList.remove('hidden');
+        divCum.classList.add('hidden');
     }
+};
+
+window.updateChallengeUnits = function (selectedSports) {
+    // Guardar selección
+    document.getElementById('selectedSports').value = JSON.stringify(selectedSports);
+
+    // Feedback UI
+    const feedback = document.getElementById('multiSportFeedback');
+    if (feedback) feedback.classList.toggle('hidden', selectedSports.length <= 1);
 
     const unitSelect = document.getElementById('challengeUnit');
+    if (!unitSelect) return;
+
+    // Guardar unidad actual
+    const currentUnit = unitSelect.value;
     unitSelect.innerHTML = '';
 
-    let options = [];
-    if (['run', 'bike', 'swim', 'walk'].includes(sportId)) {
-        options = [{ val: 'km', text: 'Km' }, { val: 'hours', text: 'Horas' }];
-    } else if (['gym', 'yoga'].includes(sportId)) {
-        options = [{ val: 'hours', text: 'Horas' }, { val: 'calories', text: 'Calorías' }];
-    } else {
-        options = [{ val: 'steps', text: 'Pasos' }];
+    if (selectedSports.length === 0) {
+        unitSelect.add(new Option('Selecciona deporte', ''));
+        return;
     }
+
+    // Definición de capacidades 
+    const DISTANCE_SPORTS = [
+        'running', 'cycling', 'swimming', 'walking', 'hiking', 'rowing',
+        'skiing', 'snowboarding', 'skating', 'wheelchair',
+        'run', 'bike', 'swim', 'walk', 'kayaking', 'canoeing'
+    ];
+
+    const STEPS_SPORTS = ['walking', 'running', 'hiking', 'walk', 'run'];
+
+    // Lógica de Intersección
+    let supportsDistance = true;
+    let supportsSteps = true;
+
+    selectedSports.forEach(sport => {
+        if (!DISTANCE_SPORTS.includes(sport) && !sport.includes('running') && !sport.includes('biking')) {
+            supportsDistance = false;
+        }
+        if (!STEPS_SPORTS.includes(sport)) {
+            supportsSteps = false;
+        }
+    });
+
+    const options = [];
+
+    if (supportsDistance) {
+        options.push({ val: 'km', text: 'Kilómetros' });
+        options.push({ val: 'meters', text: 'Metros' });
+    }
+
+    options.push({ val: 'hours', text: 'Horas' });
+    options.push({ val: 'minutes', text: 'Minutos' });
+    options.push({ val: 'calories', text: 'Calorías' });
+
+    if (supportsSteps) {
+        options.push({ val: 'steps', text: 'Pasos' });
+    }
+
     options.forEach(opt => {
         const o = document.createElement('option');
-        o.value = opt.val; o.text = opt.text; unitSelect.add(o);
+        o.value = opt.val;
+        o.text = opt.text;
+        unitSelect.add(o);
     });
+
+    // Restaurar selección
+    const exists = options.some(o => o.val === currentUnit);
+    if (exists) {
+        unitSelect.value = currentUnit;
+    } else if (options.length > 0) {
+        unitSelect.value = options[0].val;
+    }
+
+    // CLONAR A DAILY UNIT (Para modo Frecuencia)
+    const dailyUnitSelect = document.getElementById('challengeDailyUnit');
+    if (dailyUnitSelect) {
+        const currentDaily = dailyUnitSelect.value;
+        dailyUnitSelect.innerHTML = '';
+        // Clona las opciones
+        Array.from(unitSelect.options).forEach(opt => {
+            dailyUnitSelect.add(new Option(opt.text, opt.value));
+        });
+        // Restaurar
+        if (options.some(o => o.val === currentDaily)) {
+            dailyUnitSelect.value = currentDaily;
+        } else if (options.length > 0) {
+            dailyUnitSelect.value = options[0].val;
+        }
+    }
+
+    if (window.updateGoalPlaceholder) window.updateGoalPlaceholder();
+};
+
+window.selectSport = function (sportId) {
+    window.updateChallengeUnits([sportId]);
 };
 
 window.selectImage = function (url, el) {
@@ -721,7 +907,15 @@ window.handleCreateChallenge = async function () {
 
     const type = document.getElementById('challengeType').value;
     const privacy = document.getElementById('challengePrivacy').value;
-    const sport = document.getElementById('selectedSport').value;
+
+    // Obtener array de deportes
+    let sports = [];
+    try {
+        sports = JSON.parse(document.getElementById('selectedSports').value);
+    } catch (e) {
+        sports = ['run']; // fallback
+    }
+
     const name = document.getElementById('challengeName').value;
     const goal = document.getElementById('challengeGoal').value;
     const unit = document.getElementById('challengeUnit').value;
@@ -730,17 +924,77 @@ window.handleCreateChallenge = async function () {
     const end = document.getElementById('endDate').value;
     const image = document.getElementById('selectedImage').value;
 
-    if (!name || !goal || !start || !end) { window.showToast('Por favor completa todos los campos requeridos', 'error'); return; }
+    if (!name || !start || !end || sports.length === 0) { window.showToast('Por favor completa todos los campos requeridos', 'error'); return; }
     if (new Date(end) < new Date(start)) { window.showToast('Fechas inválidas', 'error'); return; }
+
+    const goalType = document.getElementById('goalType').value; // 'cumulative' | 'frequency'
+    let finalMetric = '';
+    let finalUnit = '';
+    let dailyThresholdVal = 0;
+
+    if (goalType === 'cumulative') {
+        const goal = document.getElementById('challengeGoal').value;
+        const unit = document.getElementById('challengeUnit').value;
+
+        // Validación Cumulative
+        const goalNumber = parseFloat(goal);
+        if (isNaN(goalNumber) || goalNumber <= 0 || !goal) { window.showToast('Meta total inválida', 'error'); return; }
+
+        finalMetric = `${goal} ${unit}`;
+        finalUnit = unit;
+
+    } else {
+        // FREQUENCY
+        const days = document.getElementById('challengeDays').value;
+        const dailyMin = document.getElementById('challengeDailyMin').value;
+        const dailyUnit = document.getElementById('challengeDailyUnit').value;
+
+        // Validación Frequency
+        const daysNum = parseInt(days);
+        const dailyMinNum = parseFloat(dailyMin);
+
+        if (isNaN(daysNum) || daysNum <= 0) { window.showToast('Número de días inválido', 'error'); return; }
+        if (isNaN(dailyMinNum) || dailyMinNum <= 0) { window.showToast('Mínimo diario inválido', 'error'); return; }
+
+        // Verificar que los días no superen duración
+        const startD = new Date(start);
+        const endD = new Date(end);
+        const diffDays = Math.ceil((endD - startD) / (1000 * 60 * 60 * 24)) + 1;
+
+        if (daysNum > diffDays) {
+            window.showToast(`La meta (${daysNum} días) no puede ser mayor a la duración (${diffDays} días)`, 'error');
+            return;
+        }
+
+        finalMetric = `${days} days`; // La meta visible principal son LOS DÍAS
+        finalUnit = dailyUnit;       // La unidad de esfuerzo
+        dailyThresholdVal = dailyMinNum;
+    }
 
     const options = { month: 'short', day: 'numeric' };
     const periodText = `${new Date(start).toLocaleDateString('es-ES', options)} - ${new Date(end).toLocaleDateString('es-ES', options)}`;
 
+    // Definir categoría principal
+    // Si es 1 -> el nombre del deporte (ej: RUNNING)
+    // Si son mas -> 'MULTISPORT'
+    const mainCategory = sports.length === 1 ? sports[0].toUpperCase() : 'MULTISPORT';
+
+    // Generar descripción por defecto inteligente
+    let defaultDesc = `Desafío de ${sports.length > 1 ? 'Múltiples Deportes' : mainCategory} para romper tus límites.`;
+    if (sports.length > 1 && sports.length <= 3) {
+        // Ej: Desafío de Running, Cycling y Swimming...
+        defaultDesc = `Desafío de ${sports.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')} para romper tus límites.`;
+    }
+
     const challengeData = {
         name: name,
-        description: desc || `Desafío de ${sport} para romper tus límites.`,
-        category: sport.toUpperCase(),
-        metric: `${goal} ${unit}`,
+        description: desc || defaultDesc,
+        category: mainCategory,
+        allowedSports: sports,
+        metric: finalMetric,
+        unit: finalUnit, // Guardamos la unidad base explícitamente
+        goalType: goalType,
+        dailyThreshold: dailyThresholdVal,
         period: periodText,
         imageGradient: `url('${image}') center/cover no-repeat`,
         type: type,
@@ -752,7 +1006,28 @@ window.handleCreateChallenge = async function () {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-xl">progress_activity</span> Procesando...';
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-xl">progress_activity</span> Guardando...';
+    }
+
+    // Intentar obtener geolocalización (No bloqueante, timeout corto)
+    let userGeo = null;
+    try {
+        const getGeo = () => new Promise((resolve, reject) => {
+            if (!navigator.geolocation) { resolve(null); return; }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => resolve(null), // Si falla o rechaza, seguimos sin geo (no bloqueamos)
+                { timeout: 3000 } // Máximo 3s de espera
+            );
+        });
+        userGeo = await getGeo();
+    } catch (e) {
+        console.warn("No se pudo obtener geo location", e);
+    }
+
+    // Añadir Geo al objeto
+    if (userGeo) {
+        challengeData.location = userGeo;
     }
 
     try {
@@ -839,10 +1114,13 @@ window.showChallengeDetails = function (id) {
     const challenge = AppState.challenges.find(c => c.id === id);
     if (challenge) {
         AppState.activeChallengeId = id;
+        // Persistir inmediatamente el ID del desafío activo
+        localStorage.setItem('active_challenge_id', id);
         navigateTo('challenge-detail');
     } else {
         // Fallback for explore/mock challenges
         AppState.activeChallengeId = id;
+        localStorage.setItem('active_challenge_id', id);
         navigateTo('challenge-detail');
     }
 };

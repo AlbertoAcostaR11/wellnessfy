@@ -340,9 +340,28 @@ window.publishPost = async function () {
 export function renderFeed() {
     const { avatar } = AppState.currentUser;
 
+    // Auto-scroll logic after render
+    if (AppState.targetPostId) {
+        setTimeout(() => {
+            const el = document.getElementById(`post-${AppState.targetPostId}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('ring-2', 'ring-[#00f5d4]', 'ring-offset-2', 'ring-offset-black');
+                setTimeout(() => el.classList.remove('ring-2', 'ring-[#00f5d4]', 'ring-offset-2', 'ring-offset-black'), 2000);
+                AppState.targetPostId = null; // Clear trigger
+            }
+        }, 500);
+    }
+
     return `
         <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold tracking-tight">Inicio</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Inicio</h1>
+            <button class="relative p-2 rounded-full hover:bg-white/5 transition-all text-white/80 hover:text-white lg:hidden" onclick="navigateTo('notifications')">
+                <span class="material-symbols-outlined text-xl">notifications</span>
+                <div id="notifBadgeMobile" class="absolute top-1.5 right-1.5 min-w-[1rem] h-4 px-1 bg-[#00f5d4] rounded-full hidden flex items-center justify-center shadow-[0_0_8px_#00f5d4]">
+                     <span class="text-[9px] font-black text-[#0f172a]" id="notifCountMobile">0</span>
+                </div>
+            </button>
         </div>
 
         <!-- Quick Create Post Widget -->
@@ -406,7 +425,7 @@ export function renderFeed() {
         }
 
         return `
-                <article class="glass-card rounded-3xl overflow-hidden animate-fade-in">
+                <article id="post-${post.id}" class="glass-card rounded-3xl overflow-hidden animate-fade-in transition-all duration-500">
                     <!-- Post Header -->
                     <div class="p-4 flex items-center gap-3">
                         <div class="avatar-ring size-12">

@@ -19,9 +19,9 @@ export async function initializeHealthProvider() {
 
     if (!savedProvider) {
         // Auto-detección: Si no hay selección pero hay tokens, elegir fitbit o googleFit
-        if (localStorage.getItem('fitbit_access_token')) {
+        if (localStorage.getItem('fitbit_access_token') || localStorage.getItem('fitbit_token')) {
             savedProvider = 'fitbit';
-        } else if (localStorage.getItem('google_access_token')) {
+        } else if (localStorage.getItem('google_health_token') || localStorage.getItem('google_access_token')) {
             savedProvider = 'googleFit';
         }
 
@@ -86,7 +86,10 @@ export async function syncHealthData(startDate, endDate) {
     try {
         // Verificar autenticación
         if (!provider.hasValidToken()) {
-            throw new Error(`No autenticado con ${providerName}`);
+            console.warn(`⚠️ [SYNC] Intento de sincronización sin token válido para: ${providerName}`);
+            const error = new Error('AUTH_ERROR');
+            error.providerId = providerName;
+            throw error;
         }
 
         // Obtener datos raw del proveedor
@@ -94,8 +97,25 @@ export async function syncHealthData(startDate, endDate) {
 
         debugLog(`📊 ${rawActivities.length} actividades CRUDAS obtenidas de ${providerName}`);
 
+        // DEBUG: Buscar fútbol en la data cruda antes de normalizar
+        rawActivities.forEach(act => {
+            const name = (act.name || act.activityName || '').toLowerCase();
+            const id = act.activityId || act.activityTypeId;
+            if (name.includes('fut') || name.includes('socc') || name.includes('foot') || id == 1010 || id == 90013) {
+                console.log('⚽ [SOCCER_DEBUG] Actividad sospechosa encontrada en RAW:', { name, id, duration: act.duration, date: act.startTime });
+            }
+        });
+
         // --- NUEVO MOTOR DE NORMALIZACIÓN ---
         const normalizedActivities = normalizer.normalizeActivities(providerName, rawActivities);
+
+        // DEBUG: Ver resultado de la normalización para el fútbol
+        normalizedActivities.forEach(act => {
+            if (act.sportKey === 'football_soccer' || act.name.toLowerCase().includes('fútbol')) {
+                console.log('✅ [SOCCER_DEBUG] Actividad NORMALIZADA correctamente:', { sportKey: act.sportKey, name: act.name, duration: act.duration });
+            }
+        });
+
         debugLog(`✨ ${normalizedActivities.length} actividades NORMALIZADAS por Motor Universal`);
         // ------------------------------------
 
@@ -160,13 +180,36 @@ export async function syncHealthData(startDate, endDate) {
             dailyTotals: dailyTotals.length
         });
 
+        // 💾 NUEVO: Guardar actividades en Firestore para persistencia
+        try {
+            const { syncActivities } = await import('./activityPersistence.js');
+            const persistedActivities = await syncActivities(normalizedActivities);
+
+            // Actualizar AppState con actividades persistidas
+            AppState.activities = persistedActivities;
+
+            console.log(`💾 Activities persisted: ${persistedActivities.length} total`);
+        } catch (error) {
+            console.warn('⚠️ Error persisting activities:', error);
+            // Si falla la persistencia, al menos mantener en memoria
+            AppState.activities = normalizedActivities;
+        }
+
+        // 🎯 Actualizar progreso de desafíos automáticamente
+        try {
+            const { updateAllChallengesProgress } = await import('./challengeProgressSync.js');
+            await updateAllChallengesProgress();
+        } catch (error) {
+            console.warn('⚠️ Error updating challenges progress:', error);
+        }
+
         return {
             raw: rawActivities,
             normalized: normalizedActivities,
             categorized: categorized,
             todayMetrics: todayMetrics,
             sleepHistory: sleepHistory,
-            dailyTotals: dailyTotals, // Nuevo campo
+            dailyTotals: dailyTotals,
             provider: providerName,
             syncTime: new Date()
         };
@@ -424,4 +467,59 @@ if (typeof window !== 'undefined') {
     window.initializeHealthProvider = initializeHealthProvider;
     window.connectHealthProvider = connectHealthProvider;
     window.healthProviderManager = healthProviderManager; // Exponer manager para logout
+
+    /**
+     * Handler global para los toggles de salud
+     * Centraliza la lógica de conexión/desconexión para todas las páginas
+     */
+    window.handleGlobalProviderToggle = async function (providerId, isChecked) {
+        console.log(`🔌 Global Health Toggle: ${providerId} -> ${isChecked}`);
+        const { AppState } = await import('./state.js');
+
+        if (!isChecked) {
+            // ELIMINADO confirm() que fallaba. Desconexión directa por ahora.
+            console.log(`🛑 Desconectando proveedor: ${providerId}`);
+
+            // Limpiar todas las huellas de conexión
+            localStorage.removeItem('selectedHealthProvider');
+            localStorage.removeItem('active_health_provider');
+            localStorage.removeItem(`${providerId}_access_token`);
+            localStorage.removeItem(`${providerId}_token`);
+
+            if (window.healthProviderManager) {
+                window.healthProviderManager.logoutProvider(providerId);
+                // Asegurar que el manager realmente no tenga activo nada
+                window.healthProviderManager.activeProvider = null;
+            }
+
+            if (window.showToast) window.showToast(`Desconectado de ${providerId}`, 'info');
+        } else {
+            try {
+                if (window.showToast) window.showToast(`Conectando con ${providerId}...`, 'info');
+                await connectHealthProvider(providerId, true);
+                if (window.showToast) window.showToast(`Conectado a ${providerId}`, 'success');
+            } catch (error) {
+                console.error('Error connecting provider:', error);
+                if (window.showToast) window.showToast(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // RE-RENDER OBLIGATORIO PARA ACTUALIZAR DASHBOARD Y SWITCHES
+        const page = AppState.currentPage;
+        const main = document.getElementById('mainContent');
+
+        if (main) {
+            console.log(`🔄 Refrescando vista tras cambio de salud: ${page}`);
+            if (page === 'settings') {
+                const { renderSettingsPage } = await import('../pages/settings.js');
+                main.innerHTML = renderSettingsPage();
+            } else if (page === 'profile') {
+                const { renderProfilePage } = await import('../pages/profile.js');
+                main.innerHTML = await renderProfilePage();
+            } else if (page === 'activity') {
+                const { renderActivity } = await import('../pages/activity.js');
+                main.innerHTML = renderActivity();
+            }
+        }
+    };
 }

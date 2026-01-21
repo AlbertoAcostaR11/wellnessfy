@@ -1,9 +1,96 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regla General: Solo usuarios autenticados pueden leer/escribir
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone can read public profiles
+      allow read: if request.auth != null;
+      // Only the user can update their own profile
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Posts collection
+    match /posts/{postId} {
+      // Anyone authenticated can read posts
+      allow read: if request.auth != null;
+      // Anyone authenticated can create posts
+      allow create: if request.auth != null;
+      // Only the author can update/delete their posts
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.author.uid;
+    }
+    
+    // Challenges collection
+    match /challenges/{challengeId} {
+      // Anyone authenticated can read challenges
+      allow read: if request.auth != null;
+      // Anyone authenticated can create challenges
+      allow create: if request.auth != null;
+      // Anyone authenticated can update challenges (for progress tracking)
+      // In a production app, you'd want stricter rules
+      allow update: if request.auth != null;
+      // Only authenticated users can delete challenges
+      allow delete: if request.auth != null;
+    }
+    
+    // Activities collection
+    match /activities/{activityId} {
+      // Anyone authenticated can read activities
+      allow read: if request.auth != null;
+      // Anyone authenticated can create activities
+      allow create: if request.auth != null;
+      // Users can update/delete their own activities
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    
+    // Circles collection
+    match /circles/{circleId} {
+      // Anyone authenticated can read circles
+      allow read: if request.auth != null;
+      // Anyone authenticated can create circles
+      allow create: if request.auth != null;
+      // Only the creator can delete circles
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.createdBy;
+      // Creator or members can update circles
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid in resource.data.membersList
+      );
+    }
+    
+    // Circle Invitations collection
+    match /circleInvitations/{invitationId} {
+      // Users can read their own invitations
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to
+      );
+      // Anyone can create invitations
+      allow create: if request.auth != null;
+      // Only sender or recipient can update/delete
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to
+      );
+    }
+    
+    // Friend Requests collection
+    match /friendRequests/{requestId} {
+      // Users can read their own friend requests
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to
+      );
+      // Anyone can create friend requests
+      allow create: if request.auth != null;
+      // Only sender or recipient can update/delete
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to
+      );
     }
   }
 }

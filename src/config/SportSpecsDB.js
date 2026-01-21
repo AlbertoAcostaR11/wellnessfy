@@ -4,7 +4,7 @@
  * Generado automáticamente por compile_specs.js
  * NO EDITAR MANUALMENTE. Edita los CSVs en resources/sport_specs y regenera.
  * 
- * @generated 2026-01-16T06:06:19.350Z
+ * @generated 2026-01-17T22:41:21.515Z
  */
 
 export const REVERSE_ID_MAP = {
@@ -116,7 +116,7 @@ export const REVERSE_ID_MAP = {
     "samsungApp_9052": "fencing",
     "googleFit_29": "football_soccer",
     "healthConnect_28": "paragliding",
-    "fitbit_90013": "walking",
+    "fitbit_1010": "football_soccer",
     "appleHealth_soccer": "football_soccer",
     "samsungWeb_4004": "football_soccer",
     "samsungApp_4004": "football_soccer",
@@ -170,6 +170,7 @@ export const REVERSE_ID_MAP = {
     "googleFit_45": "meditation",
     "healthConnect_45": "squash",
     "fitbit_4000": "meditation",
+    "fitbit_7075": "meditation",
     "appleHealth_meditation": "meditation",
     "googleFit_108": "other",
     "appleHealth_other": "other",
@@ -220,8 +221,8 @@ export const REVERSE_ID_MAP = {
     "googleFit_58": "running_treadmill",
     "huaweiWeb_4": "running_treadmill",
     "huaweiApp_4": "running_treadmill",
-    "samsungWeb_9002": "yoga",
-    "samsungApp_9002": "yoga",
+    "samsungWeb_9002": "running_treadmill",
+    "samsungApp_9002": "running_treadmill",
     "healthConnect_57": "running_treadmill",
     "googleFit_59": "sailing",
     "healthConnect_37": "sailing",
@@ -295,6 +296,7 @@ export const REVERSE_ID_MAP = {
     "samsungApp_5001": "volleyball",
     "googleFit_7": "walking",
     "healthConnect_79": "walking",
+    "fitbit_90013": "walking",
     "appleHealth_walking": "walking_indoor",
     "huaweiWeb_2": "walking",
     "huaweiApp_2": "walking",
@@ -311,7 +313,9 @@ export const REVERSE_ID_MAP = {
     "fitbit_52000": "yoga",
     "appleHealth_yoga": "yoga",
     "huaweiWeb_14": "yoga",
-    "huaweiApp_14": "yoga"
+    "huaweiApp_14": "yoga",
+    "samsungWeb_9010": "yoga",
+    "samsungApp_9010": "yoga"
 };
 
 export const SPORT_SPECS = {
@@ -2109,7 +2113,7 @@ export const SPORT_SPECS = {
         "ids": {
             "googleFit": "29",
             "healthConnect": "28",
-            "fitbit": "90013",
+            "fitbit": "1010",
             "appleHealth": "soccer",
             "samsungWeb": "4004",
             "samsungApp": "4004"
@@ -5665,8 +5669,8 @@ export const SPORT_SPECS = {
             "appleHealth": "yoga",
             "huaweiWeb": "14",
             "huaweiApp": "14",
-            "samsungWeb": "9002",
-            "samsungApp": "9002"
+            "samsungWeb": "9010",
+            "samsungApp": "9010"
         },
         "fields": {
             "calories": {

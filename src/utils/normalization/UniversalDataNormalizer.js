@@ -60,6 +60,8 @@ export class UniversalDataNormalizer {
                 sportKey = 'running';
             } else if (nameHint.includes('yoga')) {
                 sportKey = 'yoga';
+            } else if (nameHint.includes('medit')) {
+                sportKey = 'meditation';
             } else if (nameHint.includes('relax') || nameHint.includes('breath') || nameHint.includes('respiraci') || nameHint.includes('mindfulness')) {
                 sportKey = 'guided_breathing';
             } else if (nameHint.includes('pilates')) {
@@ -68,6 +70,8 @@ export class UniversalDataNormalizer {
                 sportKey = 'swimming';
             } else if (nameHint.includes('bic') || nameHint.includes('cycl')) {
                 sportKey = 'cycling';
+            } else if (nameHint.includes('soccer') || nameHint.includes('futbol') || nameHint.includes('fútbol') || nameHint.includes('football')) {
+                sportKey = 'football_soccer';
             } else if (nameHint.includes('gym') || nameHint.includes('pesa') || nameHint.includes('fuerza') || nameHint.includes('strength')) {
                 sportKey = 'strength_training';
             }

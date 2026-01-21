@@ -349,46 +349,28 @@ export class FitbitProvider extends HealthProvider {
     /**
      * Obtener datos de sueño para una fecha específica (Single Date)
      */
+    /**
+     * Obtener datos de sueño para una fecha específica (Single Date)
+     * Mejorado para agregar todas las sesiones del día y ser consistente con estadísticas
+     */
     async getSleep(date) {
-        const dateStr = this.formatDate(date);
-        // Note: Fitbit Sleep API often typically uses v1.2, but v1 works for basic summary
-        const fitbitUrl = `https://api.fitbit.com/1.2/user/-/sleep/date/${dateStr}.json`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
+        const startDate = new Date(date);
+        const endDate = new Date(date);
 
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
-        });
+        // Usar la lógica de rango para un solo día para asegurar agregación
+        const rangeData = await this.getSleepRange(startDate, endDate);
 
-        const data = await response.json();
-        const sleep = data.sleep?.[0];
+        if (rangeData && rangeData.length > 0) {
+            const dateStr = this.formatDate(date);
+            const dayData = rangeData.find(d => d.date === dateStr) || rangeData[0];
 
-        if (!sleep) return null;
-
-        // Calcular Sueño Real (Restando tiempo despierto)
-        // La API v1.2 suele devolver 'minutesAsleep' directamente, que es lo más preciso.
-        // Si no, calculamos (duration - wake).
-        let realMinutes = 0;
-        if (sleep.minutesAsleep) {
-            realMinutes = sleep.minutesAsleep; // Preferencia 1: Dato directo de Fitbit
-        } else {
-            const totalMinutes = sleep.duration / 60000;
-            const wakeMinutes = sleep.levels?.summary?.wake?.minutes || 0;
-            realMinutes = Math.max(0, totalMinutes - wakeMinutes);
+            return {
+                duration: Math.round(dayData.duration * 60), // Convertir horas a minutos
+                date: dayData.date
+            };
         }
 
-        return {
-            duration: realMinutes, // Guardamos minutos reales de sueño
-            timeInBed: sleep.timeInBed || (sleep.duration / 60000), // Dato extra por si acaso
-            efficiency: sleep.efficiency,
-            stages: {
-                deep: sleep.levels?.summary?.deep?.minutes || 0,
-                light: sleep.levels?.summary?.light?.minutes || 0,
-                rem: sleep.levels?.summary?.rem?.minutes || 0,
-                wake: sleep.levels?.summary?.wake?.minutes || 0
-            }
-        };
+        return null;
     }
 
     /**
@@ -536,10 +518,29 @@ export class FitbitProvider extends HealthProvider {
         const activityTypeId = fitbitActivity.activityId || fitbitActivity.activityTypeId; // API usa activityId
         const activityName = fitbitActivity.name || fitbitActivity.activityName || fitbitActivity.activityParentName; // API usa name
 
+        // Detectar tipo de actividad de forma robusta
+        // Convertimos a entero para asegurar consistencia
+        let finalActivityType = this.mapActivityType(activityTypeId);
+
+        // Fallback: Si devuelve 'other' (108) o genérico, intentar detectar por nombre
+        // ID 7075 es Meditation en algunos dispositivos (como detectado en debug)
+        if ((finalActivityType === 108 || finalActivityType === 'other') && activityName) {
+            const nameLower = activityName.toLowerCase();
+            if (nameLower.includes('medita') || nameLower.includes('mindfulness')) {
+                finalActivityType = 45; // ID oficial de Meditación en Wellnessfy
+            } else if (nameLower.includes('yoga')) {
+                finalActivityType = 100; // Yoga
+            } else if (nameLower.includes('run') || nameLower.includes('correr')) {
+                finalActivityType = 8; // Running
+            } else if (nameLower.includes('walk') || nameLower.includes('caminar')) {
+                finalActivityType = 7; // Walking
+            }
+        }
+
         return {
             id: `fitbit_${fitbitActivity.logId}`,
             name: activityName,
-            type: this.mapActivityType(activityTypeId),
+            activityType: finalActivityType, // RENOMBRADO de 'type' a 'activityType' para compatibilidad con ActivityAggregator
             startTime: this.parseFitbitDate(fitbitActivity.startTime, fitbitActivity._parentDate),
             endTime: new Date(this.parseFitbitDate(fitbitActivity.startTime, fitbitActivity._parentDate).getTime() + fitbitActivity.duration),
             duration: fitbitActivity.duration / 60000, // ms a minutos
@@ -556,20 +557,30 @@ export class FitbitProvider extends HealthProvider {
     }
 
     /**
-     * Mapear Activity Type ID de Fitbit a tipo estándar
+     * Mapear Activity Type ID de Fitbit a Universal ID (Google Fit Integers)
      */
-    mapActivityType(activityTypeId) {
+    mapActivityType(fitbitTypeId) {
+        // IDs de Fitbit -> IDs de Wellnessfy (Google Fit)
+        // Fuente: DICCIONARIO_DEPORTES.csv
+        const numericId = parseInt(fitbitTypeId);
+
         const typeMap = {
-            90009: 'running',
-            90013: 'walking',
-            1071: 'cycling',
-            15000: 'yoga',
-            2050: 'strength_training',
-            3000: 'swimming',
-            // Agregar más según necesidad
+            90009: 8,   // Running
+            90013: 7,   // Walking
+            1071: 1,    // Cycling
+            15000: 100, // Yoga
+            2050: 5,    // Strength Training
+            3000: 82,   // Swimming (82 es Natación genérica)
+            4000: 45,   // Meditation (Configurado)
+            7075: 45,   // Meditation (Detectado en debug)
+
+            // Mapeos adicionales comunes
+            90001: 1,   // Biking
+            90019: 8,   // Treadmill (Running)
+            90004: 104, // Hiking
         };
 
-        return typeMap[activityTypeId] || 'other';
+        return typeMap[numericId] || 108; // 108 = Other
     }
 
     /**

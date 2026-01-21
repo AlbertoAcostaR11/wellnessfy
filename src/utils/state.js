@@ -15,13 +15,15 @@ export const AppState = {
         averages: { steps: 0, activeMinutes: 0, sleepHours: 0 },
         badges: []
     },
-    currentPage: 'feed', // Default changed to feed
+    currentPage: 'activity', // Default changed to activity
     challenges: [],
     circles: [],
     feedPosts: [],
     activeChallengeId: null,
     wellnessApps: [],
-    notifications: []
+    notifications: [],
+    activities: [],
+    todayStats: null
 };
 
 // Load user data from localStorage
@@ -54,7 +56,7 @@ export function loadUserData() {
             }
 
             console.log('📦 Datos de salud cargados de memoria:',
-                { stats: !!AppState.todayStats, activities: AppState.activities.length });
+                { stats: !!AppState.todayStats, activities: (AppState.activities || []).length });
 
         } catch (e) {
             console.error('Error parsing saved health data:', e);
@@ -69,6 +71,12 @@ export function loadUserData() {
         } catch (e) {
             console.error('Error loading challenges:', e);
         }
+    }
+
+    // Load Active Challenge ID
+    const savedActiveChallengeId = localStorage.getItem('active_challenge_id');
+    if (savedActiveChallengeId) {
+        AppState.activeChallengeId = savedActiveChallengeId;
     }
 
     // Load Circles (preparando para circles)
@@ -96,6 +104,11 @@ export function saveUserData() {
     try {
         localStorage.setItem("wellnessfy_user", JSON.stringify(AppState.currentUser));
         localStorage.setItem("my_posts", JSON.stringify(AppState.feedPosts)); // Persist posts
+
+        // Save active challenge ID
+        if (AppState.activeChallengeId) {
+            localStorage.setItem("active_challenge_id", AppState.activeChallengeId);
+        }
 
         // Save health data (Fitbit/Google Fit metrics)
         const healthData = {

@@ -22,53 +22,84 @@ async function handleHealthSync() {
     const syncLabel = document.getElementById('syncLabel');
 
     try {
-        const provider = healthProviderManager.activeProvider || 'fitbit';
+        const provider = healthProviderManager.getActiveProvider();
+        const providerName = provider ? provider.name.toLowerCase() : 'desconocido';
 
         if (syncIcon) syncIcon.classList.add('animate-spin');
         if (syncLabel) syncLabel.innerText = 'Sincronizando...';
 
-        console.log('🚀 Iniciando sincronización real con Motor Universal...');
+        console.log(`🚀 [ACTIVITY] Iniciando sincronización con ${providerName}...`);
 
-        if (provider === 'googleFit') {
-            await requestGoogleSync();
-        } else {
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - 6);
+        // Rango de 7 días
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 6);
 
-            // Fetch data (Includes Daily Totals now)
-            const result = await syncHealthData(startDate, endDate);
-            console.log('📊 Resultado del Motor Universal:', result);
+        // Fetch data
+        const result = await syncHealthData(startDate, endDate);
+        console.log('📊 [ACTIVITY] Resultado del Motor:', result ? 'Éxito' : 'Vacío');
 
-            if (result) {
-                if (result.categorized && result.categorized.sports) {
-                    AppState.activities = result.categorized.sports;
-                } else if (Array.isArray(result)) {
-                    AppState.activities = result;
-                }
-                if (result.todayMetrics) {
-                    AppState.todayStats = result.todayMetrics;
-                }
-                if (result.sleepHistory) {
-                    AppState.sleepHistory = result.sleepHistory;
-                }
-                if (result.dailyTotals) {
-                    AppState.dailyTotals = result.dailyTotals;
-                }
-                saveUserData();
+        if (result) {
+            // Actualizar AppState con resultados del motor
+            if (result.categorized && result.categorized.sports) {
+                AppState.activities = result.categorized.sports;
+            } else if (result.normalized) {
+                AppState.activities = result.normalized;
             }
+            if (result.todayMetrics) AppState.todayStats = result.todayMetrics;
+            if (result.sleepHistory) AppState.sleepHistory = result.sleepHistory;
+            if (result.dailyTotals) AppState.dailyTotals = result.dailyTotals;
+
+            saveUserData();
+
+            // Solo forzar re-render si estamos en la página de actividad
+            if (AppState.currentPage === 'activity') {
+                const activeTab = document.querySelector('.activity-tab.active');
+                if (activeTab && activeTab.dataset.tab) {
+                    window.switchActivityTab(activeTab.dataset.tab);
+                }
+
+                console.log('🔄 Refrescando vista de actividad...');
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) mainContent.innerHTML = renderActivity();
+            }
+            window.showToast('Datos actualizados');
         }
 
         if (syncLabel) syncLabel.innerText = 'Sincronizado';
-        console.log('🔄 Refrescando vista de actividad...');
-        const mainContent = document.getElementById('mainContent');
-        if (mainContent) mainContent.innerHTML = renderActivity();
 
     } catch (error) {
         console.error('❌ Error en sincronización:', error);
-        alert(`Error: ${error.message}`);
+
+        // Manejo amigable de falta de autenticación
+        if (error.message.includes('No autenticado') || error.message.includes('AUTH_ERROR')) {
+            const providerId = error.providerId || (healthProviderManager.getActiveProvider() ? healthProviderManager.getActiveProvider().name : 'googleFit');
+            const providerName = providerId === 'googleFit' ? 'Google Fit' : (providerId === 'fitbit' ? 'Fitbit' : providerId);
+
+            if (window.showToast) window.showToast(`Tu sesión con ${providerName} ha expirado`, 'warning');
+
+            // Preguntar si quiere reconectar
+            setTimeout(() => {
+                if (confirm(`Tu sesión con ${providerName} ha expirado o no ha sido iniciada. ¿Quieres conectarte ahora?`)) {
+                    if (window.handleGlobalProviderToggle) {
+                        window.handleGlobalProviderToggle(providerId, true);
+                    } else {
+                        window.navigateTo('settings');
+                    }
+                }
+            }, 500);
+        } else {
+            if (window.showToast) {
+                window.showToast(`Error: ${error.message}`, 'error');
+            } else {
+                alert(`Error: ${error.message}`);
+            }
+        }
     } finally {
         if (syncIcon) syncIcon.classList.remove('animate-spin');
+        if (syncLabel && syncLabel.innerText === 'Sincronizando...') {
+            syncLabel.innerText = 'Sincronizar';
+        }
     }
 }
 window.syncHealthConnect = handleHealthSync;
@@ -90,17 +121,26 @@ export function renderActivity() {
 
     return `
         <!-- Header & Tabs (Cleaned) -->
-        <div class="flex justify-between items-center mb-4 relative z-50">
-             <div class="flex flex-col">
-                <h2 class="text-xl font-bold text-white">Actividad</h2>
-                <p class="text-[10px] text-white/40 uppercase tracking-wider">Última sync: ${lastSyncText}</p>
+        <!-- Header & Tabs (Standardized) -->
+        <div class="mb-6 relative z-50">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold tracking-tight text-white">Actividad</h1>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 opacity-80 cursor-pointer bg-white/5 py-2 px-4 rounded-full hover:opacity-100 backdrop-blur-md" onclick="window.syncHealthConnect()" id="syncBtn">
+                        <span class="material-symbols-outlined text-[16px] text-[#00f5d4]" id="syncIcon">sync</span>
+                        <p class="text-white text-[11px] font-bold uppercase tracking-widest" id="syncLabel">Sincronizar</p>
+                        <div class="w-px h-3 bg-white/20 mx-1"></div>
+                        <img src="${providerIcon}" class="size-4 object-contain">
+                    </div>
+                    <button class="relative p-2 rounded-full hover:bg-white/5 transition-all text-white/80 hover:text-white lg:hidden" onclick="navigateTo('notifications')">
+                        <span class="material-symbols-outlined text-xl">notifications</span>
+                        <div id="notifBadgeMobile" class="absolute top-1.5 right-1.5 min-w-[1rem] h-4 px-1 bg-[#00f5d4] rounded-full hidden flex items-center justify-center shadow-[0_0_8px_#00f5d4]">
+                            <span class="text-[9px] font-black text-[#0f172a]" id="notifCountMobile">0</span>
+                        </div>
+                    </button>
+                </div>
             </div>
-            <div class="flex items-center gap-2 opacity-80 cursor-pointer bg-white/5 py-2 px-4 rounded-full hover:opacity-100 backdrop-blur-md" onclick="window.syncHealthConnect()" id="syncBtn">
-                <span class="material-symbols-outlined text-[16px] text-[#00f5d4]" id="syncIcon">sync</span>
-                <p class="text-white text-[11px] font-bold uppercase tracking-widest" id="syncLabel">Sincronizar</p>
-                <div class="w-px h-3 bg-white/20 mx-1"></div>
-                <img src="${providerIcon}" class="size-4 object-contain">
-            </div>
+            <p class="text-[10px] text-white/40 uppercase tracking-wider mt-1">Última sync: ${lastSyncText}</p>
         </div>
 
         <div class="flex gap-2 mb-6 relative z-40">
@@ -666,6 +706,7 @@ function getSportMetadata(sportKey) {
         'swimming': { name: 'Natación', icon: 'pool', color: '#00d2ff', unit: 'km' },
         'tennis': { name: 'Tenis', icon: 'sports_tennis', color: '#ffeaa7', unit: 'min' },
         'soccer': { name: 'Fútbol', icon: 'sports_soccer', color: '#00b894', unit: 'min' },
+        'football_soccer': { name: 'Fútbol', icon: 'sports_soccer', color: '#00b894', unit: 'min' },
         'basketball': { name: 'Baloncesto', icon: 'sports_basketball', color: '#ff7675', unit: 'min' },
         'hiking': { name: 'Senderismo', icon: 'hiking', color: '#26de81', unit: 'km' },
         'default': { name: 'Actividad', icon: 'sports_score', color: '#95a5a6', unit: 'min' }

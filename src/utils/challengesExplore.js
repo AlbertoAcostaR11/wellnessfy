@@ -1,5 +1,6 @@
 
 import { AppState } from './state.js';
+import { mountSportSelector } from './sportSelectorInit.js';
 
 // ==========================================
 // MÓDULO EXPLORAR DESAFÍOS (GEOLOCALIZADO)
@@ -7,20 +8,15 @@ import { AppState } from './state.js';
 
 export const ExploreModule = {
     userLocation: null,
-    radius: 15, // km por defecto
-    activeSport: 'run',
+    radius: 5000, // Empezar con radio amplio para ver algo
+    activeSports: [], // Array vacío = todos
     isLoading: false,
     challengesFound: [],
 
     // Base de datos simulada de desafíos "cercanos"
     // En producción, esto vendría de una query geoespacial a Firestore (GeoFlutterFire o similar)
-    mockGeoChallenges: [
-        { id: 'geo1', name: 'Morning Run Parque México', sport: 'run', participants: 124, image: 'https://images.unsplash.com/photo-1552674605-469455302436?w=800&q=80', creator: 'Running Club CDMX', latOffset: 0.01, lngOffset: 0.01 },
-        { id: 'geo2', name: 'Yoga al Amanecer', sport: 'yoga', participants: 45, image: 'https://images.unsplash.com/photo-1544367563-12123d8965cd?w=800&q=80', creator: 'Ana Yoga', latOffset: -0.02, lngOffset: 0.005 },
-        { id: 'geo3', name: 'Cicli-Ruta Insurgentes', sport: 'bike', participants: 340, image: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80', creator: 'Bici-Tours', latOffset: 0.05, lngOffset: -0.03 },
-        { id: 'geo4', name: 'Crossfit Open Box', sport: 'gym', participants: 80, image: 'https://images.unsplash.com/photo-1517963879466-e925ac6943d6?w=800&q=80', creator: 'Iron Gym', latOffset: -0.01, lngOffset: -0.01 },
-        { id: 'geo5', name: 'Reto 5k Principiantes', sport: 'run', participants: 210, image: 'https://images.unsplash.com/photo-1486218119243-1388350cc8eb?w=800&q=80', creator: 'Nike Run Club', latOffset: 0.005, lngOffset: 0.02 }
-    ],
+    // Datos reales conectados a AppState
+
 
     init: function () {
         console.log('🌍 Iniciando Explorador Geolocalizado...');
@@ -31,27 +27,24 @@ export const ExploreModule = {
             this.updateResults();
         }
 
-        // Exponer funciones al window para los eventos onclick del HTML inyectado
+        // Exponer función para el slider de radio
         window.updateExploreRadius = (val) => {
             this.radius = parseInt(val);
-            document.getElementById('radiusValue').textContent = `${this.radius} km`;
+            const label = this.radius >= 5000 ? 'Global (Todo el mundo)' : `${this.radius} km`;
+            document.getElementById('radiusValue').textContent = label;
             this.updateResults();
         };
 
-        window.setExploreSport = (sport) => {
-            this.activeSport = sport;
-            // Actualizar UI botones
-            document.querySelectorAll('.sport-filter-btn').forEach(btn => {
-                if (btn.dataset.sport === sport) {
-                    btn.classList.add('bg-[#00f5d4]/20', 'border-[#00f5d4]', 'text-[#00f5d4]');
-                    btn.classList.remove('bg-white/5', 'border-white/5', 'text-gray-400');
-                } else {
-                    btn.classList.remove('bg-[#00f5d4]/20', 'border-[#00f5d4]', 'text-[#00f5d4]');
-                    btn.classList.add('bg-white/5', 'border-white/5', 'text-gray-400');
-                }
-            });
-            this.updateResults();
-        };
+        // Montar Selector de Deportes
+        mountSportSelector('geo-explore-sport-selector', {
+            mode: 'multiple',
+            initialSelection: this.activeSports,
+            placeholder: 'Filtrar por deporte...',
+            onSelect: (selectedSports) => {
+                this.activeSports = selectedSports;
+                this.updateResults();
+            }
+        });
     },
 
     getUserLocation: function () {
@@ -106,19 +99,68 @@ export const ExploreModule = {
     updateResults: function () {
         if (!this.userLocation) return;
 
-        // Filtrar desafíos
-        const filtered = this.mockGeoChallenges.map(c => {
-            // Calcular lat/lng real del desafío basado en offsets (simulación)
-            // En producción, c.lat y c.lng vendrían fijos de la DB
-            const realLat = this.userLocation.lat + (c.latOffset || 0);
-            const realLng = this.userLocation.lng + (c.lngOffset || 0);
-            const dist = this.getDistanceFromLatLonInKm(this.userLocation.lat, this.userLocation.lng, realLat, realLng);
+        if (!AppState.challenges) return;
 
+        // Filtrar desafíos reales
+        const filtered = AppState.challenges.map(c => {
+            // Verificar si tiene geolocalización
+            if (!c.location || !c.location.lat || !c.location.lng) {
+                return { ...c, distanceKm: 9999 }; // Sin ubicación = Lejos
+            }
+
+            const dist = this.getDistanceFromLatLonInKm(this.userLocation.lat, this.userLocation.lng, c.location.lat, c.location.lng);
             return { ...c, distanceKm: dist };
         }).filter(c => {
-            return c.sport === this.activeSport && c.distanceKm <= this.radius;
+            const uid = AppState.currentUser.id || AppState.currentUser.uid;
+            const username = AppState.currentUser.username;
+            const name = AppState.currentUser.name;
+
+            // 0. Ocultar mis propios desafíos (Discovery)
+            // Usamos la misma lógica robusta que en MyChallengesTab
+            const isCreator = (c.creator?.id === uid) ||
+                (c.creator?.username === username) ||
+                (c.creator?.name === name) ||
+                (c.createdBy === uid) ||
+                (c.creatorId === uid);
+
+            if (isCreator) return false;
+
+            // 0.5 Ocultar desafíos a los que YA me uní
+            const isParticipant = c.participantsList && c.participantsList.includes(uid);
+            if (isParticipant) return false;
+
+            // 1. Filtro Privacidad
+            if (c.challengePrivacy === 'private' || c.privacy === 'private') {
+                // Si es privado y NO soy miembro (ya filtrado arriba), no debería verlo en explorar
+                // Salvo que tenga invitación o sea visible... por ahora ocultamos privados en explorar
+                return false;
+            }
+
+            // 2. Filtro de Distancia
+            // Si el radio es muy grande (>5000), mostramos todo (Global)
+            const isGlobalSearch = this.radius >= 5000;
+
+            if (!isGlobalSearch) {
+                if (c.distanceKm > this.radius) return false;
+                // Si no tiene ubicación (9999) y buscamos localmente, se oculta
+                if (c.distanceKm > 9000) return false;
+            }
+
+            // 3. Filtro de Deporte (Multideporte support)
+            // Si activeSports está vacío -> Muestra todo
+            if (this.activeSports.length === 0) return true;
+
+            // Si el desafío tiene 'allowedSports' (nuevo formato), checar intersección
+            if (c.allowedSports && Array.isArray(c.allowedSports)) {
+                return c.allowedSports.some(s => this.activeSports.includes(s));
+            }
+            // Fallback formato antiguo (category o id implícito)
+            const cat = (c.category || '').toLowerCase();
+            return this.activeSports.includes(cat);
+
         }).sort((a, b) => a.distanceKm - b.distanceKm); // Más cercanos primero
 
+        console.log(`🔍 [Explore] Filtrado: ${filtered.length} desafíos de ${AppState.challenges.length} (Radio: ${this.radius}km)`);
         this.renderResults(filtered);
     },
 
@@ -142,9 +184,16 @@ export const ExploreModule = {
             return;
         }
 
-        container.innerHTML = results.map(challenge => `
+        container.innerHTML = results.map(challenge => {
+            // Fix: Handle creator object correctly
+            const creatorName = challenge.creator?.name || challenge.creator || 'Desconocido';
+            const bgImage = challenge.image || challenge.imageGradient || '';
+            // Ensure we have a valid URL if possible, otherwise rely on CSS fallback or solid color
+            const style = bgImage.includes('url') ? `background-image: ${bgImage}` : `background-image: url('${bgImage}')`;
+
+            return `
             <div class="glass-card rounded-2xl p-4 flex gap-4 items-center group cursor-pointer hover:border-[#00f5d4]/30 transition-all" onclick="window.showChallengeDetails && window.showChallengeDetails('${challenge.id}')">
-                <div class="size-16 rounded-xl bg-cover bg-center shrink-0 border border-white/10" style="background-image: url('${challenge.image}')"></div>
+                <div class="size-16 rounded-xl bg-cover bg-center shrink-0 border border-white/10" style="${style}"></div>
                 
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start">
@@ -153,7 +202,7 @@ export const ExploreModule = {
                             ${challenge.distanceKm.toFixed(1)} km
                         </span>
                     </div>
-                    <p class="text-xs text-white/50 truncate mb-2">por ${challenge.creator}</p>
+                    <p class="text-xs text-white/50 truncate mb-2">por ${creatorName}</p>
                     
                     <div class="flex items-center gap-3 text-[10px] text-white/40 font-bold uppercase tracking-wider">
                          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">group</span> ${challenge.participants}</span>
@@ -165,22 +214,19 @@ export const ExploreModule = {
                     <span class="material-symbols-outlined text-lg">add</span>
                 </button>
             </div>
-        `).join('');
+        `}).join('');
     },
 
     // Retorna el HTML Inicial de la Pestaña
     getTemplate: function () {
         return `
             <div class="animate-fade-in space-y-6">
-                <!-- 1. Filtro Deporte -->
+                <!-- 1. Filtro Deporte (NUEVO SELECTOR) -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">¿Qué quieres practicar?</label>
-                    <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                        ${this.renderIcon('run', 'Running', 'directions_run')}
-                        ${this.renderIcon('bike', 'Ciclismo', 'directions_bike')}
-                        ${this.renderIcon('swim', 'Natación', 'pool')}
-                        ${this.renderIcon('yoga', 'Yoga', 'self_improvement')}
-                        ${this.renderIcon('gym', 'Gimnasio', 'fitness_center')}
+                    <div id="geo-explore-sport-selector">
+                        <!-- SportSearchSelector se montará aquí -->
+                        <div class="h-10 bg-white/5 rounded-xl animate-pulse"></div>
                     </div>
                 </div>
 
@@ -194,13 +240,13 @@ export const ExploreModule = {
                         <span id="radiusValue" class="text-xl font-bold text-[#00f5d4]">${this.radius} km</span>
                     </div>
                     
-                    <input type="range" min="1" max="50" value="${this.radius}" class="w-full accent-[#00f5d4] cursor-pointer" 
+                    <input type="range" min="1" max="10000" step="10" value="${this.radius}" class="w-full accent-[#00f5d4] cursor-pointer" 
                            oninput="window.updateExploreRadius(this.value)">
                            
                     <div class="flex justify-between text-[9px] text-white/30 font-bold uppercase tracking-widest mt-2">
                         <span>1 km</span>
-                        <span>25 km</span>
-                        <span>50 km</span>
+                        <span>500 km</span>
+                        <span>Global</span>
                     </div>
                 </div>
 

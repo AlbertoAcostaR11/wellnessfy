@@ -1,6 +1,8 @@
 
 import { AppState, saveUserData } from '../utils/state.js';
 import { navigateTo } from '../router.js';
+import { getSportIcon, getSportDisplayName } from '../utils/sportIcons.js';
+import { initSportSelector } from './profileSportSelector.js';
 // Firebase Imports
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
@@ -33,18 +35,37 @@ let pendingAvatarBlob = null;
 export async function renderProfilePage(userId = null) {
     let user;
     let isOwnProfile = true;
+    let isFriend = false;
 
+    // 1. Resolve User
     if (userId && userId !== AppState.currentUser.uid) {
-        // Viewing another user's profile
         isOwnProfile = false;
         try {
-            const userDoc = await getDoc(doc(db, 'users', userId));
-            if (userDoc.exists()) {
-                user = { uid: userId, ...userDoc.data() };
+            // Check if userId is actually a username (starts with @)
+            if (userId.startsWith('@')) {
+                const uQuery = query(collection(db, 'users'), where('username', '==', userId));
+                const uSnap = await getDocs(uQuery);
+                if (!uSnap.empty) {
+                    user = { uid: uSnap.docs[0].id, ...uSnap.docs[0].data() };
+                    userId = user.uid;
+                }
             } else {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (userDoc.exists()) {
+                    user = { uid: userId, ...userDoc.data() };
+                }
+            }
+
+            if (!user) {
                 user = AppState.currentUser;
                 isOwnProfile = true;
                 if (window.showToast) window.showToast('Usuario no encontrado', 'error');
+            } else {
+                // Check Friendship
+                const fQuery = query(collection(db, 'friendships'),
+                    where('users', 'array-contains', AppState.currentUser.uid));
+                const fSnap = await getDocs(fQuery);
+                isFriend = fSnap.docs.some(d => d.data().users.includes(user.uid) && d.data().status === 'accepted');
             }
         } catch (error) {
             console.error('Error loading user profile:', error);
@@ -55,43 +76,45 @@ export async function renderProfilePage(userId = null) {
         user = AppState.currentUser;
     }
 
+    const showPrivateContent = isOwnProfile || user.isPublic !== false || isFriend;
+
     // Mock counts
     const postsCount = AppState.feedPosts ? AppState.feedPosts.filter(p => p.author.username === user.username).length : 0;
     const followersCount = "0";
     const followingCount = "0";
 
-    // Icons map for View Mode
-    const sportIcons = {
-        gym: 'fitness_center', running: 'directions_run', yoga: 'self_improvement',
-        cycling: 'directions_bike', swimming: 'pool', boxing: 'sports_mma',
-        crossfit: 'timer', pilates: 'accessibility_new'
-    };
-    const sportLabels = {
-        gym: 'Gym', running: 'Correr', yoga: 'Yoga', cycling: 'Bici',
-        swimming: 'Nadar', boxing: 'Box', crossfit: 'Crossfit', pilates: 'Pilates'
-    };
+    // Dynamic Sport Icons (Imported)
+    // No need for local sportIcons map anymore
+
 
     return `
         <!-- Header -->
-        <div class="sticky top-0 bg-[#020617]/80 backdrop-blur-lg z-40 -mx-4 -mt-6 px-4 py-4 mb-6 border-b border-white/5 flex items-center justify-between lg:hidden transition-all duration-300">
+        <!-- Header Standard -->
+        <div class="flex items-center justify-between mb-6 lg:hidden">
             <div class="flex items-center gap-2">
                 ${!isOwnProfile ? `
-                    <button onclick="window.history.back(); /* Just fallback, router handles nav history better usually */ navigateTo('circles')" class="size-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors">
+                    <button onclick="window.history.back();" class="size-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors">
                         <span class="material-symbols-outlined text-white">arrow_back</span>
                     </button>
                 ` : ''}
-                <span class="font-bold text-xl tracking-tight text-white">${user.username ? user.username.replace('@', '') : 'User'}</span>
+                <span class="font-bold text-2xl tracking-tight text-white">${user.username ? user.username.replace('@', '') : 'User'}</span>
                 <span class="material-symbols-outlined text-[#00f5d4] text-lg" style="font-variation-settings: 'FILL' 1">verified</span>
             </div>
-            ${isOwnProfile ? `
             <div class="flex items-center gap-4">
+                ${isOwnProfile ? `
                  <span class="material-symbols-outlined cursor-pointer text-white hover:text-[#00f5d4] transition-colors" onclick="window.showEditProfile()">edit</span>
                  <span class="material-symbols-outlined cursor-pointer text-white hover:text-[#00f5d4] transition-colors" onclick="window.navigateTo('settings')">settings</span>
+                ` : ''}
+                <button class="relative p-2 rounded-full hover:bg-white/5 transition-all text-white/80 hover:text-white" onclick="navigateTo('notifications')">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                    <div id="notifBadgeMobile" class="absolute top-1.5 right-1.5 min-w-[1rem] h-4 px-1 bg-[#00f5d4] rounded-full hidden flex items-center justify-center shadow-[0_0_8px_#00f5d4]">
+                        <span class="text-[9px] font-black text-[#0f172a]" id="notifCountMobile">0</span>
+                    </div>
+                </button>
             </div>
-            ` : ''}
         </div>
 
-        <section class="px-4 pb-24">
+        <section class="pb-24">
             <!-- Avatar -->
             <div class="flex flex-col items-center mb-4">
                 <div class="size-32 rounded-full bg-gradient-to-tr from-[#00f5d4] to-[#00d2ff] p-[3px] mb-3 shadow-[0_0_30px_rgba(0,245,212,0.2)]">
@@ -135,14 +158,14 @@ export async function renderProfilePage(userId = null) {
             </div>
 
             <!-- NEW: Interests / Activities Display (Moved Up) -->
-            ${(user.interests && Array.isArray(user.interests) && user.interests.length > 0) ? `
+            ${(showPrivateContent && user.interests && Array.isArray(user.interests) && user.interests.length > 0) ? `
             <div class="mb-6 text-center">
                 <p class="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-3">Deportes de interés</p>
                 <div class="flex flex-wrap items-center justify-center gap-2 px-2">
                     ${user.interests.map(sport => `
                         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#00f5d4]/10 border border-[#00f5d4]/30">
-                            <span class="material-symbols-outlined text-[#00f5d4] text-sm">${sportIcons[sport] || 'circle'}</span>
-                            <span class="text-[#00f5d4] text-[10px] font-bold uppercase tracking-wider">${sportLabels[sport] || sport}</span>
+                            <span class="material-symbols-outlined text-[#00f5d4] text-sm">${getSportIcon(sport)}</span>
+                            <span class="text-[#00f5d4] text-[10px] font-bold uppercase tracking-wider">${getSportDisplayName(sport)}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -156,21 +179,18 @@ export async function renderProfilePage(userId = null) {
                         Compartir Perfil
                     </button>
                 ` : `
-                    <button class="w-full bg-[#00f5d4] text-black rounded-xl py-3 text-sm font-bold hover:bg-[#00d2ff] transition-colors active:scale-[0.98]" onclick="window.sendFriendRequest('${user.uid}')">
-                        Agregar Amigo
+                    <button class="w-full ${isFriend ? 'bg-white/10 text-white' : 'bg-[#00f5d4] text-black'} rounded-xl py-3 text-sm font-bold hover:brightness-110 transition-colors active:scale-[0.98]" onclick="window.sendFriendRequest('${user.uid}')">
+                        ${isFriend ? 'Amigos' : 'Agregar Amigo'}
                     </button>
                 `}
             </div>
 
             <!-- Details Grid -->
-             <div class="grid grid-cols-2 gap-3 mb-8">
-                <div class="glass-card p-3 rounded-xl bg-white/5 flex flex-col gap-1">
-                    <span class="text-[10px] text-white/40 uppercase tracking-wider">Edad</span>
-                    <span class="text-sm font-bold text-white">${calculateAge(user.birthdate)} años</span>
-                </div>
-                <div class="glass-card p-3 rounded-xl bg-white/5 flex flex-col gap-1">
-                    <span class="text-[10px] text-white/40 uppercase tracking-wider">Cuerpo</span>
-                    <span class="text-sm font-bold text-white">${user.height || '--'} ${user.heightUnit || 'cm'} • ${user.weight || '--'} ${user.weightUnit || 'kg'}</span>
+            ${showPrivateContent ? `
+             <div class="flex justify-center mb-8">
+                <div class="glass-card p-4 px-10 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-2 border border-white/5 min-w-[160px]">
+                    <span class="text-[10px] text-white/40 font-bold uppercase tracking-widest">Cumpleaños</span>
+                    <span class="text-base font-bold text-white capitalize text-center leading-tight">${formatBirthday(user.birthdate)}</span>
                 </div>
              </div>
 
@@ -178,23 +198,16 @@ export async function renderProfilePage(userId = null) {
             <div class="grid grid-cols-3 gap-1">
                 ${renderUserPosts(user)}
             </div>
-            <!-- Health Connections Section (Only for owner) -->
-            ${isOwnProfile ? `
-            <div class="mt-8 pt-8 border-t border-white/10">
-                <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#00f5d4]">monitor_heart</span>
-                    Conexiones de Salud
-                </h3>
-                <div class="space-y-3">
-                    ${renderConnectionCard('Google Fit', 'googleFit', 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Fit_icon_2018.svg')}
-                    ${renderConnectionCard('Fitbit', 'fitbit', 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Fitbit_logo_2016.svg')}
-                    ${renderConnectionCard('Samsung Health', 'samsungHealth', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Samsung_Health_icon.png/120px-Samsung_Health_icon.png')}
-                    ${renderConnectionCard('Huawei Health', 'huaweiHealth', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Huawei_Health_icon.svg/100px-Huawei_Health_icon.svg.png')}
+            ` : `
+            <!-- Privacy Wall -->
+            <div class="glass-card rounded-3xl p-10 text-center border border-white/5 bg-white/[0.02] animate-fade-in">
+                <div class="size-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                    <span class="material-symbols-outlined text-white/40 text-3xl">lock</span>
                 </div>
-                <p class="text-xs text-brand-silver mt-4">Activa una fuente para sincronizar tus deportes automáticamente.</p>
+                <h3 class="text-white font-bold mb-2">Este perfil es privado</h3>
+                <p class="text-xs text-white/40 leading-relaxed max-w-[200px] mx-auto">Envía una solicitud de amistad para ver sus publicaciones y actividad.</p>
             </div>
-            ` : ''}
-
+            `}
         </section>
     `;
 }
@@ -204,15 +217,37 @@ function renderUserPosts(user) {
     if (!AppState.feedPosts || AppState.feedPosts.length === 0) {
         return `<div class="col-span-3 text-center py-10 text-white/30 text-xs">No hay publicaciones aún</div>`;
     }
-    const myPosts = AppState.feedPosts.filter(p => p.author.username === user.username);
-    if (myPosts.length === 0) return `<div class="col-span-3 text-center py-10 text-white/30 text-xs">No hay publicaciones aún</div>`;
 
-    return myPosts.map(post => `
-        <div class="aspect-[4/5] bg-white/5 relative group cursor-pointer overflow-hidden">
-            <div class="bg-center bg-cover size-full transition-transform duration-500 group-hover:scale-110" style="background-image: url('${post.image || (post.media && post.media[0]) || ''}');"></div>
-        </div>
-    `).join('');
+    const targetUsername = (user.username.startsWith('@') ? user.username : '@' + user.username).toLowerCase();
+
+    const myPosts = AppState.feedPosts.filter(p => {
+        const pUser = (p.author.username.startsWith('@') ? p.author.username : '@' + p.author.username).toLowerCase();
+        const hasImage = p.image || (p.media && p.media.length > 0);
+        return pUser === targetUsername && hasImage;
+    });
+
+    if (myPosts.length === 0) return `<div class="col-span-3 text-center py-10 text-white/30 text-xs">No hay fotos publicadas</div>`;
+
+    return myPosts.map(post => {
+        const imageUrl = post.image || (post.media && post.media.length > 0 ? post.media[0] : null);
+
+        return `
+            <div class="aspect-[4/5] bg-white/5 relative group cursor-pointer overflow-hidden rounded-md border border-white/5" onclick="window.viewPost('${post.id}')">
+                <div class="bg-center bg-cover size-full transition-transform duration-500 group-hover:scale-110" style="background-image: url('${imageUrl}');"></div>
+                ${post.content ? `
+                    <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                        <p class="text-[10px] text-white line-clamp-1">${post.content}</p>
+                    </div>
+                ` : ''}
+            </div>`;
+    }).join('');
 }
+
+window.viewPost = function (postId) {
+    if (!postId) return;
+    AppState.targetPostId = postId;
+    navigateTo('feed');
+};
 
 function calculateAge(birthdate) {
     if (!birthdate) return '--';
@@ -224,6 +259,22 @@ function calculateAge(birthdate) {
         age--;
     }
     return age;
+}
+
+function formatBirthday(dateString) {
+    if (!dateString) return '--';
+    // Parse YYYY-MM-DD directly to avoid timezone issues
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return '--';
+
+    const day = parseInt(parts[2], 10);
+    const monthIndex = parseInt(parts[1], 10) - 1;
+
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    if (monthIndex < 0 || monthIndex > 11) return '--';
+
+    return `${day} de ${months[monthIndex]}`;
 }
 
 // ==========================================
@@ -328,20 +379,11 @@ export function showEditProfile(isOnboarding = false) {
                             </div>
                         </div>
                         
-                        <!-- NEW: Sports Selector -->
+                        <!-- Sport Search Selector -->
                          <div class="space-y-4 pt-4 border-t border-white/5">
-                            <label class="text-white/40 text-[10px] font-bold uppercase tracking-wider ml-1">Tipo de Actividad</label>
-                            <div class="grid grid-cols-4 gap-2">
-                                ${sportsList.map(sport => {
-        const isSelected = user.interests && user.interests.includes(sport);
-        return `
-                                    <button id="sport-${sport}" onclick="window.toggleSportSelection('${sport}')" 
-                                        class="flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all ${isSelected ? 'border-[#00f5d4] bg-[#00f5d4]/10 text-[#00f5d4]' : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10'}">
-                                        <span class="material-symbols-outlined text-xl">${sportsIcons[sport]}</span>
-                                        <span class="text-[9px] font-bold uppercase tracking-wider">${sportsLabels[sport]}</span>
-                                    </button>
-                                    `;
-    }).join('')}
+                            <label class="text-white/40 text-[10px] font-bold uppercase tracking-wider ml-1">Deportes de Interés</label>
+                            <div id="sport-selector-container">
+                                <!-- SportSearchSelector se renderizará aquí -->
                             </div>
                         </div>
                     </div>
@@ -355,6 +397,9 @@ export function showEditProfile(isOnboarding = false) {
 
     const container = document.getElementById('modalsContainer');
     container.innerHTML = modal;
+
+    // Inicializar Sport Search Selector
+    setTimeout(() => initSportSelector(), 100);
 }
 
 // ... Cropper & Helpers (startCrop, finishCrop, toggles) are same as before ...
@@ -559,7 +604,7 @@ window.handleEditProfileSubmit = async function (isOnboarding) {
             const main = document.getElementById('mainContent');
             // Usamos un control simple para saber si estamos en perfil, aunque AppState debería tenerlo
             if (main && AppState.currentPage === 'profile') {
-                main.innerHTML = renderProfilePage();
+                main.innerHTML = await renderProfilePage();
             }
         }
 
@@ -575,95 +620,3 @@ window.handleEditProfileSubmit = async function (isOnboarding) {
     }
 };
 
-// --- Helper para Renderizar Switches de Conexión ---
-function renderConnectionCard(name, key, iconUrl) {
-    // Verificar si está conectado (Esto debe leer del localStorage por ahora)
-    const IS_CONNECTED = localStorage.getItem(`${key.includes('google') ? 'google' : key}_access_token`)
-        || localStorage.getItem('selectedHealthProvider') === key;
-
-    const checked = IS_CONNECTED ? 'checked' : '';
-    const statusText = IS_CONNECTED ? 'Conectado' : 'Desconectado';
-    const statusColor = IS_CONNECTED ? 'text-[#00f5d4]' : 'text-gray-500';
-
-    return `
-<div class="bg-white/5 rounded-xl p-4 flex items-center justify-between border border-white/5">
-<div class="flex items-center gap-3">
-    <div class="size-10 rounded-full bg-white flex items-center justify-center p-1">
-        <img src="${iconUrl}" class="size-full object-contain" alt="${name}">
-    </div>
-    <div>
-        <div class="text-white font-medium">${name}</div>
-        <div class="text-xs ${statusColor}">${statusText}</div>
-    </div>
-</div>
-<label class="relative inline-flex items-center cursor-pointer">
-    <input type="checkbox" class="sr-only peer" ${checked} onchange="window.toggleHealthProvider('${key}', this.checked)">
-    <div class="w-11 h-6 bg-gray-700/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00f5d4] peer-checked:shadow-[0_0_15px_rgba(0,245,212,0.4)]"></div>
-</label>
-</div>
-`;
-}
-
-// Global Toggle Handler (Exposed to window)
-window.toggleHealthProvider = async function (providerKey, isChecked) {
-    console.log(`🔌 Toggling ${providerKey}: ${isChecked ? 'ON' : 'OFF'}`);
-
-    if (isChecked) {
-        // CONECTAR
-        try {
-            // Import dinámico para no romper si module falla
-            const { healthProviderManager } = await import('../utils/healthSync.js');
-            const provider = healthProviderManager.providers[providerKey.replace('Health', '')] || healthProviderManager.providers[providerKey];
-
-            if (!provider) {
-                alert('Proveedor no disponible: ' + providerKey);
-                // Revert switch visually
-                await new Promise(r => setTimeout(r, 100)); // wait for rendering
-                renderProfilePage();
-                return;
-            }
-
-            // Iniciar Auth
-            localStorage.setItem('selectedHealthProvider', providerKey);
-            await provider.authenticate();
-
-        } catch (e) {
-            console.error(e);
-            alert('Error al conectar: ' + e.message);
-        }
-    } else {
-        // DESCONECTAR
-        if (confirm(`¿Desconectar ${providerKey}? Se dejarán de sincronizar nuevos datos.`)) {
-            // Limpiar tokens específicos
-            if (providerKey === 'fitbit') localStorage.removeItem('fitbit_access_token');
-            if (providerKey === 'googleFit') localStorage.removeItem('google_access_token');
-            if (providerKey.includes('huawei')) localStorage.removeItem('huawei_access_token');
-            if (providerKey.includes('samsung')) localStorage.removeItem('samsung_access_token');
-
-            if (localStorage.getItem('selectedHealthProvider') === providerKey) {
-                localStorage.removeItem('selectedHealthProvider');
-            }
-
-            // Recargar para actualizar UI
-            // Necesitamos acceder a 'renderLayout' pero esa función es global o importada en main.js? 
-            // Probablemente location.reload() es más seguro si renderLayout no está en window.
-            // O intentar renderProfilePage() si es suficiente.
-            // Para UI completa, reload es OK.
-            if (window.renderLayout) {
-                window.renderLayout();
-            } else {
-                location.reload();
-            }
-        } else {
-            // Revert switch visually
-            if (window.renderLayout) {
-                window.renderLayout();
-            } else {
-                // Simple UI reversion logic if reload is too aggressive?
-                // Just refetching profile page
-                const main = document.getElementById('mainContent');
-                if (main) main.innerHTML = await renderProfilePage();
-            }
-        }
-    }
-};
