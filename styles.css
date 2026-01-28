@@ -18,6 +18,35 @@
     --navy-700: #1e293b;
 }
 
+/* Fix for Icon FOUC (Flash of Unstyled Content) */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* FORCE FIX: Ensure icon container is always 24px square with !important */
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    overflow: hidden !important;
+    text-align: center;
+    vertical-align: middle;
+
+    /* Support for all WebKit browsers */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'liga';
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -268,22 +297,28 @@ body {
 .input-field {
     width: 100%;
     padding: 0.875rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    color: white;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    color: white !important;
     font-size: 0.875rem;
     transition: all 0.3s ease;
 }
 
 .input-field:focus {
     outline: none;
-    border-color: var(--neon-teal);
-    box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.1);
+    border-color: var(--neon-teal) !important;
+    box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .input-field::placeholder {
     color: rgba(255, 255, 255, 0.4);
+}
+
+.input-field option {
+    background-color: var(--navy-900);
+    color: white;
 }
 
 /* Modal */
@@ -696,4 +731,14 @@ input[type=number] {
 
 .toggle-switch-checkbox:checked+.toggle-switch-slider:before {
     transform: translateX(20px);
+}
+
+/* Hide broken images in mobile headers */
+@media (max-width: 1023px) {
+
+    img[src=""],
+    img:not([src]),
+    img[src*="undefined"] {
+        display: none !important;
+    }
 }

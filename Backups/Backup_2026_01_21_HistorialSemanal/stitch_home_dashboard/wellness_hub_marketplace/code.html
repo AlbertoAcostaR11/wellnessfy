@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Glass Wellness Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "neon-teal": "#00f2ff",
+                        "neon-lime": "#bcff00",
+                        "deep-bg": "#050a0a",
+                        "glass-bg": "rgba(255, 255, 255, 0.03)",
+                        "glass-border": "rgba(255, 255, 255, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --neon-glow-teal: 0 0 15px rgba(0, 242, 255, 0.4);
+            --neon-glow-lime: 0 0 15px rgba(188, 255, 0, 0.4);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow-teal {
+            box-shadow: var(--neon-glow-teal);
+        }
+        .neon-glow-lime {
+            box-shadow: var(--neon-glow-lime);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-deep-bg font-display text-white transition-colors duration-200 min-h-screen">
+<header class="sticky top-0 z-50 bg-deep-bg/60 backdrop-blur-xl border-b border-glass-border">
+<div class="flex items-center p-4 justify-between max-w-md mx-auto">
+<div class="flex size-10 items-center justify-center rounded-full glass-card">
+<span class="material-symbols-outlined text-neon-teal">search</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight flex-1 text-center text-white">Wellness Hub</h1>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full glass-card p-2">
+<span class="material-symbols-outlined text-white">person</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto pb-24">
+<div class="sticky top-[73px] z-40 bg-deep-bg overflow-x-auto no-scrollbar">
+<div class="flex border-b border-glass-border px-4 gap-6">
+<a class="flex flex-col items-center justify-center border-b-2 border-neon-teal text-neon-teal pb-3 pt-4 shrink-0" href="#">
+<p class="text-sm font-bold tracking-wide">All</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4 shrink-0" href="#">
+<p class="text-sm font-bold">Meditation</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4 shrink-0" href="#">
+<p class="text-sm font-bold">Nutrition</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4 shrink-0" href="#">
+<p class="text-sm font-bold">Fitness</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4 shrink-0" href="#">
+<p class="text-sm font-bold">Sleep</p>
+</a>
+</div>
+</div>
+<div class="p-4">
+<h2 class="text-sm font-black uppercase tracking-[0.2em] pb-3 text-neon-teal">Featured Partner</h2>
+<div class="relative flex flex-col items-stretch justify-start rounded-2xl glass-card overflow-hidden neon-glow-teal/10">
+<div class="w-full h-44 bg-center bg-no-repeat bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD5oZ2Lxpp0YBFNcY8mUzAloXZ4VyAZ9Mw1M0JOrKaLNlI1oR0tYPPV3QJLvBrILsMxnvAn6uae2CM3kXyPGe1XmvP3vbv6MHoxdHDCtSj0t-hgqoLWraCc1p_-8-zjpnuQCeNsxML3TY-gWwLa-0a03_pnfHaTq-JlhQYEpKLeRFqDYvKIQKAVtlnPKFGG1EGFdeE3r-Utlh2YCuldW3lKLHklrag2khYcb8twjMU8SXhRCMT4YfbHy9ldRZYx2_CPcTRqvNeEkKo");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute top-3 right-3 bg-neon-teal text-black text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg neon-glow-teal">
+                    New
+                </div>
+</div>
+<div class="flex w-full flex-col items-stretch justify-center gap-1 p-5 -mt-2 z-10">
+<p class="text-neon-lime text-[10px] font-black uppercase tracking-[0.2em]">Premium Integration</p>
+<p class="text-xl font-bold text-white">ZenState Pro</p>
+<div class="flex items-center gap-3 justify-between mt-2">
+<p class="text-gray-400 text-sm leading-snug">AI-driven meditation and biofeedback</p>
+<button class="flex items-center justify-center rounded-xl h-10 px-5 bg-neon-teal text-black text-sm font-black shadow-lg neon-glow-teal whitespace-nowrap">
+                        $9.99/mo
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4">
+<h2 class="text-sm font-black uppercase tracking-[0.2em] pb-3 text-neon-teal">Popular Services</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="w-12 h-12 rounded-xl bg-neon-teal/10 flex items-center justify-center mb-4 border border-neon-teal/20">
+<span class="material-symbols-outlined text-neon-teal text-3xl">favorite</span>
+</div>
+<h3 class="font-bold text-base text-white">Heart Sync</h3>
+<p class="text-xs text-gray-400 mt-1">Real-time HR monitoring</p>
+</div>
+<div class="mt-5 flex items-center justify-between">
+<span class="text-[10px] font-black text-neon-lime uppercase tracking-wider">Active</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-gray-800 rounded-full peer-checked:bg-neon-lime peer-checked:neon-glow-lime after:content-[''] after:absolute after:top-[2.5px] after:left-[2.5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:bg-black"></div>
+</label>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="relative w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+<span class="material-symbols-outlined text-gray-500 text-3xl">restaurant</span>
+<div class="absolute -top-1.5 -right-1.5 bg-neon-teal rounded-full p-1 neon-glow-teal">
+<span class="material-symbols-outlined text-black text-[12px] leading-none fill-icon">lock</span>
+</div>
+</div>
+<h3 class="font-bold text-base text-white">Macro Chef</h3>
+<p class="text-xs text-gray-400 mt-1">Gourmet meal planning</p>
+</div>
+<div class="mt-5">
+<button class="w-full bg-neon-lime text-black py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 neon-glow-lime">
+<span class="material-symbols-outlined text-[14px] fill-icon">shopping_cart</span>
+                        BUY $4.99
+                    </button>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="w-12 h-12 rounded-xl bg-neon-teal/10 flex items-center justify-center mb-4 border border-neon-teal/20">
+<span class="material-symbols-outlined text-neon-teal text-3xl">health_metrics</span>
+</div>
+<h3 class="font-bold text-base text-white">Health Link</h3>
+<p class="text-xs text-gray-400 mt-1">Sync wearable health data</p>
+</div>
+<div class="mt-5 flex items-center justify-between">
+<span class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Inactive</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-gray-800 rounded-full peer-checked:bg-neon-lime peer-checked:neon-glow-lime after:content-[''] after:absolute after:top-[2.5px] after:left-[2.5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:bg-black"></div>
+</label>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="relative w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+<span class="material-symbols-outlined text-gray-500 text-3xl">exercise</span>
+<div class="absolute -top-1.5 -right-1.5 bg-neon-teal rounded-full p-1 neon-glow-teal">
+<span class="material-symbols-outlined text-black text-[12px] leading-none fill-icon">lock</span>
+</div>
+</div>
+<h3 class="font-bold text-base text-white">Iron Tracker</h3>
+<p class="text-xs text-gray-400 mt-1">Advanced weight lifting</p>
+</div>
+<div class="mt-5">
+<button class="w-full bg-neon-lime text-black py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 neon-glow-lime">
+<span class="material-symbols-outlined text-[14px] fill-icon">shopping_cart</span>
+                        BUY $1.99
+                    </button>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="w-12 h-12 rounded-xl bg-neon-teal/10 flex items-center justify-center mb-4 border border-neon-teal/20">
+<span class="material-symbols-outlined text-neon-teal text-3xl">bedtime</span>
+</div>
+<h3 class="font-bold text-base text-white">Sleep Cycle</h3>
+<p class="text-xs text-gray-400 mt-1">Smart alarm tracking</p>
+</div>
+<div class="mt-5 flex items-center justify-between">
+<span class="text-[10px] font-black text-neon-lime uppercase tracking-wider">Active</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-gray-800 rounded-full peer-checked:bg-neon-lime peer-checked:neon-glow-lime after:content-[''] after:absolute after:top-[2.5px] after:left-[2.5px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:bg-black"></div>
+</label>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+<div>
+<div class="relative w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+<span class="material-symbols-outlined text-gray-500 text-3xl">water_drop</span>
+<div class="absolute -top-1.5 -right-1.5 bg-neon-teal rounded-full p-1 neon-glow-teal">
+<span class="material-symbols-outlined text-black text-[12px] leading-none fill-icon">lock</span>
+</div>
+</div>
+<h3 class="font-bold text-base text-white">H2O Pro</h3>
+<p class="text-xs text-gray-400 mt-1">Smart bottle sync</p>
+</div>
+<div class="mt-5">
+<button class="w-full bg-neon-lime text-black py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 neon-glow-lime">
+<span class="material-symbols-outlined text-[14px] fill-icon">shopping_cart</span>
+                        BUY $2.99
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-12 text-center">
+<p class="text-xs text-gray-500 italic font-medium">Missing an integration?</p>
+<button class="mt-4 text-neon-teal text-xs font-black tracking-widest uppercase bg-neon-teal/10 px-8 py-3 rounded-full border border-neon-teal/30 transition-all hover:bg-neon-teal hover:text-black">Request Access</button>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-deep-bg/80 backdrop-blur-2xl border-t border-glass-border safe-area-inset-bottom z-50">
+<div class="max-w-md mx-auto flex items-center justify-around h-20 px-2">
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-neon-teal transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-neon-teal transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px] font-bold mt-1">Social</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neon-teal" href="#">
+<div class="relative">
+<span class="material-symbols-outlined fill-icon text-3xl">grid_view</span>
+<div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-neon-teal rounded-full neon-glow-teal"></div>
+</div>
+<span class="text-[10px] font-black mt-0.5">Hub</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-neon-teal transition-colors" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-bold mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-neon-teal transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold mt-1">Profile</span>
+</a>
+</div>
+</nav>
+
+</body></html>

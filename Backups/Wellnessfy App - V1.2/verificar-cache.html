@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Caché</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0e1a;
+            color: #fff;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #00f5d4;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            color: #0f0;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            color: #f00;
+        }
+
+        .warning {
+            background: rgba(255, 165, 0, 0.1);
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            color: #ffa500;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00f5d4, #00b8ff);
+            border: none;
+            color: #0a0e1a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .instructions {
+            background: rgba(0, 245, 212, 0.05);
+            border-left: 4px solid #00f5d4;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #00f5d4;
+        }
+
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        kbd {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Verificador de Caché - Google Health</h1>
+
+    <div class="instructions">
+        <h3>⚠️ IMPORTANTE: Limpia la caché primero</h3>
+        <ol>
+            <li><strong>Windows/Linux:</strong> Presiona <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></li>
+            <li><strong>Mac:</strong> Presiona <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></li>
+            <li>O haz clic derecho en el botón de recargar y selecciona "Empty Cache and Hard Reload"</li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <h2>1. Estado del Archivo googleHealth.js</h2>
+        <div id="fileStatus">Cargando...</div>
+        <button onclick="checkFileVersion()">🔄 Verificar Versión</button>
+    </div>
+
+    <div class="card">
+        <h2>2. Verificación de Función showToast</h2>
+        <div id="functionStatus">Cargando...</div>
+        <button onclick="checkFunction()">🔍 Verificar Función</button>
+    </div>
+
+    <div class="card">
+        <h2>3. Test de Importación</h2>
+        <div id="importStatus">Cargando...</div>
+        <button onclick="testImport()">📦 Probar Import</button>
+    </div>
+
+    <div class="card">
+        <h2>4. Información de Caché</h2>
+        <div id="cacheInfo"></div>
+        <button onclick="showCacheInfo()">📊 Ver Info de Caché</button>
+        <button onclick="clearAllCache()">🗑️ Limpiar Todo</button>
+    </div>
+
+    <div class="card">
+        <h2>5. Instrucciones de Solución</h2>
+        <div class="instructions">
+            <h3>Si ves errores arriba:</h3>
+            <ol>
+                <li><strong>Cierra TODAS las pestañas</strong> de la aplicación</li>
+                <li><strong>Cierra el navegador completamente</strong></li>
+                <li><strong>Vuelve a abrir el navegador</strong></li>
+                <li><strong>Abre esta página nuevamente</strong></li>
+                <li><strong>Presiona <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></strong></li>
+                <li><strong>Haz clic en "Verificar Versión"</strong></li>
+            </ol>
+
+            <h3>Si aún no funciona:</h3>
+            <ol>
+                <li>Abre DevTools (<kbd>F12</kbd>)</li>
+                <li>Ve a la pestaña <strong>Network</strong></li>
+                <li>Marca <strong>"Disable cache"</strong></li>
+                <li>Recarga la página</li>
+            </ol>
+        </div>
+    </div>
+
+    <script type="module">
+        async function checkFileVersion() {
+            const status = document.getElementById('fileStatus');
+            status.innerHTML = '<div class="status warning">⏳ Verificando...</div>';
+
+            try {
+                // Intentar cargar el archivo con un timestamp para evitar caché
+                const timestamp = new Date().getTime();
+                const response = await fetch(`./src/utils/googleHealth.js?t=${timestamp}`);
+                const content = await response.text();
+
+                // Contar líneas
+                const lines = content.split('\n').length;
+
+                // Buscar la función showToast
+                const hasShowToast = content.includes('function showToast(message, type = \'info\')');
+                const showToastPosition = content.indexOf('function showToast');
+
+                let html = '';
+
+                // Verificar número de líneas
+                if (lines >= 370) {
+                    html += '<div class="status success">✅ Archivo correcto: ' + lines + ' líneas</div>';
+                } else {
+                    html += '<div class="status error">❌ Archivo desactualizado: ' + lines + ' líneas (esperado: ~375)</div>';
+                }
+
+                // Verificar función showToast
+                if (hasShowToast) {
+                    const lineNumber = content.substring(0, showToastPosition).split('\n').length;
+                    if (lineNumber < 60) {
+                        html += '<div class="status success">✅ Función showToast encontrada en línea ' + lineNumber + ' (correcto)</div>';
+                    } else {
+                        html += '<div class="status error">❌ Función showToast en línea ' + lineNumber + ' (debería estar antes de línea 60)</div>';
+                    }
+                } else {
+                    html += '<div class="status error">❌ Función showToast NO encontrada</div>';
+                }
+
+                // Mostrar primeras líneas
+                const firstLines = content.split('\n').slice(0, 60).join('\n');
+                html += '<details><summary>Ver primeras 60 líneas del archivo</summary><pre>' + firstLines + '</pre></details>';
+
+                status.innerHTML = html;
+
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Error al cargar archivo: ' + error.message + '</div>';
+            }
+        }
+
+        async function checkFunction() {
+            const status = document.getElementById('functionStatus');
+
+            try {
+                // Intentar importar el módulo
+                const module = await import('./src/utils/googleHealth.js?t=' + new Date().getTime());
+
+                let html = '<div class="status success">✅ Módulo importado correctamente</div>';
+
+                // Verificar funciones exportadas
+                if (module.initGoogleIdentity) {
+                    html += '<div class="status success">✅ initGoogleIdentity disponible</div>';
+                } else {
+                    html += '<div class="status error">❌ initGoogleIdentity NO disponible</div>';
+                }
+
+                if (module.requestGoogleSync) {
+                    html += '<div class="status success">✅ requestGoogleSync disponible</div>';
+                } else {
+                    html += '<div class="status error">❌ requestGoogleSync NO disponible</div>';
+                }
+
+                if (module.autoSyncIfReady) {
+                    html += '<div class="status success">✅ autoSyncIfReady disponible</div>';
+                } else {
+                    html += '<div class="status error">❌ autoSyncIfReady NO disponible</div>';
+                }
+
+                status.innerHTML = html;
+
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Error al importar módulo: ' + error.message + '</div><pre>' + error.stack + '</pre>';
+            }
+        }
+
+        async function testImport() {
+            const status = document.getElementById('importStatus');
+            status.innerHTML = '<div class="status warning">⏳ Probando importación...</div>';
+
+            try {
+                const module = await import('./src/utils/googleHealth.js?t=' + new Date().getTime());
+
+                // Intentar inicializar
+                if (module.initGoogleIdentity) {
+                    module.initGoogleIdentity();
+                    status.innerHTML = '<div class="status success">✅ Importación exitosa y función ejecutada</div>';
+                } else {
+                    status.innerHTML = '<div class="status error">❌ Función no disponible después de importar</div>';
+                }
+
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Error: ' + error.message + '</div><pre>' + error.stack + '</pre>';
+            }
+        }
+
+        function showCacheInfo() {
+            const info = document.getElementById('cacheInfo');
+
+            let html = '<div class="status">';
+            html += '<strong>Información del Navegador:</strong><br>';
+            html += 'User Agent: ' + navigator.userAgent + '<br>';
+            html += 'Hora actual: ' + new Date().toLocaleString() + '<br>';
+            html += '</div>';
+
+            html += '<div class="status">';
+            html += '<strong>LocalStorage:</strong><br>';
+            html += 'Token: ' + (localStorage.getItem('google_health_token') ? 'Existe' : 'No existe') + '<br>';
+            html += 'Expira: ' + (localStorage.getItem('google_health_token_expiry') ? new Date(parseInt(localStorage.getItem('google_health_token_expiry'))).toLocaleString() : 'N/A') + '<br>';
+            html += 'Última sync: ' + (localStorage.getItem('last_health_sync') ? new Date(parseInt(localStorage.getItem('last_health_sync'))).toLocaleString() : 'Nunca') + '<br>';
+            html += '</div>';
+
+            info.innerHTML = html;
+        }
+
+        function clearAllCache() {
+            if (confirm('¿Estás seguro de que quieres limpiar TODA la caché y datos locales?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Intentar limpiar service workers si existen
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        registrations.forEach(registration => registration.unregister());
+                    });
+                }
+
+                alert('✅ Caché limpiada. La página se recargará.');
+                location.reload(true);
+            }
+        }
+
+        // Exponer funciones globalmente
+        window.checkFileVersion = checkFileVersion;
+        window.checkFunction = checkFunction;
+        window.testImport = testImport;
+        window.showCacheInfo = showCacheInfo;
+        window.clearAllCache = clearAllCache;
+
+        // Auto-ejecutar al cargar
+        window.onload = () => {
+            checkFileVersion();
+            checkFunction();
+            showCacheInfo();
+        };
+    </script>
+</body>
+
+</html>

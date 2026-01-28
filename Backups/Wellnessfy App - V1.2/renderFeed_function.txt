@@ -1,0 +1,55 @@
+function renderFeed() {
+    return `
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold tracking-tight">Inicio</h1>
+            <button class="btn-primary" onclick="showCreatePostModal()">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                    Publicar
+                </span>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            ${AppState.feedPosts.length > 0 ? 
+                AppState.feedPosts.map(post => `
+                    <div class="glass-card rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="size-12 rounded-full bg-gradient-to-br from-primary to-secondary p-[2px]">
+                                <div class="size-full rounded-full bg-navy-900 bg-cover bg-center" style="background-image: url('${post.author?.avatar}');"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm">${post.author?.name}</h4>
+                                <p class="text-xs text-white/60">${post.author?.username} • ${post.time}</p>
+                            </div>
+                        </div>
+                        ${post.content ? `<p class="text-sm text-white/90 mb-4">${post.content}</p>` : ''}
+                        ${post.image ? `<div class="rounded-2xl overflow-hidden mb-4"><img src="${post.image}" class="w-full"></div>` : ''}
+                        <div class="flex items-center gap-6 pt-3 border-t border-white/5">
+                            <button class="flex items-center gap-2 text-white/60 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl">favorite</span>
+                                <span class="text-sm font-medium">${post.likes || 0}</span>
+                            </button>
+                            <button class="flex items-center gap-2 text-white/60 hover:text-secondary transition-colors">
+                                <span class="material-symbols-outlined text-xl">chat_bubble</span>
+                                <span class="text-sm font-medium">${post.comments || 0}</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('') 
+                : 
+                `<div class="glass-card rounded-3xl p-12 text-center">
+                    <span class="material-symbols-outlined text-6xl text-white/20 mb-4 block">article</span>
+                    <h3 class="text-lg font-bold text-white/60 mb-2">No hay publicaciones aún</h3>
+                    <p class="text-sm text-white/40 mb-4">Sé el primero en compartir algo con tu comunidad</p>
+                    <button class="btn-primary" onclick="showCreatePostModal()">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">add</span>
+                            Crear publicación
+                        </span>
+                    </button>
+                </div>`
+            }
+        </div>
+    `;
+}

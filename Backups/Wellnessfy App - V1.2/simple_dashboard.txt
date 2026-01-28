@@ -1,0 +1,26 @@
+
+function renderDashboard() {
+    const { stats } = AppState.currentUser;
+    return `
+        <div class="glass-card rounded-3xl p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6">Mi Panel</h2>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-2">directions_walk</span>
+                    <p class="text-sm text-white/60">Pasos</p>
+                    <p class="text-2xl font-bold">${stats.steps.toLocaleString()}</p>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="material-symbols-outlined text-4xl text-secondary mb-2">fitness_center</span>
+                    <p class="text-sm text-white/60">Activo</p>
+                    <p class="text-2xl font-bold">${stats.activeMinutes}m</p>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="material-symbols-outlined text-4xl text-purple-400 mb-2">bedtime</span>
+                    <p class="text-sm text-white/60">Sueño</p>
+                    <p class="text-2xl font-bold">${Math.floor(stats.sleepHours)}h</p>
+                </div>
+            </div>
+        </div>
+    `;
+}

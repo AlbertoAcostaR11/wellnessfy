@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Search Selector - Demo</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #00f5d4 0%, #00d2ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 3rem;
+            font-size: 0.875rem;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .demo-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #00f5d4;
+        }
+
+        .demo-section p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .selector-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .output {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #00f5d4;
+            margin-top: 1rem;
+        }
+
+        .output-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00f5d4;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1>🔍 Sport Search Selector</h1>
+        <p class="subtitle">Componente de búsqueda y selección de deportes para Wellnessfy</p>
+
+        <!-- Demo 1: Selección Única -->
+        <div class="demo-section">
+            <h2>1. Selección Única (Single Mode)</h2>
+            <p>Selecciona un solo deporte. Ideal para filtros y creación de desafíos.</p>
+
+            <div id="selector-single" class="selector-container"></div>
+
+            <div class="output-label">Selección actual:</div>
+            <div id="output-single" class="output">null</div>
+        </div>
+
+        <!-- Demo 2: Selección Múltiple -->
+        <div class="demo-section">
+            <h2>2. Selección Múltiple (Multiple Mode)</h2>
+            <p>Selecciona varios deportes. Ideal para intereses de perfil y filtros avanzados.</p>
+
+            <div id="selector-multiple" class="selector-container"></div>
+
+            <div class="output-label">Selección actual:</div>
+            <div id="output-multiple" class="output">[]</div>
+        </div>
+
+        <!-- Demo 3: Con Límite -->
+        <div class="demo-section">
+            <h2>3. Selección Múltiple con Límite (Max 3)</h2>
+            <p>Selecciona hasta 3 deportes máximo.</p>
+
+            <div id="selector-limited" class="selector-container"></div>
+
+            <div class="output-label">Selección actual:</div>
+            <div id="output-limited" class="output">[]</div>
+        </div>
+
+        <!-- Demo 4: Con Selección Inicial -->
+        <div class="demo-section">
+            <h2>4. Con Selección Inicial</h2>
+            <p>Componente pre-cargado con deportes seleccionados.</p>
+
+            <div id="selector-initial" class="selector-container"></div>
+
+            <div class="output-label">Selección actual:</div>
+            <div id="output-initial" class="output">["yoga", "running", "biking"]</div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">78</div>
+                <div class="stat-label">Deportes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Plataformas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Modos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Funcional</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SportSearchSelector } from './src/components/SportSearchSelector.js';
+
+        // Demo 1: Single Mode
+        const selectorSingle = new SportSearchSelector({
+            mode: 'single',
+            placeholder: 'Buscar un deporte...',
+            onSelect: (selection) => {
+                document.getElementById('output-single').textContent = JSON.stringify(selection, null, 2);
+                console.log('Single selection:', selection);
+            }
+        });
+        document.getElementById('selector-single').appendChild(selectorSingle.render());
+
+        // Demo 2: Multiple Mode
+        const selectorMultiple = new SportSearchSelector({
+            mode: 'multiple',
+            placeholder: 'Buscar deportes...',
+            onSelect: (selection) => {
+                document.getElementById('output-multiple').textContent = JSON.stringify(selection, null, 2);
+                console.log('Multiple selection:', selection);
+            }
+        });
+        document.getElementById('selector-multiple').appendChild(selectorMultiple.render());
+
+        // Demo 3: Limited
+        const selectorLimited = new SportSearchSelector({
+            mode: 'multiple',
+            maxSelections: 3,
+            placeholder: 'Selecciona hasta 3 deportes...',
+            onSelect: (selection) => {
+                document.getElementById('output-limited').textContent = JSON.stringify(selection, null, 2);
+                console.log('Limited selection:', selection);
+            }
+        });
+        document.getElementById('selector-limited').appendChild(selectorLimited.render());
+
+        // Demo 4: With Initial Selection
+        const selectorInitial = new SportSearchSelector({
+            mode: 'multiple',
+            initialSelection: ['yoga', 'running', 'biking'],
+            placeholder: 'Buscar más deportes...',
+            onSelect: (selection) => {
+                document.getElementById('output-initial').textContent = JSON.stringify(selection, null, 2);
+                console.log('Initial selection:', selection);
+            }
+        });
+        document.getElementById('selector-initial').appendChild(selectorInitial.render());
+
+        // Exponer globalmente para debugging
+        window.selectors = {
+            single: selectorSingle,
+            multiple: selectorMultiple,
+            limited: selectorLimited,
+            initial: selectorInitial
+        };
+
+        console.log('✅ Sport Search Selector Demo loaded!');
+        console.log('💡 Try: window.selectors.single.getSelection()');
+    </script>
+</body>
+
+</html>

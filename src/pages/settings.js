@@ -1,6 +1,6 @@
 
 import { AppState } from '../utils/state.js';
-import { switchHealthProvider, getActiveProviderName } from '../utils/healthSync.js';
+import { switchHealthProvider, getActiveProviderName } from '../utils/healthSync_v2.js';
 // Firebase Imports
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getFirestore, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';

@@ -1,0 +1,170 @@
+Deporte,Health Connect,Fitbit,Garmin,Apple Health,Google Fit,Samsung Health,Huawei,Xiaomi,Notas
+Aerobics,--,--,--,--,9,9007,--,--,Solo Google Fit y Samsung
+Alpine Skiing,31,--,ALPINE_SKIING,downhillSkiing,--,9032,--,--,
+American Football,2,--,AMERICAN_FOOTBALL,americanFootball,27,4006,--,--,
+Archery,--,--,--,archery,119,9051,--,--,
+Australian Football,3,--,--,australianFootball,28,--,--,--,
+Backcountry Skiing,32,--,BACKCOUNTRY_SKIING,crossCountrySkiing,--,--,--,--,
+Badminton,4,--,BADMINTON,badminton,10,6003,--,--,
+Baseball,6,2001,BASEBALL,baseball,11,2001,--,--,
+Basketball,5,--,BASKETBALL,basketball,12,4003,--,--,Único que coincide en HC y Google Fit
+Beach Volleyball,--,--,--,volleyball,--,5002,--,--,
+Biathlon,7,--,--,--,13,--,--,--,
+Biking,8,90013,cycling,cycling,1,7001,3,--,
+Biking (Indoor),--,--,INDOOR_CYCLING,cycling,18,7002,5,--,
+Biking (Mountain),--,--,MOUNTAIN_BIKING,cycling,15,7003,--,--,
+Biking (Road),--,--,ROAD_CYCLING,cycling,16,7004,--,--,
+Bowling,9,--,BOWLING,bowling,--,3003,--,--,
+Boxing,10,--,--,boxing,20,9055,--,--,
+Calisthenics,11,--,--,functionalStrengthTraining,21,--,--,--,
+Canoeing,12,--,CANOEING,paddleSports,--,9037,--,--,
+Cricket,13,2003,CRICKET,cricket,23,2003,--,--,
+Cross Country Skiing,--,--,CROSS_COUNTRY_SKIING,crossCountrySkiing,--,--,--,--,
+Curling,--,--,CURLING,curling,106,--,--,--,
+Dancing,14,--,--,dance,24,9011,--,--,
+Diving,--,--,DIVING,diving,102,9039,--,--,
+Elliptical,16,--,ELLIPTICAL,elliptical,25,9003,--,--,
+Fencing,17,--,--,fencing,26,9052,--,--,
+Football (American),2,--,AMERICAN_FOOTBALL,americanFootball,27,4006,--,--,
+Football (Australian),3,--,--,australianFootball,28,--,--,--,
+Football (Soccer),28,90013,SOCCER,soccer,29,4004,--,--,HC usa 28 vs Google Fit 29
+Frisbee,18,--,ULTIMATE_FRISBEE,discSports,30,--,--,--,
+Golf,19,3001,GOLF,golf,32,3001,--,--,HC usa 19 vs Google Fit 32
+Guided Breathing,20,--,--,--,122,--,--,--,
+Gymnastics,21,--,--,gymnastics,33,9053,--,--,
+Handball,22,--,--,handball,34,4005,--,--,
+HIIT,23,--,HIGH_INTENSITY_INTERVAL_TRAINING,highIntensityIntervalTraining,114,--,--,--,
+Hiking,24,--,HIKING,hiking,35,9001,--,1,
+Hockey,--,4001,HOCKEY,hockey,36,4001,--,--,
+Ice Skating,25,--,ICE_SKATING,skatingSports,104,9030,--,--,
+Inline Skating,--,--,INLINE_SKATING,skatingSports,--,--,--,--,
+Kayaking,--,--,KAYAKING,paddleSports,40,9036,--,--,
+Martial Arts,26,--,--,martialArts,44,9054,--,--,
+Paddling,27,--,--,paddleSports,--,--,--,--,
+Paragliding,28,--,--,--,48,9048,--,--,
+Pilates,29,--,PILATES,pilates,49,9009,--,--,
+Racquetball,30,--,--,racquetball,51,6005,--,--,
+Rock Climbing,33,--,--,climbing,52,9044,--,--,
+Roller Skating,34,--,ROLLER_SKATING,skatingSports,--,9031,--,--,
+Rowing,35,--,ROWING,rowing,53,9006,--,--,
+Rowing (Indoor),--,--,INDOOR_ROWING,rowing,54,--,--,--,
+Rugby,36,4002,RUGBY,rugby,55,4002,--,--,
+Running,56,90009,running,running,8,1002,1,--,HC usa 56 vs Google Fit 8
+Running (Indoor),--,--,indoor_running,running,58,9002,4,--,
+Running (Treadmill),57,--,treadmill_running,running,58,9002,4,--,
+Running (Trail),--,--,trail_running,running,--,--,--,--,
+Sailing,37,--,SAILING,sailing,59,9038,--,--,
+Scuba Diving,38,--,DIVING,diving,60,9039,--,--,
+Skateboarding,39,--,SKATEBOARDING,skatingSports,61,--,--,--,
+Skating,40,--,--,skatingSports,62,--,--,--,
+Skiing,41,--,--,downhillSkiing,--,9032,--,--,
+Snowboarding,42,--,SNOWBOARDING,snowboarding,--,9033,--,--,
+Snowshoeing,43,--,SNOWSHOEING,snowSports,--,--,--,--,
+Softball,44,2002,SOFTBALL,softball,--,2002,--,--,
+Squash,45,--,SQUASH,squash,--,6001,--,--,
+Stair Climbing,46,--,STAIR_CLIMBING,stairClimbing,--,9004,--,--,
+Strength Training,47,2050,STRENGTH_TRAINING,traditionalStrengthTraining,--,9013,--,--,
+Stretching,48,--,--,flexibility,--,9012,--,--,
+Surfing,49,--,SURFING,surfingSports,--,9034,--,--,
+Swimming,50,--,SWIMMING,swimming,--,8001,--,--,
+Swimming (Open Water),51,--,OPEN_WATER_SWIMMING,swimming,--,8003,--,--,
+Swimming (Pool),52,--,POOL_SWIMMING,swimming,--,8002,--,--,
+Table Tennis,53,--,TABLE_TENNIS,tableTennis,--,6004,--,--,
+Tennis,75,--,TENNIS,tennis,82,6002,--,--,HC usa 75 vs Google Fit 82
+Volleyball,54,--,VOLLEYBALL,volleyball,--,5001,--,--,
+Walking,79,--,WALKING,walking,7,1001,2,1,HC usa 79 vs Google Fit 7
+Walking (Indoor),--,--,INDOOR_WALKING,walking,--,--,--,--,
+Water Polo,55,--,--,waterPolo,--,--,--,--,
+Weightlifting,58,97,--,traditionalStrengthTraining,--,9013,--,--,
+Wheelchair,59,--,--,wheelchairWalkPace,--,--,--,--,
+Yoga,80,15000,YOGA,yoga,100,9010,--,--,HC usa 80 vs Google Fit 100
+Other,81,--,OTHER,other,108,0,255,--,ID genérico para actividades no clasificadas
+Aerobic Dance,--,--,--,--,--,9008,--,--,Zumba en Samsung
+Archery,--,--,--,archery,119,9051,--,--,
+Barre,--,--,--,barre,--,--,--,--,Solo Apple
+Bocce Ball,--,--,BOCCE_BALL,--,--,--,--,--,Solo Garmin
+Bouldering,--,--,--,climbing,--,9045,--,--,
+Burpees,--,--,--,functionalStrengthTraining,--,9021,--,--,
+Cardio,--,--,CARDIO,--,--,--,--,--,Solo Garmin
+Cardio Dance,--,--,--,cardioDance,--,--,--,--,Solo Apple
+Chin-ups,--,--,--,functionalStrengthTraining,--,9025,--,--,
+Circuit Training,--,--,--,traditionalStrengthTraining,22,9014,--,--,
+Core Training,--,--,--,coreTraining,--,9015,--,--,
+CrossFit,--,--,--,crossTraining,113,--,--,--,
+Cyclocross,--,--,cyclocross,cycling,--,--,--,--,
+Darts,--,--,DARTS,--,--,--,--,--,Solo Garmin
+Dips,--,--,--,functionalStrengthTraining,--,9026,--,--,
+Disc Golf,--,--,DISC_GOLF,discSports,--,--,--,--,
+Downhill Biking,--,--,downhill_biking,cycling,--,--,--,--,
+E-Biking,--,--,EBIKING,cycling,--,--,--,--,
+Elevator,--,--,--,--,117,--,--,--,Solo Google Fit
+Ergometer,--,--,--,rowing,103,9006,--,--,
+Escalator,--,--,--,--,118,--,--,--,Solo Google Fit
+Field Hockey,--,--,FIELD_HOCKEY,hockey,--,--,--,--,
+Fishing,--,--,FISHING,fishing,--,--,--,--,
+Flexibility,--,--,--,flexibility,--,--,--,--,Solo Apple
+Functional Strength,--,--,--,functionalStrengthTraining,--,--,--,--,Solo Apple
+Gardening,--,--,--,--,31,--,--,--,Solo Google Fit
+Golf Cart,--,--,--,golf,--,9060,--,--,
+Gravel Cycling,--,--,gravel_unpaved_cycling,cycling,--,--,--,--,
+Hand Cycling,--,--,HANDCYCLING,cycling,14,--,--,--,
+Housework,--,--,--,--,38,--,--,--,Solo Google Fit
+Hula Hooping,--,--,--,--,--,9059,--,--,Solo Samsung
+Hunting,--,--,HUNTING,hunting,--,--,--,--,
+Ice Hockey,--,--,ICE_HOCKEY,hockey,--,--,--,--,
+Interval Training,--,--,--,highIntensityIntervalTraining,115,--,--,--,
+Jogging,--,--,--,running,56,--,--,--,
+Jump Rope,--,--,JUMP_ROPE,jumpRope,39,9027,--,--,
+Jumping Jacks,--,--,--,functionalStrengthTraining,--,9022,--,--,
+Kettlebell,--,--,--,functionalStrengthTraining,41,--,--,--,
+Kickboxing,--,--,--,kickboxing,42,9056,--,--,
+Kitesurfing,--,--,KITESURFING,surfingSports,43,--,--,--,
+Lacrosse,--,--,LACROSSE,lacrosse,--,--,--,--,
+Lunges,--,--,--,functionalStrengthTraining,--,9019,--,--,
+Meditation,--,--,--,mindAndBody,45,--,--,--,
+Mind and Body,--,--,--,mindAndBody,--,--,--,--,Solo Apple
+Mixed Cardio,--,--,--,mixedCardio,--,--,--,--,Solo Apple
+Mixed Martial Arts,--,--,--,martialArts,46,--,--,--,
+Motorcycling,--,--,MOTORCYCLING,--,--,--,--,--,Solo Garmin
+Mountaineering,--,--,--,climbing,--,9046,--,--,
+Obstacle Run,--,--,obstacle_run,running,--,--,--,--,
+Orienteering,--,--,--,--,--,9047,--,--,Solo Samsung
+P90X,--,--,--,functionalStrengthTraining,47,--,--,--,
+Paddleboarding,--,--,STAND_UP_PADDLEBOARDING,paddleSports,--,9041,--,--,
+Plank,--,--,--,coreTraining,--,9023,--,--,
+Polo,--,--,--,equestrianSports,50,--,--,--,
+Preparation Recovery,--,--,--,preparationAndRecovery,--,--,--,--,Solo Apple
+Pull-ups,--,--,--,functionalStrengthTraining,--,9024,--,--,
+Push-ups,--,--,--,functionalStrengthTraining,--,9017,--,--,
+Recumbent Cycling,--,--,RECUMBENT_CYCLING,cycling,--,--,--,--,
+Running (Sand),--,--,--,running,57,--,--,--,
+Running (Street),--,--,street_running,running,--,--,--,--,
+Running (Track),--,--,track_running,running,--,--,--,--,
+Running (Ultra),--,--,ULTRA_RUN,running,--,--,--,--,
+Running (Virtual),--,--,virtual_run,running,--,--,--,--,
+Shuffleboard,--,--,SHUFFLEBOARD,--,--,--,--,--,Solo Garmin
+Sit-ups,--,--,--,coreTraining,--,9018,--,--,
+Skydiving,--,--,--,--,--,9049,--,--,Solo Samsung
+Snorkeling,--,--,SNORKELING,diving,--,9040,--,--,
+Social Dance,--,--,--,socialDance,--,--,--,--,Solo Apple
+Spinning,--,--,--,cycling,17,--,--,--,
+Squats,--,--,--,functionalStrengthTraining,--,9020,--,--,
+Stair Stepper,--,--,STAIR_STEPPER,stairClimbing,--,--,--,--,
+Step Machine,--,--,--,stairClimbing,--,9005,--,--,
+Step Training,--,--,--,stepTraining,--,--,--,--,Solo Apple
+Table Football,--,--,--,--,--,9028,--,--,Solo Samsung
+Tai Chi,--,--,--,taiChi,--,9058,--,--,
+Track and Field,--,--,--,trackAndField,--,--,--,--,Solo Apple
+Track Cycling,--,--,TRACK_CYCLING,cycling,--,--,--,--,
+Transition,--,--,TRANSITION,transition,--,--,--,--,Para triatlones
+Tubing,--,--,TUBING,waterSports,--,--,--,--,
+Underwater Diving,--,--,--,diving,--,--,--,--,
+Utility Biking,--,--,--,cycling,19,--,--,--,
+Virtual Cycling,--,--,VIRTUAL_CYCLING,cycling,--,--,--,--,
+Wakeboarding,--,--,WAKEBOARDING,waterSports,--,9043,--,--,
+Walking (Normal Steps),--,--,--,walking,--,--,--,7,Solo Xiaomi
+Water Fitness,--,--,--,waterFitness,--,--,--,--,Solo Apple
+Water Skiing,--,--,WATERSKIING,waterSports,--,9042,--,--,
+Whitewater Rafting,--,--,WHITEWATER_RAFTING,paddleSports,--,--,--,--,
+Windsurfing,--,--,WINDSURFING,surfingSports,--,9035,--,--,
+Wrestling,--,--,--,wrestling,--,9057,--,--,

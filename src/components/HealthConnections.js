@@ -1,6 +1,6 @@
 
 import { AppState } from '../utils/state.js';
-import { connectHealthProvider, getActiveProviderName } from '../utils/healthSync.js';
+import { connectHealthProvider, getActiveProviderName } from '../utils/healthSync_v2.js';
 
 /**
  * Componente unificado para gestionar las conexiones de salud

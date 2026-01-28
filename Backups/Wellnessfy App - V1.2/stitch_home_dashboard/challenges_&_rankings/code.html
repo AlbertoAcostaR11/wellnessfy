@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wellnessfy Challenges - Neon Glass</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00f5e1",
+                        "primary-dim": "rgba(0, 245, 225, 0.15)",
+                        "background-dark": "#050b12",
+                        "card-dark": "#0f172a",
+                        "neon-teal": "#00f5e1",
+                        "gold": "#ffd700"
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .neon-shadow {
+                box-shadow: 0 0 15px rgba(0, 245, 225, 0.4);
+            }
+            .neon-border {
+                border: 1px solid rgba(0, 245, 225, 0.3);
+            }
+            .glass-card {
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .neon-gradient {
+                background: linear-gradient(135deg, #00f5e1 0%, #00b8ff 100%);
+            }
+            .bet-card-glow {
+                box-shadow: 0 0 20px rgba(0, 245, 225, 0.25);
+                border: 1px solid rgba(0, 245, 225, 0.4);
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white transition-colors duration-300 min-h-screen">
+<div class="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-xl border-b border-white/5">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-white flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-neon-teal">search</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Challenges</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 bg-transparent text-white">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<div class="pb-1">
+<div class="flex px-4 gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-neon-teal text-white pb-3 pt-4" href="#">
+<p class="text-sm font-bold tracking-wide">Active</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4" href="#">
+<p class="text-sm font-bold tracking-wide">Discover</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 pb-3 pt-4" href="#">
+<p class="text-sm font-bold tracking-wide">History</p>
+</a>
+</div>
+</div>
+</div>
+<main class="flex flex-col pb-32">
+<div class="px-4 pt-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-white text-xl font-bold">Featured</h2>
+<span class="bg-gold/10 text-gold text-[10px] font-black px-2 py-0.5 rounded border border-gold/30 uppercase tracking-widest">Sponsored</span>
+</div>
+<div class="glass-card rounded-2xl overflow-hidden border-neon-teal/20 shadow-lg shadow-neon-teal/5">
+<div class="relative w-full aspect-[21/9] bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRYkpVwvt-7aTWjWGDVpsUIqjnL9pkyJMsC7m_7MDeWWcwDKisq5aMF2MeZej56MDw3pg0Ld0DnxmcAhPt9dp-Ejp_SFhuhgWEJNqnWUZg8fBRvoVaw3ktYJHesi7lONnTqYgfh_TuRF_CPd3IIyLtXfDlnz0PoP-KI6pXP-TDPhoepchB9Pz63VPTW94LfNuyvMQcAH06t4LrLl1J-48QPOH-uHBYbNcdxJbB1DLC1sdFlnDyMZ5gyoHEmklXy0qYwQoYJVqDnz4");'>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent"></div>
+<div class="absolute bottom-3 left-4">
+<span class="neon-gradient text-black text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-neon-teal/40">Pro Challenge</span>
+</div>
+</div>
+<div class="p-5">
+<p class="text-neon-teal text-[10px] font-black uppercase tracking-[0.2em] mb-1">ENDURANCE</p>
+<h3 class="text-xl font-bold mb-2">Iron Mind 30-Day Yoga</h3>
+<div class="flex items-center gap-2 text-gray-400 text-xs">
+<span class="material-symbols-outlined text-sm">group</span>
+<span>1,240 participants • Starts in 2h</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 mt-4">
+<h2 class="text-white text-xl font-bold mb-4">Your Active Challenges</h2>
+<div class="flex flex-col gap-5">
+<div class="flex flex-col rounded-2xl glass-card overflow-hidden">
+<div class="w-full aspect-video bg-center bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCyKYcrbbSGSr8-NYIWC2sJxJcVLuvl_74FPHAQ6diLAKQ-DJTeXVKmTa5Uos8pLlMiRgdwU0HDlYg-AKv4pfMuarb4xN7Y9Tsl6jqqI5HVrKVds0Ncqjy2Ny8pMDlipIfpCZmWgQgCJUhjJgC-dFJaFIUWg6XUAfeEMRwCoGzWrDDoA0FOFCV5bv1liKi9uiiATlxxoELU5xoVfJRb9UMDqg4imuNDAfrpH2E7xioGSERSnodeR6_sIypaovDLOF1ZAQZkat8aweo");'>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-card-dark/90"></div>
+</div>
+<div class="p-5 -mt-8 relative z-10">
+<div class="flex justify-between items-start mb-2">
+<p class="text-neon-teal text-[10px] font-black uppercase tracking-widest">SOCIAL</p>
+<span class="text-gray-400 text-[10px] font-medium px-2 py-1 rounded-full bg-white/5 border border-white/10 uppercase">3 days left</span>
+</div>
+<p class="text-white text-xl font-bold leading-tight mb-4">50k Steps Week</p>
+<div class="mb-5 flex flex-col gap-2 rounded-xl bg-gradient-to-br from-card-dark to-black bet-card-glow text-white p-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-gold/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-gold" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+</div>
+<div>
+<p class="text-[9px] uppercase text-gray-400 font-black tracking-widest leading-none mb-1">Winner Reward</p>
+<p class="text-sm font-bold text-white">Winner gets Lunch</p>
+</div>
+</div>
+<div class="flex items-center gap-3 text-right border-l border-white/10 pl-4">
+<div>
+<p class="text-[9px] uppercase text-gray-400 font-black tracking-widest leading-none mb-1">Loser Stake</p>
+<p class="text-sm font-bold text-neon-teal">Pays $20</p>
+</div>
+<div class="bg-neon-teal/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-neon-teal" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-3">
+<img alt="Participant" class="size-8 rounded-full border-2 border-card-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUMZL6TV891-mY0vOUhUC9q28D-zU1Ua22O2zCstOZjW84UG7TR-fksRwkanXocThp7-fjMwaGvx6ID6qlrQYyyswvkfkOa8Id8GwLizPdvjX61DEwCrbadquUg8FvTdlcVojXM3LG0YPU-qzh3OBXmIwWQpytle-UiXgNSOWPfsSkAZxiNPDGOYNBK18CR6JVBB6Nyih5GMIdwuscisMcOdmu7i-QweH-yCFRXwTXMwEyPmr1xa1OsIIAtdmhR791PZdC37Va_04"/>
+<img alt="Participant" class="size-8 rounded-full border-2 border-card-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiXQwESDz4Frb9fECEIcwt6Vx1RGrzmuSF_bOIOjbwIEgriJYsTN3kqI0QVEMO-5XwcBO41dl8oUEF4sJl-sEl80gczPM7ndQDZ83ORWm0SVD6R7V1F6IRL3bo4EYG3l-HJMLKRrMQ7dWHr0I1qLVPjsc9tkKxcAImuGyrZiGFdnH8MllS4o5SfzHdAu34ySyMp1DNMzliM2mzDr9twJKkLEnJ5tNnhP_IyiqSXBCQv5cUGnwagiw3FKcWQsmr-81d93w3RmEXmJ0"/>
+<img alt="Participant" class="size-8 rounded-full border-2 border-card-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtD9VI0HO9HYYiyN1fAphtNZz5XBbk3LXchPYIM1cHytlTtMm2BOTPcVsQRDon8N3_WulFIs6jOWyFu5rfX9HrCJkuF2A5GpxjK7_EidpekdWN_2pgikSUyWjdaqg1VWO1EhhebEWTJlQS1Rnt55w9OMkIqXvZvnsIeote4Omawnvjp6ob2803fkTbtliyVEUril79cFs9fXA0QS4t-1nEIb8eSC8fHT-tOTXXXJEyZdOnhjWdFkrD7t4e4IqjlE5oSz7lVS6uUuA"/>
+<div class="size-8 rounded-full border-2 border-card-dark bg-neon-teal/10 flex items-center justify-center text-[10px] font-black text-neon-teal">+9</div>
+</div>
+<button class="flex min-w-[120px] cursor-pointer items-center justify-center rounded-xl h-10 px-4 neon-gradient text-black text-xs font-black uppercase tracking-tighter shadow-lg shadow-neon-teal/20 active:scale-95 transition-all">
+<span>View Details</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 py-8 bg-gradient-to-b from-card-dark/50 to-background-dark/80 rounded-t-[32px] border-t border-white/5">
+<div class="flex items-center justify-between mb-8 px-2">
+<h2 class="text-white text-xl font-bold">Global Leaderboard</h2>
+<button class="text-neon-teal text-xs font-black uppercase tracking-widest">View All</button>
+</div>
+<div class="flex items-end justify-center gap-6 mb-10">
+<div class="flex flex-col items-center">
+<div class="relative mb-3">
+<img alt="User" class="size-16 rounded-full border-2 border-gray-500 shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5hGaq6DQJXSM01aruYwzmKzDCHGhgVmfD9cnt_vzC9H1xxhqCzQZJzu7iPVrgDF2lYrqsoIaf44MAzZzpTpA_iZY1Zb5fCYIfIc3E2gWZC_dlN3l7EAVj5vemYUhIzAQWPHrwQcYKJP_k3C7gDx_toBpY_KoQEJYvnG8fHF4rP7b88r8K_41rbAgaXuFC6fhCnfv0R1Qpq3QHd_tcI75e_Gpp2_4bpkbz-LrPJNAz8ZdIdGg-3vbS5QEzhh3uEEDBtP9NpvlY6Vw"/>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ring-2 ring-background-dark">2</div>
+</div>
+<p class="text-xs font-bold text-gray-300">Sarah K.</p>
+<p class="text-[10px] text-neon-teal/70 font-black">12.4k PTS</p>
+</div>
+<div class="flex flex-col items-center scale-110">
+<div class="relative mb-3">
+<div class="absolute -top-7 left-1/2 -translate-x-1/2 text-gold drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<img alt="User" class="size-20 rounded-full border-2 border-gold shadow-lg shadow-gold/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeaaS9HONgrdRr1FikxP2Ltd2g9EW1NIvOzpobxBtf_UwWffxKo2Chd4OGnYQS3cJV8KfumGAStoP6g0plUQwBk-n4jZvkfxp7EV9-RaRCs_q1ZPLrmiMdt7tsmhXeWmcWqG2uJYFvcVJi55PXizeFrd77_gsE9ZWKPq8lQwqoDcAaw4mZRywR9a6kRhvjFERN0v3spRMKwImBZndqAbNVM4b61AEExrEJQaLRm1E88xnmlYxipATkfUbpsSrZ5jLBKvPsGaeAqAQ"/>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gold text-black text-[10px] font-black px-2.5 py-0.5 rounded-full ring-2 ring-background-dark">1</div>
+</div>
+<p class="text-sm font-black text-white">Mike Chen</p>
+<p class="text-xs text-neon-teal font-black drop-shadow-sm">15.8k PTS</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="relative mb-3">
+<img alt="User" class="size-16 rounded-full border-2 border-orange-700/50 shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ-DNScfFEqclbXTmqyWGEu5Wm4Iq6tBaOJUEwtKmAo0tEZ5wwn0v0F3kIlpNXTxAZ2nBVtuPxm5_Uj6911rTr3xJFazR3cn7Phu4VvlygGqKYQuej18JfkRVMOcQbcw6ku_fZEe80Tg4KPEuTne1_59CAD66FT0m2d8BXx-7y3cpnMuctc1iX0HGKiej3oaUU1YLydIyJndzBSKLVlhjsL3LMkT8IjMIj8cpG_95o7XlTe3YX2z07Es-AuOwfR4WfmaMn7qvM29w"/>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orange-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ring-2 ring-background-dark">3</div>
+</div>
+<p class="text-xs font-bold text-gray-300">Alex J.</p>
+<p class="text-[10px] text-neon-teal/70 font-black">11.1k PTS</p>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between p-4 rounded-2xl glass-card border-neon-teal/20 bg-neon-teal/5">
+<div class="flex items-center gap-4">
+<span class="text-xs font-black text-neon-teal w-4">4</span>
+<div class="relative">
+<img alt="User" class="size-11 rounded-full border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzZml90w8VZN-jXGUvErvWMjTIWNgSZ2xMyK1pAQYP_1d3dGQPmhtSfoC1OIMw57Q8MBOu6sI44NObE67l5UUmTySNjiZ7AL8_xSjK4c2YNvk7soJd6R8Il_fM5IHIOUtLHp4RSjSmmFSwvpp_tsZULrq_9uMzHkAKadFfdILe79JyScqPEKI8pFR-mtGMljeYhVE2YRbSY5hRJH_f3Noq_0sHJPXHbvLuOtC4-HTHiR4ecAGQq_ouK_ddmAKQUohOs5t_FDc8c1A"/>
+<div class="absolute -bottom-1 -right-1 bg-green-500 size-3 rounded-full border-2 border-background-dark"></div>
+</div>
+<div>
+<p class="text-sm font-bold text-white">Jessica Roe</p>
+<div class="flex items-center gap-1 text-[10px] text-green-400 font-bold">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>
+<span>+2 ranks</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-black text-neon-teal">9.2k</p>
+</div>
+<div class="flex items-center justify-between p-4 rounded-2xl glass-card">
+<div class="flex items-center gap-4">
+<span class="text-xs font-black text-gray-500 w-4">5</span>
+<div class="relative">
+<img alt="User" class="size-11 rounded-full border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2Bcjl_rk1Ipc3vJ8HMdKIIA6cL67xuZUWgT97OlZwuYibn517AYInKM7UST5S8Gg6sKPtUOhkXy7f5wKS4j0TiyZHXvl6FtgGyHrQbrTvhJhGVgTv15pLIqYzY-q0KkMGVCQ8selHzgLSy5vMbQNWRSCrCMazZzeQjuptK6lkzE5-Qw5eU3TOTxFv8Sw3Pwa8CCpet1O7yzOMwBYhz9jqY-7eTftDv2uEgShY0zwz4d_V0s4CBTr-SJSb1j4IbNhNoq0VgOcNN04"/>
+<div class="absolute -bottom-1 -right-1 bg-red-500 size-3 rounded-full border-2 border-background-dark"></div>
+</div>
+<div>
+<p class="text-sm font-bold text-white">David Smith</p>
+<div class="flex items-center gap-1 text-[10px] text-red-400 font-bold">
+<span class="material-symbols-outlined text-[12px]">trending_down</span>
+<span>-1 rank</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-black text-gray-400">8.9k</p>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-28 left-1/2 -translate-x-1/2 z-50">
+<button class="flex items-center gap-2 neon-gradient text-black px-8 py-3.5 rounded-2xl shadow-2xl shadow-neon-teal/30 hover:opacity-90 transition-all active:scale-95 group">
+<span class="material-symbols-outlined font-black">add</span>
+<span class="font-black text-xs uppercase tracking-widest">Create Challenge</span>
+</button>
+</div>
+<div class="fixed bottom-0 w-full bg-background-dark/90 backdrop-blur-2xl border-t border-white/5 flex justify-around p-3 pb-8 z-50">
+<div class="flex flex-col items-center gap-1 text-gray-500">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[9px] font-bold uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-neon-teal">
+<span class="material-symbols-outlined drop-shadow-[0_0_8px_rgba(0,245,225,0.4)]" style="font-variation-settings: 'FILL' 1;">trophy</span>
+<span class="text-[9px] font-black uppercase">Challenges</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-500">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[9px] font-bold uppercase">Stats</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[9px] font-bold uppercase">Profile</span>
+</div>
+</div>
+
+</body></html>

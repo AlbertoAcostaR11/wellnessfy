@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wellnessfy Circles - Neon Glass</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00f2fe",
+                        "primary-dark": "#00d4c1",
+                        "neon-teal": "#00f2fe",
+                        "glass-bg": "rgba(15, 23, 42, 0.6)",
+                        "background-dark": "#070b14",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                font-family: 'Lexend', sans-serif;
+                -webkit-tap-highlight-color: transparent;
+                min-height: 100dvh;
+                background-color: #070b14;
+                background-image: radial-gradient(circle at 0% 0%, rgba(0, 242, 254, 0.1) 0%, transparent 40%),
+                                  radial-gradient(circle at 100% 100%, rgba(0, 212, 193, 0.1) 0%, transparent 40%);
+            }
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .bg-neon-gradient {
+            background: linear-gradient(135deg, #00d4c1 0%, #00f2fe 100%);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-nav {
+            background: rgba(7, 11, 20, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="dark:text-white transition-colors duration-200">
+<div class="sticky top-0 z-50 glass-nav border-b border-white/5">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-white flex size-12 shrink-0 items-center">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Circles</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 bg-transparent text-white/80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<div class="pb-0 px-4">
+<div class="flex justify-between relative">
+<a class="flex flex-col items-center justify-center pb-[13px] pt-4 flex-1 relative" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide text-neon-teal">My Circles</p>
+<div class="absolute bottom-0 left-0 right-0 h-[3px] bg-neon-gradient rounded-t-full shadow-[0_-4px_10px_rgba(0,242,254,0.4)]"></div>
+</a>
+<a class="flex flex-col items-center justify-center pb-[13px] pt-4 flex-1 text-slate-500" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">Discover</p>
+<div class="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent"></div>
+</a>
+</div>
+</div>
+</div>
+<main class="max-w-md mx-auto pb-32">
+<div class="px-4 py-6">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-2xl h-full glass-card border-none">
+<div class="text-neon-teal flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-lg">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl text-white focus:outline-0 focus:ring-0 border-none bg-transparent placeholder:text-slate-500 px-4 pl-2 text-base font-normal leading-normal" placeholder="Search friends or groups"/>
+</div>
+</label>
+</div>
+<section>
+<h3 class="text-white/60 text-[11px] uppercase tracking-[0.2em] font-bold px-5 pb-3">My Connections</h3>
+<div class="flex flex-col gap-2 px-4">
+<div class="flex items-center gap-4 glass-card p-4 rounded-2xl justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-neon-teal/30" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmv-r1h3PMrUDYgxhlg22pxBGoXIa0pFFryBYSe1ZueesEYU6MLXBpudrEG0cfCI89BRvLdu7s0M5-GHKamgkFTMqS-Pq5z_-JifYjPeQEjAk4LOxrUQTiz19Fmnyqp3GOn5Wr4aB7zTI10hzoG5h8R3duMeohC-l1w0aT_q_1UsbuxkQf4CgRYD6LtOL-emrB6I9bqSTH1E26Hyf9w4YEuDntdAyqLPPpT3Tp-FBJImV_4DTyHI7vraQV4LIC8VBlejUnuY-BZ_w");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-semibold leading-normal line-clamp-1">Sarah Jenkins</p>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-neon-teal/10 text-neon-teal text-[9px] font-bold uppercase tracking-wider border border-neon-teal/20">Family</span>
+<p class="text-slate-500 text-[10px] font-normal">Active 5m ago</p>
+</div>
+</div>
+</div>
+<div class="shrink-0 flex gap-2">
+<div class="text-white bg-neon-gradient p-2 rounded-full flex items-center justify-center shadow-lg shadow-neon-teal/20">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 glass-card p-4 rounded-2xl justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-neon-teal/30" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDx4hzbcxm661VBwdExfZB86PPzfWEn3uTkNhpimuJ1eyKuVaeH_HlXUesXvDfTuNE1Y8QCR4SIDCgSf8G0OP61urO79SPSvtECp2SgOS5qOtOW7k2OmKjseAMcLLPQQkoddKfnuQt3_vpLUDL1fOHokYwsPfqa042tiYWiLDY_9vqWysrwcQ25SshQnVatxMlLSVT6emMbfwTFIhlaIb1xnUbwF64-RGX_3K1SoYxU2X4tTdXpnBV2nwhM7AebsUL3ds_139MmEYg");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-semibold leading-normal line-clamp-1">David Chen</p>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider border border-white/5">Work</span>
+<p class="text-slate-500 text-[10px] font-normal">3k steps today</p>
+</div>
+</div>
+</div>
+<div class="shrink-0 flex gap-2">
+<div class="text-white bg-neon-gradient p-2 rounded-full flex items-center justify-center shadow-lg shadow-neon-teal/20">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 glass-card p-4 rounded-2xl justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-neon-teal/30" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC-c_g-HwnubdEvxdXmNNFmbZuQUvMKpWNhMbuM1sAQ2SOAru1wrcOhi5VecfGBQ54m1Qj39CfT7GQbwn9ksMnIr10duOJ9dYs_KKkEwPsb86I0Kcc3U_rJh6oXtCZQp4KJgvFl-z9DB9p4q6Tvy_UON0RXtgZJtJAjJwAiIKMqVwyMGWSDYG19w9-vk5ijoPo7Vqf0vGHQGDtOzVdc8Qxt6GNULsR4CluPqFdySnt9bVWZHSl3-ciSwz-j3ZBl7Ch-wSBzqavibt0");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-semibold leading-normal line-clamp-1">Jessica Miller</p>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-neon-teal/10 text-neon-teal text-[9px] font-bold uppercase tracking-wider border border-neon-teal/20">Family</span>
+<p class="text-slate-500 text-[10px] font-normal">Level 24</p>
+</div>
+</div>
+</div>
+<div class="shrink-0 flex gap-2">
+<div class="text-white bg-neon-gradient p-2 rounded-full flex items-center justify-center shadow-lg shadow-neon-teal/20">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-10">
+<div class="flex items-center justify-between px-5 pb-4">
+<h3 class="text-white/60 text-[11px] uppercase tracking-[0.2em] font-bold">Recommended</h3>
+<a class="text-neon-teal text-xs font-semibold" href="#">See All</a>
+</div>
+<div class="grid grid-cols-2 gap-4 px-4">
+<div class="glass-card p-5 rounded-[2rem] flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-center bg-cover rounded-full mb-3 relative border-2 border-white/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnTidOn04rK_8pdSoenclAbM3i01u5YoWMd9FHn1jABDlm8i69XSdiY7fdFu-VbqeoaP2TxMqhniJEcjdPOjRWy-nVfgHgEE9BxprCJXW5ovOiol1Wv_eoK8hgH0xTip8c6N9t13U77GnCMmfXho2Lm8aCptGhXMJHIzYBy5LlSv3m7gOU0tp7aKWzWm_ZyUw0kMxXEpfvkPKQOMWVIbSEAzw5zvo_JFPOTOjxf3NU8Xm2uJg1ue9eGazXOsE04TNCPlpwY37JmXY");'>
+<div class="absolute bottom-0 right-0 bg-yellow-400 w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[12px] text-slate-900 font-bold">star</span>
+</div>
+</div>
+<p class="text-white text-sm font-bold">Marcus Thorne</p>
+<p class="text-slate-500 text-[10px] mb-4 uppercase tracking-wider">Ultra Runner</p>
+<button class="w-full bg-neon-gradient text-slate-900 py-2.5 rounded-xl text-xs font-black hover:opacity-90 transition-opacity shadow-lg shadow-neon-teal/30">
+                    ADD FRIEND
+                </button>
+</div>
+<div class="glass-card p-5 rounded-[2rem] flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-center bg-cover rounded-full mb-3 relative border-2 border-white/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBYqfSFmenP6_9J-XZxpBpisVt1-gBTv3LfnfW4BTNsWwDkinBsynmhaQ9ZIGiyVRwpqfeUvyJ3pb6XyTraWjSUwPLy_X9Mj0EwYviZnoakeAxd3TTzjBcS3ofETwKRSUnVfJPGhXiGhSjpBmnr_2D5pMHbv7NiMYeu1F3W-VgUDFCV4Duxuxz-6nRKiz4fmy9Jhe3vH4SJIQGPpqANt7fu0cXaJu7tuA3yQinfYOKeVMVqH1xorzIoZswVANiw0EEOSlENdg_fZzE");'>
+<div class="absolute bottom-0 right-0 bg-neon-gradient w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-sm text-slate-900">
+<span class="material-symbols-outlined text-[12px] font-bold">bolt</span>
+</div>
+</div>
+<p class="text-white text-sm font-bold">Elena Kostic</p>
+<p class="text-slate-500 text-[10px] mb-4 uppercase tracking-wider">Yoga Expert</p>
+<button class="w-full bg-neon-gradient text-slate-900 py-2.5 rounded-xl text-xs font-black hover:opacity-90 transition-opacity shadow-lg shadow-neon-teal/30">
+                    ADD FRIEND
+                </button>
+</div>
+<div class="glass-card p-5 rounded-[2rem] flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-center bg-cover rounded-full mb-3 border-2 border-white/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCS0xbfTXY6ySKV8pio5OgI0HMBWpVTEI-F5U32eB-66tMktVpvPIgzmaPZaqCcDp1zGlWKXLpDMgYFBDdvcwEQXH_NmNHixzy9LPMSs-c5k2P6v7aSlllNe-5DCskf0Se9RXZmCoTaeU-rvY2OoPuhw-8SNQxAzzGHAvGoMI-r907eNRVDW9rFxZBUx_FIfLAL-w6uWiXKfsi0kow2sxe-qa1HX2YZ-rrxmzfHTDpstnkhH2yn8tOEgkipE1Qw7-BHVtXJ5edWZ9k");'></div>
+<p class="text-white text-sm font-bold">Sam Wilson</p>
+<p class="text-slate-500 text-[10px] mb-4 uppercase tracking-wider">HIIT Trainer</p>
+<button class="w-full bg-neon-gradient text-slate-900 py-2.5 rounded-xl text-xs font-black hover:opacity-90 transition-opacity shadow-lg shadow-neon-teal/30">
+                    ADD FRIEND
+                </button>
+</div>
+<div class="glass-card p-5 rounded-[2rem] flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-center bg-cover rounded-full mb-3 border-2 border-white/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDnc-x7qslE-44ro0gVAq_7m6U0OLpvYJ9enhH7B9-1Syc78jSMs7VhXh0wqenJ8ZUlOFrbfRzS_jKek7Zq_4_WU4VVoIGMkvB7IMq5xJAV8csYQRRpQ_3_u5ZWNPYtp9GEnH_i50FqyqhGgZe3bnz2diFiD3PAH5heY3RbJib-9n6cRmtqSwV-btYDcarBrCMOpvyB2LaX3eafhvYy1hiY5AlqucjINKhVN0LnOyC427fh_gEcZmyjOgF4_twOVU3_mTDUDooTork");'></div>
+<p class="text-white text-sm font-bold">Lily Vance</p>
+<p class="text-slate-500 text-[10px] mb-4 uppercase tracking-wider">Daily Walker</p>
+<button class="w-full bg-neon-gradient text-slate-900 py-2.5 rounded-xl text-xs font-black hover:opacity-90 transition-opacity shadow-lg shadow-neon-teal/30">
+                    ADD FRIEND
+                </button>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 glass-nav border-t border-white/5 px-6 py-3 flex justify-between items-end z-50 pb-8">
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Home</span>
+</div>
+<div class="flex flex-col items-center text-neon-teal">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">group</span>
+<span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Circles</span>
+</div>
+<div class="flex flex-col items-center justify-center -mb-4 bg-neon-gradient w-14 h-14 rounded-full border-4 border-[#070b14] text-slate-900 shadow-[0_0_20px_rgba(0,242,254,0.4)]">
+<span class="material-symbols-outlined text-[28px] font-bold">add</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Activity</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Profile</span>
+</div>
+</nav>
+
+</body></html>

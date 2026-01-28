@@ -3,7 +3,7 @@
  * Muestra exactamente qué datos se están obteniendo de la API
  */
 
-import { healthProviderManager } from './healthSync.js';
+import { healthProviderManager } from './healthSync_v2.js';
 
 export async function debugFitbitData() {
     console.group('🔍 DIAGNÓSTICO DETALLADO DE FITBIT');

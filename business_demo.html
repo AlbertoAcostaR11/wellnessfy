@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Wellnessfy Business - Gestión Empresarial</title>
+    <link rel="icon" href="logo-icon.png" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+        rel="stylesheet" />
+
+    <!-- Estilos Compartidos -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Estilos Específicos Business -->
+    <style>
+        .business-badge {
+            background: linear-gradient(135deg, #7000ff, #ae00ff);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-navy-900 text-white font-inter min-h-screen flex">
+
+    <!-- Sidebar Business -->
+    <aside class="w-64 glass-card border-r border-white/10 h-screen fixed sticky top-0 flex flex-col p-6 z-50">
+        <!-- Logo Area -->
+        <div class="mb-8 px-2 flex items-center gap-3">
+            <img src="logo-icon.png" alt="Wellnessfy" class="h-8 w-8 object-contain">
+            <div class="flex flex-col">
+                <span class="font-outfit font-bold text-lg tracking-tight">Wellnessfy</span>
+                <span class="business-badge w-fit">Business</span>
+            </div>
+        </div>
+
+        <!-- Perfil Empresa Selector -->
+
+
+        <!-- Navegación -->
+        <nav class="space-y-1 flex-1">
+            <p class="px-4 text-xs font-bold text-white/40 uppercase tracking-widest mb-2 mt-4">Gestión</p>
+
+            <a href="javascript:void(0)" onclick="showSection('dashboard'); return false;"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-white border border-white/5">
+                <span class="material-symbols-outlined text-neon-teal">dashboard</span>
+                <span class="font-medium text-sm">Dashboard</span>
+            </a>
+
+            <a href="javascript:void(0)" onclick="showSection('challenges'); return false;"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">campaign</span>
+                <span class="font-medium text-sm">Mis Desafíos</span>
+            </a>
+
+            <a href="javascript:void(0)" onclick="showSection('badges'); return false;"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                <span class="font-medium text-sm">Insignias & Premios</span>
+            </a>
+
+            <p class="px-4 text-xs font-bold text-white/40 uppercase tracking-widest mb-2 mt-8">Configuración</p>
+
+            <a href="javascript:void(0)" onclick="showSection('brandProfile'); return false;"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">storefront</span>
+                <span class="font-medium text-sm">Perfil de Marca</span>
+            </a>
+
+            <a href="javascript:void(0)" onclick="showSection('admin'); return false;"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="font-medium text-sm">Administración</span>
+            </a>
+        </nav>
+
+        <!-- User Footer -->
+        <div class="mt-auto pt-6 border-t border-white/10 flex items-center gap-3">
+            <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=random"
+                    class="rounded-full h-full w-full">
+            </div>
+            <div class="flex-1">
+                <p class="text-xs font-bold">Admin User</p>
+                <p class="text-[10px] text-white/50">admin@empresa.com</p>
+            </div>
+            <button class="text-white/40 hover:text-white">
+                <span class="material-symbols-outlined text-lg">logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+        <!-- SECCIÓN: Dashboard (Por defecto) -->
+        <div id="dashboardSection">
+
+            <!-- Header -->
+            <header class="flex justify-between items-end mb-10">
+                <div>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Brand Insights</h1>
+                    <p class="text-white/60">Resumen de impacto de tu comunidad en tiempo real.</p>
+                </div>
+                <button onclick="showSection('createChallenge')" class="btn-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined">add</span>
+                    Nuevo Desafío
+                </button>
+            </header>
+
+            <!-- Stats Grid (Metrics) -->
+            <div class="stat-grid mb-10">
+                <!-- Card 1 -->
+                <div class="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl">visibility</span>
+                    </div>
+                    <p class="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Alcance Total</p>
+                    <p class="text-3xl font-black font-outfit">0</p>
+                    <div class="flex items-center gap-1 mt-2 text-emerald-400 text-xs font-bold">
+                        <span class="material-symbols-outlined text-sm">trending_up</span>
+                        <span>0% vs mes anterior</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl">group</span>
+                    </div>
+                    <p class="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Participantes Activos</p>
+                    <p class="text-3xl font-black font-outfit">0</p>
+                    <div class="flex items-center gap-1 mt-2 text-emerald-400 text-xs font-bold">
+                        <span class="material-symbols-outlined text-sm">trending_up</span>
+                        <span>+5% nuevos esta semana</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl">ads_click</span>
+                    </div>
+                    <p class="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Conversión (Clics)</p>
+                    <p class="text-3xl font-black font-outfit">0</p>
+                    <p class="text-xs text-white/40 mt-2">Clics en "Visitar Tienda"</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl">verified</span>
+                    </div>
+                    <p class="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Tasa de Finalización</p>
+                    <p class="text-3xl font-black font-outfit text-neon-teal">0%</p>
+                    <p class="text-xs text-white/40 mt-2">Usuarios que terminan tus retos</p>
+                </div>
+            </div>
+
+            <!-- Graficas / Tablas Placeholder -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Audience Demographics -->
+                <div class="glass-card p-6 lg:col-span-1 h-96 flex flex-col">
+                    <h3 class="font-bold text-lg mb-6">Audiencia</h3>
+                    <div class="flex-1 flex items-center justify-center relative">
+                        <!-- Placeholder Chart Circle -->
+                        <div
+                            class="h-48 w-48 rounded-full border-[12px] border-white/5 relative flex items-center justify-center">
+                            <div
+                                class="absolute inset-0 rounded-full border-[12px] border-neon-purple border-l-transparent rotate-45">
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-black">--</p>
+                                <p class="text-xs text-white/50">Sin Datos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-white/50 mt-4 px-4">
+                        <span>--</span>
+                        <span>--</span>
+                    </div>
+                </div>
+
+                <!-- Active Challenges Table -->
+                <div class="glass-card p-0 lg:col-span-2 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Desafíos Activos</h3>
+                        <a href="#" class="text-xs font-bold text-neon-teal hover:underline">VER TODOS</a>
+                    </div>
+                    <div class="flex-1 overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-white/40 font-bold uppercase text-[10px] tracking-wider bg-white/5">
+                                <tr>
+                                    <th class="px-6 py-4">Reto</th>
+                                    <th class="px-6 py-4">Estado</th>
+                                    <th class="px-6 py-4 text-right">Participantes</th>
+                                    <th class="px-6 py-4 text-right">Progreso</th>
+                                    <th class="px-6 py-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <!-- Datos dinámicos -->
+                                <tr class="hover:bg-white/5 transition-colors">
+                                    <td colspan="5" class="px-6 py-8 text-center text-white/30 text-xs italic">
+                                        No hay desafíos activos
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div> <!-- Cierre de dashboardSection -->
+
+        <!-- SECCIÓN: Mis Desafíos -->
+        <div id="challengesSection" class="hidden animate-fade-in">
+            <!-- Header -->
+            <header class="flex justify-between items-end mb-10">
+                <div>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Mis Desafíos</h1>
+                    <p class="text-white/60">Crea y gestiona las experiencias para tu comunidad.</p>
+                </div>
+                <button onclick="showSection('createChallenge')" class="btn-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined">add</span>
+                    Nuevo Desafío
+                </button>
+            </header>
+
+            <!-- Challenges Grid/List -->
+            <div class="space-y-6">
+                <!-- Filtros -->
+                <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-2">
+                    <button class="badge badge-primary cursor-pointer">Todos</button>
+                    <button class="badge badge-secondary cursor-pointer">Activos</button>
+                    <button class="badge badge-purple cursor-pointer">Borradores</button>
+                    <button class="badge badge-pink cursor-pointer">Finalizados</button>
+                </div>
+
+                <!-- Lista de Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Los retos aparecerán aquí dinámicamente -->
+
+                    <!-- Card New (Dotted) -->
+                    <button onclick="showSection('createChallenge')"
+                        class="glass-card p-6 border-2 border-dashed border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center text-center gap-4 group h-full min-h-[300px]">
+                        <div
+                            class="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-glow">
+                            <span class="material-symbols-outlined text-3xl text-neon-teal">add</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg group-hover:text-neon-teal transition-colors">Crear Nuevo</h3>
+                            <p class="text-xs text-white/50 mt-1">Lanza un nuevo reto para tu audiencia</p>
+                        </div>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: Perfil de Marca -->
+        <div id="brandProfileSection" class="hidden animate-fade-in">
+            <!-- Header: Cover Image & Logo -->
+            <div class="relative mb-24">
+                <!-- Cover Image Upload -->
+                <div
+                    class="h-48 w-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden relative group cursor-pointer flex items-center justify-center">
+                    <span class="material-symbols-outlined text-6xl text-white/5" id="coverPlaceholder">image</span>
+                    <img src=""
+                        class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-75 transition-opacity hidden"
+                        id="coverPreview">
+                    <div
+                        class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                            class="bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 border border-white/20">
+                            <span class="material-symbols-outlined">add_photo_alternate</span>
+                            Cambiar Portada
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Logo Upload (Floating) -->
+                <div class="absolute -bottom-10 left-8 z-50">
+                    <div
+                        class="h-32 w-32 rounded-2xl bg-navy-900 p-1 border border-white/10 shadow-2xl relative group cursor-pointer">
+                        <div
+                            class="h-full w-full rounded-xl bg-white/10 flex items-center justify-center overflow-hidden relative">
+                            <span class="material-symbols-outlined text-4xl text-white/20"
+                                id="logoPlaceholder">domain</span>
+                            <img src="" class="hidden p-4 w-full h-full object-cover" id="logoPreview">
+
+                            <!-- Overlay Edit -->
+                            <div
+                                class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="material-symbols-outlined text-white">edit</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end mt-4 relative z-10">
+                    <button onclick="saveBrandProfile()" class="btn-primary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">save</span>
+                        Guardar
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Columna Izquierda: Identidad -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- Identidad Básica -->
+                    <div class="glass-card p-6">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-neon-teal">badge</span>
+                            Identidad de Marca
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Nombre
+                                    Comercial</label>
+                                <input type="text" id="brandName" value="Empresa Demo"
+                                    class="input-field font-bold text-lg">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Handle
+                                    (@usuario)</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">@</span>
+                                    <input type="text" id="brandHandle" value="empresa_demo" class="input-field pl-8">
+                                </div>
+                            </div>
+
+                            <div class="col-span-full space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Slogan / Bio
+                                    Corta</label>
+                                <input type="text" id="brandBio"
+                                    value="Impulsando el bienestar corporativo y la salud de nuestros equipos."
+                                    class="input-field">
+                                <p class="text-[10px] text-white/30 text-right">62/140 caracteres</p>
+                            </div>
+
+                            <div class="col-span-full space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Descripción
+                                    ("Sobre Nosotros")</label>
+                                <textarea rows="4"
+                                    class="input-field resize-none">Somos una organización comprometida con crear un entorno de trabajo saludable y motivador, fomentando hábitos positivos y el desarrollo personal de cada miembro de nuestra comunidad.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ubicación -->
+                    <div class="glass-card p-6">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-neon-purple">location_on</span>
+                            Ubicación y Horarios
+                        </h3>
+
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Dirección
+                                    Principal</label>
+                                <div class="flex gap-2">
+                                    <input type="text" value="Av. Reforma 222, Ciudad de México"
+                                        class="input-field flex-1">
+                                    <button class="btn-secondary px-4"><span
+                                            class="material-symbols-outlined">my_location</span></button>
+                                </div>
+                            </div>
+
+                            <!-- Mapa Preview (Placeholder) -->
+                            <div
+                                class="h-48 w-full rounded-xl bg-white/5 border border-white/10 flex items-center justify-center relative overflow-hidden">
+                                <iframe width="100%" height="100%" frameborder="0"
+                                    style="border:0; opacity: 0.6; filter: grayscale(100%) invert(90%) contrast(120%);"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3762.476472237736!2d-99.1622340850933!3d19.43003008688577!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ff35f52136e7%3A0x6d907297e785b967!2sReforma%20222!5e0!3m2!1ses-419!2smx!4v1642968383816!5m2!1ses-419!2smx"
+                                    allowfullscreen>
+                                </iframe>
+                                <div
+                                    class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
+                                    <p class="text-xs text-white/70 text-center">Lat: 19.4300, Lng: -99.1622</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Conversión -->
+                <div class="space-y-8">
+
+                    <!-- Call to Action (CTA) -->
+                    <div class="glass-card p-6 border-l-4 border-l-neon-teal">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-neon-teal">touch_app</span>
+                            Botón de Acción
+                        </h3>
+                        <p class="text-xs text-white/60 mb-6">Este es el botón principal que verán los usuarios en tu
+                            perfil.</p>
+
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Texto del
+                                    Botón</label>
+                                <select class="input-field">
+                                    <option>Visitar Tienda</option>
+                                    <option>Reservar Clase</option>
+                                    <option>Contactar por WhatsApp</option>
+                                    <option>Ver Menú</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Enlace
+                                    Destino</label>
+                                <input type="text" value="https://empresa.com"
+                                    class="input-field text-neon-teal font-medium">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redes Sociales -->
+                    <div class="glass-card p-6">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined">share</span>
+                            Redes Sociales
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
+                                    <span class="text-xs font-bold">IG</span>
+                                </div>
+                                <input type="text" placeholder="@usuario" value="@empresa_demo"
+                                    class="input-field flex-1 text-sm">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
+                                    <span class="text-xs font-bold">FB</span>
+                                </div>
+                                <input type="text" placeholder="/pagina" class="input-field flex-1 text-sm">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
+                                    <span class="text-xs font-bold">WA</span>
+                                </div>
+                                <input type="text" placeholder="+52..." value="+52 55 1234 5678"
+                                    class="input-field flex-1 text-sm">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
+                                    <span class="text-xs font-bold">TK</span>
+                                </div>
+                                <input type="text" placeholder="@usuario" class="input-field flex-1 text-sm">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
+                                    <span class="text-xs font-bold">X</span>
+                                </div>
+                                <input type="text" placeholder="@usuario" class="input-field flex-1 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos Fiscales (Privados) -->
+                    <div
+                        class="p-4 rounded-xl bg-white/5 border border-white/5 opacity-50 hover:opacity-100 transition-opacity">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wider">Datos Fiscales</h4>
+                            <span class="material-symbols-outlined text-sm">lock</span>
+                        </div>
+                        <p class="text-xs text-white/50">Solo visible para administración</p>
+                        <div class="mt-2 text-xs font-mono bg-black/20 p-2 rounded">
+                            RFC: GEN010101ABC<br>
+                            Razón: Empresa Demo S.A. de C.V.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: Administración -->
+        <div id="adminSection" class="hidden animate-fade-in">
+            <!-- Header -->
+            <header class="flex justify-between items-end mb-10">
+                <div>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Administración</h1>
+                    <p class="text-white/60">Gestiona accesos, roles y permisos de tu equipo.</p>
+                </div>
+                <button onclick="openInviteModal()" class="btn-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined">person_add</span>
+                    Invitar Miembro
+                </button>
+            </header>
+
+            <!-- Admin Content -->
+            <div class="glass-card p-0 overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                    <h3 class="font-bold text-lg">Equipo</h3>
+
+                    <div class="flex gap-2">
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">search</span>
+                            <input type="text" placeholder="Buscar..."
+                                class="bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-neon-teal w-48 transition-colors">
+                        </div>
+                        <button
+                            class="p-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70">
+                            <span class="material-symbols-outlined text-sm">filter_list</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="text-white/40 font-bold uppercase text-[10px] tracking-wider bg-white/5">
+                            <tr>
+                                <th class="px-6 py-4">Usuario</th>
+                                <th class="px-6 py-4">Rol</th>
+                                <th class="px-6 py-4">Estado</th>
+                                <th class="px-6 py-4">Último Acceso</th>
+                                <th class="px-6 py-4"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5" id="adminTableBody">
+                            <!-- Los usuarios se cargarán dinámicamente aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invite Member Modal -->
+        <div id="inviteModal" class="modal-overlay hidden">
+            <div class="modal-content glass-card p-8 relative">
+                <button onclick="closeInviteModal()" class="absolute top-4 right-4 text-white/40 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+
+                <h3 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-neon-teal">person_add</span>
+                    Invitar al Equipo
+                </h3>
+                <p class="text-white/60 text-sm mb-6">
+                    Añade colaboradores para gestionar tu marca. El usuario debe ser <b>amigo/seguidor</b> de la marca
+                    para poder ser invitado.
+                </p>
+
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase tracking-wider text-white/50">Username o Email</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40">alternate_email</span>
+                            <input type="text" id="inviteInput" placeholder="Ej. juan_perez o juan@email.com"
+                                class="input-field pl-10">
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg flex gap-3 items-start">
+                        <span class="material-symbols-outlined text-blue-400 text-sm mt-0.5">info</span>
+                        <p class="text-xs text-blue-200">
+                            Se enviará una notificación al usuario. Si no está conectado con la marca, no podrá aceptar
+                            la invitación.
+                        </p>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button onclick="closeInviteModal()" class="btn-secondary text-sm">Cancelar</button>
+                        <button onclick="sendInvitation()" class="btn-primary text-sm flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">send</span>
+                            Enviar Invitación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: Gamificación (Insignias & Premios) -->
+        <div id="badgesSection" class="hidden animate-fade-in">
+            <!-- Header & Tabs -->
+            <header class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
+                <div>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Gamificación & Premios</h1>
+                    <p class="text-white/60">Gestiona las insignias digitales y tu catálogo de recompensas físicas.</p>
+                </div>
+
+                <!-- Tab Switching Logic -->
+                <div class="flex p-1 bg-white/5 rounded-xl border border-white/10">
+                    <button onclick="switchGamificationTab('badges')" id="tabBtnBadges"
+                        class="px-6 py-2 rounded-lg text-sm font-bold bg-white/10 text-white shadow-sm transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">military_tech</span>
+                        Insignias Digitales
+                    </button>
+                    <button onclick="switchGamificationTab('rewards')" id="tabBtnRewards"
+                        class="px-6 py-2 rounded-lg text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">redeem</span>
+                        Biblioteca de Recompensas
+                    </button>
+                </div>
+            </header>
+
+            <!-- VISTA 1: INSIGNIAS (Original) -->
+            <div id="viewBadges" class="animate-fade-in">
+                <!-- Actions Bar -->
+                <div class="flex justify-end mb-6">
+                    <button onclick="openNewBadgeModal()" class="btn-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        Nueva Insignia
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Columna Izquierda: Galería de Insignias -->
+                    <div class="lg:col-span-2 space-y-6">
+
+                        <!-- Stats Rápidas -->
+                        <div class="grid grid-cols-3 gap-4 mb-2">
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                <p class="text-xs text-white/50 uppercase font-bold">Total Otorgadas</p>
+                                <p class="text-2xl font-black text-neon-teal">0</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                <p class="text-xs text-white/50 uppercase font-bold">Insignias Activas</p>
+                                <p class="text-2xl font-black text-white">0</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                <p class="text-xs text-white/50 uppercase font-bold">Tasa de Canje</p>
+                                <p class="text-2xl font-black text-purple-400">0%</p>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <span class="material-symbols-outlined text-neon-teal">grid_view</span>
+                            Colección de Insignias
+                        </h3>
+
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Create New Placeholder -->
+                            <button onclick="openNewBadgeModal()"
+                                class="glass-card p-4 flex flex-col items-center justify-center text-center gap-3 border-dashed border-2 border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all text-white/40 hover:text-white">
+                                <div class="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-2xl">add</span>
+                                </div>
+                                <span class="text-xs font-bold uppercase">Crear Nueva</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Ganadores -->
+                    <div class="space-y-6">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-400">history</span>
+                            Últimos Ganadores
+                        </h3>
+
+                        <div class="glass-card p-0 overflow-hidden">
+                            <table class="w-full text-left text-sm">
+                                <tbody class="divide-y divide-white/5">
+                                    <!-- Empty State -->
+                                    <tr>
+                                        <td class="p-8 text-center text-white/40 text-xs">
+                                            Aún no hay insignias otorgadas
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mini Promo to switch tabs -->
+                        <div onclick="switchGamificationTab('rewards')"
+                            class="p-5 rounded-2xl bg-gradient-to-br from-purple-900/50 to-blue-900/50 border border-white/10 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
+                            <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12">🎁</div>
+                            <h4 class="font-bold text-white mb-2">Recompensas Físicas</h4>
+                            <p class="text-xs text-white/60 mb-2">Configura premios reales para tus insignias.</p>
+                            <span class="text-xs font-bold text-white underline">Ir a Biblioteca &rarr;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 2: RECOMPENSAS (Nuevo) -->
+            <div id="viewRewards" class="hidden animate-fade-in">
+                <!-- Actions Bar -->
+                <div class="flex justify-end mb-6">
+                    <button onclick="openCreateRewardModal()" class="btn-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined">add_card</span>
+                        Nueva Recompensa
+                    </button>
+                </div>
+
+                <div id="rewardsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+                    <!-- Reward Card 1 -->
+                    <div
+                        class="glass-card p-0 overflow-hidden group hover:border-neon-teal/50 transition-colors relative">
+                        <div class="h-20 bg-purple-900/20 relative">
+                            <div
+                                class="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold">
+                                ACTIVO</div>
+                            <div
+                                class="absolute -bottom-5 left-4 h-10 w-10 rounded-lg bg-navy-900 border border-white/10 flex items-center justify-center text-xl shadow-lg">
+                                🎁</div>
+                        </div>
+                        <div class="p-4 pt-6">
+                            <h3 class="font-bold text-sm mb-1 leading-tight">Descuento 20% Online</h3>
+                            <p class="text-[10px] text-white/50 line-clamp-2 mb-3 leading-relaxed">Válido en todo el
+                                catálogo.</p>
+                            <div
+                                class="flex items-center justify-between text-[10px] font-mono bg-black/20 p-1.5 rounded mb-3">
+                                <span class="text-white/40">CÓDIGO:</span>
+                                <span class="text-neon-teal font-bold">SUMMER2026</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-white/5 pt-3">
+                                <div>
+                                    <p class="text-[8px] text-white/40 font-bold uppercase">Stock</p>
+                                    <p class="text-xs font-bold text-white">∞ Ilimitado</p>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] text-white/40 font-bold uppercase">Canjeados</p>
+                                    <p class="text-xs font-bold text-white">45</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reward Card 2 -->
+                    <div
+                        class="glass-card p-0 overflow-hidden group hover:border-neon-teal/50 transition-colors relative">
+                        <div class="h-20 bg-blue-900/20 relative">
+                            <div
+                                class="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold">
+                                ACTIVO</div>
+                            <div
+                                class="absolute -bottom-5 left-4 h-10 w-10 rounded-lg bg-navy-900 border border-white/10 flex items-center justify-center text-xl shadow-lg">
+                                🧢</div>
+                        </div>
+                        <div class="p-4 pt-6">
+                            <h3 class="font-bold text-sm mb-1 leading-tight">Kit Bienvenida Premium</h3>
+                            <p class="text-[10px] text-white/50 line-clamp-2 mb-3 leading-relaxed">Incluye botella,
+                                toalla y gorra.</p>
+                            <div
+                                class="flex items-center justify-between text-[10px] font-mono bg-black/20 p-1.5 rounded mb-3">
+                                <span class="text-white/40">TIPO:</span>
+                                <span class="text-blue-400 font-bold">CSV ÚNICO</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-white/5 pt-3">
+                                <div>
+                                    <p class="text-[8px] text-white/40 font-bold uppercase">Stock</p>
+                                    <p class="text-xs font-bold text-white">50</p>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] text-white/40 font-bold uppercase">Canjeados</p>
+                                    <p class="text-xs font-bold text-white">12</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Create New -->
+                    <button onclick="openCreateRewardModal()"
+                        class="glass-card p-4 border-2 border-dashed border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center text-center gap-3 group h-full min-h-[200px]">
+                        <div
+                            class="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-glow">
+                            <span class="material-symbols-outlined text-2xl text-neon-teal">add_card</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm group-hover:text-neon-teal transition-colors">Crear Recompensa
+                            </h3>
+                            <p class="text-[10px] text-white/50 mt-0.5">Añade un nuevo incentivo</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="border-t border-white/10 pt-8 flex gap-4 opacity-50 hover:opacity-100 transition-opacity">
+                    <span class="material-symbols-outlined text-white/40 text-2xl">gavel</span>
+                    <p class="text-xs text-white/60 leading-relaxed max-w-4xl">
+                        <strong class="text-white">Aviso Legal:</strong> Wellnessfy actúa exclusivamente como plataforma
+                        de gestión...
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: Crear Desafío -->
+        <div id="createChallengeSection" class="hidden animate-fade-in pb-20">
+            <!-- Header Navegación -->
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="showSection('challenges')"
+                    class="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Nuevo Desafío</h1>
+                    <p class="text-white/60">Configura los detalles de tu nueva experiencia.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Columna Principal: Formulario -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- 1. Datos Básicos -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">1.
+                            Datos Básicos</label>
+
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Nombre del
+                                    Desafío</label>
+                                <input type="text" id="ccName" placeholder="Ej: Maratón de Verano 2026"
+                                    class="input-field text-lg font-bold">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label
+                                    class="text-xs font-bold uppercase tracking-wider text-white/50">Descripción</label>
+                                <textarea id="ccDesc" rows="3"
+                                    placeholder="Describe el objetivo y motiva a tu comunidad..."
+                                    class="input-field resize-none"></textarea>
+                            </div>
+
+                            <!-- Selector de Portada Avanzado -->
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Portada</label>
+
+                                <!-- Grid Predefinido -->
+                                <div class="grid grid-cols-4 gap-2" id="predefinedCovers">
+                                    <div onclick="selectCover(this, 'gym')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'run')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1502904550040-7534597429ae?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1502904550040-7534597429ae?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'yoga')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'cycle')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=80">
+                                    </div>
+                                    <!-- Nuevas Portadas -->
+                                    <div onclick="selectCover(this, 'hiking')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'swim')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'meditation')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80">
+                                    </div>
+                                    <div onclick="selectCover(this, 'team')"
+                                        class="cover-option h-20 rounded-lg bg-cover bg-center cursor-pointer border-2 border-transparent hover:border-white transition-all opacity-60 hover:opacity-100"
+                                        style="background-image: url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80')"
+                                        data-url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80">
+                                    </div>
+                                </div>
+
+                                <!-- Preview Personalizado (Oculto Default) -->
+                                <div id="customCoverPreview"
+                                    class="hidden relative w-full h-40 rounded-xl bg-cover bg-center border-2 border-neon-teal group animate-fade-in shadow-xl">
+                                    <div
+                                        class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                                        <span
+                                            class="text-white font-bold text-xs uppercase tracking-widest bg-black/50 px-3 py-1 rounded backdrop-blur">Imagen
+                                            personalizada</span>
+                                    </div>
+                                    <button onclick="clearCustomCover()"
+                                        class="absolute top-2 right-2 bg-black/60 hover:bg-red-500 text-white p-1.5 rounded-full transition-colors backdrop-blur">
+                                        <span class="material-symbols-outlined text-sm">close</span>
+                                    </button>
+                                </div>
+
+                                <!-- Guía de Diseño -->
+                                <button onclick="document.getElementById('uploadCoverInput').click()"
+                                    class="w-full py-3 rounded-xl border border-dashed border-white/20 hover:border-neon-teal hover:bg-neon-teal/5 transition-all flex items-center justify-center gap-3 text-sm font-bold text-white/60 hover:text-white group">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-neon-teal/20 group-hover:text-neon-teal transition-colors">
+                                        <span class="material-symbols-outlined text-lg">add_photo_alternate</span>
+                                    </div>
+                                    Subir banner personalizado
+                                </button>
+                                <input type="file" id="uploadCoverInput" class="hidden" accept="image/*"
+                                    onchange="handleCoverUpload(this)">
+
+                                <div
+                                    class="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-lg flex gap-3 mt-2">
+                                    <span class="material-symbols-outlined text-indigo-400 text-lg">aspect_ratio</span>
+                                    <div class="space-y-1">
+                                        <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-wide">Guía de
+                                            Diseño para Banner</p>
+                                        <p class="text-[10px] text-indigo-200/70 leading-relaxed">
+                                            Recomendamos subir una imagen de <strong class="text-white">800x640
+                                                px</strong>.
+                                        </p>
+                                        <ul class="text-[10px] text-indigo-200/60 list-disc ml-3 space-y-0.5">
+                                            <li>Centra el contenido relevante en una franja central de <strong
+                                                    class="text-white">256 px</strong> de altura.</li>
+                                            <li>Considera un margen superior e inferior de <strong
+                                                    class="text-white">192 px</strong> (zona de recorte).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="ccImage" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Deporte y Meta -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">2.
+                            Configuración de Meta</label>
+
+                        <!-- Selección de Deporte -->
+                        <div class="mb-6">
+                            <label class="text-xs font-bold uppercase tracking-wider text-white/50 mb-2 block">Deportes
+                                Permitidos</label>
+                            <div class="flex flex-wrap gap-2" id="sportSelector">
+                                <button type="button" onclick="toggleSport(this, 'running')"
+                                    class="sport-chip px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white text-xs font-bold uppercase transition-all"
+                                    data-sport="running">Running</button>
+                                <button type="button" onclick="toggleSport(this, 'cycling')"
+                                    class="sport-chip px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white text-xs font-bold uppercase transition-all"
+                                    data-sport="cycling">Ciclismo</button>
+                                <button type="button" onclick="toggleSport(this, 'walking')"
+                                    class="sport-chip px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white text-xs font-bold uppercase transition-all"
+                                    data-sport="walking">Caminata</button>
+                                <button type="button" onclick="toggleSport(this, 'swimming')"
+                                    class="sport-chip px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white text-xs font-bold uppercase transition-all"
+                                    data-sport="swimming">Natación</button>
+                                <button type="button" onclick="toggleSport(this, 'yoga')"
+                                    class="sport-chip px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white text-xs font-bold uppercase transition-all"
+                                    data-sport="yoga">Yoga</button>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Meta -->
+                        <div class="bg-white/5 p-1 rounded-xl flex mb-6">
+                            <button onclick="setGoalType('cumulative')" id="btnCumulative"
+                                class="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-white/10 text-neon-teal shadow">Acumular
+                                Total</button>
+                            <button onclick="setGoalType('frequency')" id="btnFrequency"
+                                class="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-white/50 hover:bg-white/5 transition-colors">Crear
+                                Hábito</button>
+                        </div>
+                        <input type="hidden" id="ccGoalType" value="cumulative">
+
+                        <!-- Inputs Meta -->
+                        <div class="p-4 bg-black/20 rounded-xl border border-white/5">
+                            <!-- Acumulativo -->
+                            <div id="goalCumulative" class="grid grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase text-white/50">Unidad</label>
+                                    <select id="ccUnit" class="input-field bg-navy-900">
+                                        <option value="km">Kilómetros</option>
+                                        <option value="meters">Metros</option>
+                                        <option value="calories">Calorías</option>
+                                        <option value="minutes">Minutos</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase text-white/50">Meta Total</label>
+                                    <input type="number" id="ccGoalValue" placeholder="00"
+                                        class="input-field font-mono text-xl font-bold text-right text-neon-teal">
+                                </div>
+                            </div>
+
+                            <!-- Frecuencia -->
+                            <div id="goalFrequency" class="hidden space-y-4">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase text-white/50">Días a
+                                        Completar</label>
+                                    <input type="number" id="ccDays" placeholder="Ej: 21"
+                                        class="input-field font-mono text-xl font-bold text-right text-neon-teal">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase text-white/50">Mínimo
+                                            Diario</label>
+                                        <input type="number" id="ccDailyMin" placeholder="10"
+                                            class="input-field font-mono text-lg text-white">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase text-white/50">Unidad</label>
+                                        <p id="ccDailyUnitDisplay" class="text-sm font-bold text-white/70 pt-3">Km</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Duración -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">3.
+                            Duración</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Fecha
+                                    Inicio</label>
+                                <input type="date" id="ccStart" class="input-field">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Fecha
+                                    Fin</label>
+                                <input type="date" id="ccEnd" class="input-field">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Columna Lateral: Resumen y Tipo -->
+                <div class="space-y-8">
+                    <!-- 4. Tipo y Privacidad -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">4.
+                            Tipo y Privacidad</label>
+
+                        <div class="space-y-3">
+                            <div id="typeGroup"
+                                class="p-3 rounded-xl border border-neon-teal bg-neon-teal/10 cursor-default flex items-center gap-3">
+                                <span class="material-symbols-outlined text-neon-teal">groups</span>
+                                <div>
+                                    <p class="text-sm font-bold text-neon-teal">Grupal / Marca</p>
+                                    <p class="text-[10px] text-white/60">Para tu comunidad</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="ccType" value="group">
+
+                        <!-- Opciones de Grupo -->
+                        <div id="groupOptions" class="mt-4 pt-4 border-t border-white/10">
+                            <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Visibilidad</label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="setPrivacy('public')" id="privPublic"
+                                    class="flex-1 py-1.5 rounded-lg border border-neon-teal text-neon-teal text-xs font-bold">Público</button>
+                                <button type="button" onclick="setPrivacy('private')" id="privPrivate"
+                                    class="flex-1 py-1.5 rounded-lg border border-transparent text-white/50 hover:bg-white/5 text-xs font-bold">Privado</button>
+                            </div>
+                            <input type="hidden" id="ccPrivacy" value="public">
+                        </div>
+                    </div>
+
+                    <!-- 5. Premio (Insignia & Recompensa) -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">5.
+                            Premios & Reconocimiento</label>
+
+                        <!-- Insignia Digital (Default) -->
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Insignia
+                                    Digital</label>
+                                <span
+                                    class="text-[10px] bg-neon-teal/20 text-neon-teal px-2 py-0.5 rounded border border-neon-teal/30">AUTOMÁTICO</span>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Icon Selector -->
+                                <div class="relative group cursor-pointer">
+                                    <div
+                                        class="h-16 w-16 rounded-full bg-gradient-to-br from-neon-teal to-blue-500 p-[2px]">
+                                        <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center text-2xl"
+                                            id="badgeIconDisplay">🏆</div>
+                                    </div>
+                                    <!-- Simple Emoji Selector -->
+                                    <select id="ccBadgeIcon"
+                                        onchange="document.getElementById('badgeIconDisplay').textContent = this.value"
+                                        class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <option value="🏆">🏆</option>
+                                        <option value="🥇">🥇</option>
+                                        <option value="🏃">🏃</option>
+                                        <option value="🧘">🧘</option>
+                                        <option value="💪">💪</option>
+                                        <option value="🔥">🔥</option>
+                                        <option value="🌟">🌟</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <input type="text" id="ccBadgeName" placeholder="Nombre de la Insignia"
+                                        class="input-field text-sm font-bold">
+                                    <p class="text-[10px] text-white/40">Se generará esta insignia para los ganadores.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="h-px bg-white/5 my-6"></div>
+
+                        <!-- Recompensa de Biblioteca -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="toggleLinkedReward(this)" id="btnToggleReward"
+                                    class="w-10 h-5 rounded-full bg-white/10 relative transition-colors">
+                                    <div
+                                        class="h-3 w-3 rounded-full bg-white absolute top-1 left-1 transition-transform">
+                                    </div>
+                                </button>
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/70 cursor-pointer"
+                                    onclick="toggleLinkedReward(document.getElementById('btnToggleReward'))">Vincular
+                                    Recompensa de la Biblioteca</label>
+                            </div>
+
+                            <div id="linkedRewardSection" class="hidden pl-2 border-l-2 border-white/5 mt-4">
+                                <p class="text-[10px] text-white/40 mb-3">Selecciona un beneficio de tu biblioteca para
+                                    otorgar a quien complete el reto.</p>
+
+                                <div id="linkedRewardContainer">
+                                    <!-- Empty State -->
+                                    <button onclick="openRewardSelectorModal()"
+                                        class="w-full p-4 rounded-xl border border-dashed border-white/20 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-white/50 hover:text-white">
+                                        <span class="material-symbols-outlined">add_circle</span>
+                                        Seleccionar de la Biblioteca
+                                    </button>
+                                </div>
+                                <input type="hidden" id="ccRewardId">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Creación -->
+                    <button onclick="createChallenge()" id="btnCreate"
+                        class="w-full py-4 rounded-xl btn-primary font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">rocket_launch</span>
+                        Lanzar Desafío
+                    </button>
+
+                    <p class="text-xs text-center text-white/30">
+                        Al lanzar el desafío, será visible inmediatamente en la app móvil.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invite Member Modal (Fixed) -->
+        <div id="inviteModal" class="modal-overlay hidden">
+            <div class="modal-content glass-card p-6 w-full max-w-md animate-pop-in relative">
+                <h3 class="text-xl font-bold mb-2">Invitar Miembro</h3>
+                <p class="text-xs text-white/50 mb-6">Envía una invitación para unirse a tu organización.</p>
+
+                <div class="space-y-4 mb-8">
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-wider text-white/50 mb-1 block">Correo
+                            Electrónico</label>
+                        <input type="email" id="inviteEmail" class="input-field" placeholder="ejemplo@empresa.com">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeInviteModal()" class="btn-secondary text-sm">Cancelar</button>
+                    <button onclick="sendInvitation()" class="btn-primary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        Enviar Invitación
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <!-- NEW BADGE MODAL ADVANCED -->
+        <div id="newBadgeModal" class="modal-overlay hidden">
+            <div
+                class="modal-content glass-card p-0 relative max-w-4xl w-full mx-4 overflow-hidden flex flex-col md:flex-row">
+                <button onclick="closeNewBadgeModal()"
+                    class="absolute top-4 right-4 z-50 text-white/40 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+
+                <!-- Columna Izquierda: Preview Visual -->
+                <div
+                    class="w-full md:w-1/3 bg-black/20 p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/10 relative">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-white/40 absolute top-8 left-8">Vista
+                        Previa</h3>
+
+                    <div id="previewBadgeContainer"
+                        class="h-40 w-40 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden ring-4 ring-white/5"
+                        style="background: linear-gradient(135deg, #00f5d4, #3b82f6);">
+
+                        <!-- Emoji Layer -->
+                        <span id="previewBadgeEmoji" class="text-6xl filter drop-shadow-lg select-none">🏆</span>
+
+                        <!-- Image Layer -->
+                        <img id="previewBadgeImage" src=""
+                            class="h-28 w-28 object-contain hidden filter drop-shadow-lg">
+                    </div>
+
+                    <div class="mt-8 text-center w-full">
+                        <p id="previewBadgeNameText" class="font-outfit font-black text-xl text-white truncate px-4">
+                            Nueva Insignia</p>
+                        <p class="text-xs text-white/50 font-medium mt-1">Nivel 1</p>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Configuración -->
+                <div class="w-full md:w-2/3 p-8 overflow-y-auto max-h-[80vh]">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-neon-teal">design_services</span>
+                        Diseñar Insignia
+                    </h3>
+
+                    <div class="space-y-8">
+
+                        <!-- 1. Identidad Visual -->
+                        <div class="space-y-4">
+                            <label
+                                class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">1.
+                                Iconografía</label>
+
+                            <!-- Tabs Tipo -->
+                            <div class="flex p-1 bg-white/5 rounded-xl border border-white/10 w-fit">
+                                <button onclick="setBadgeContentType('emoji')" id="btnTypeEmoji"
+                                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white/10 text-white shadow-sm">Emoji</button>
+                                <button onclick="setBadgeContentType('image')" id="btnTypeImage"
+                                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-white/50 hover:text-white">Subir
+                                    Imagen</button>
+                            </div>
+
+                            <!-- Input Emoji -->
+                            <div id="inputEmojiSection" class="animate-fade-in">
+                                <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Seleccionar
+                                    Emoji</label>
+                                <div
+                                    class="bg-black/20 rounded-xl p-4 border border-white/5 max-h-60 overflow-y-auto custom-scrollbar">
+
+                                    <!-- Categoría: Sports & Awards -->
+                                    <p
+                                        class="text-[10px] font-bold uppercase text-neon-teal mb-2 mt-1 sticky top-0 bg-navy-900/90 py-1 backdrop-blur z-10">
+                                        Sports & Awards</p>
+                                    <div class="grid grid-cols-8 gap-1 mb-4">
+                                        <!-- Sports -->
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚽</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏀</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏈</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚾</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎾</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏐</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏉</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥏</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎱</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏓</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏸</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏒</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏑</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏏</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⛳</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏹</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎣</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🤿</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥊</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥋</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⛸️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎿</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🛷</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥌</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎯</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎳</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">👟</button>
+
+                                        <!-- Awards -->
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏆</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥇</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥈</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥉</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏅</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎖️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">👑</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">💎</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚜️</button>
+                                    </div>
+
+                                    <!-- Categoría: Celebrations -->
+                                    <p
+                                        class="text-[10px] font-bold uppercase text-neon-teal mb-2 mt-4 sticky top-0 bg-navy-900/90 py-1 backdrop-blur z-10">
+                                        Celebrations</p>
+                                    <div class="grid grid-cols-8 gap-1 mb-4">
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎉</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎊</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">✨</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎇</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎆</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎈</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎁</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎀</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎟️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎫</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🥂</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🍻</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🍾</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🍷</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🍺</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">☕</button>
+                                    </div>
+
+                                    <!-- Categoría: Travel & Adventure -->
+                                    <p
+                                        class="text-[10px] font-bold uppercase text-neon-teal mb-2 mt-4 sticky top-0 bg-navy-900/90 py-1 backdrop-blur z-10">
+                                        Travel & Adventure</p>
+                                    <div class="grid grid-cols-8 gap-1 mb-4">
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🌍</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🗺️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🧭</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏔️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏕️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏖️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏜️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏝️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">✈️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🚀</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🚁</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⛵</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚓</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🧳</button>
+                                    </div>
+
+                                    <!-- Categoría: Objects & Symbols -->
+                                    <p
+                                        class="text-[10px] font-bold uppercase text-neon-teal mb-2 mt-4 sticky top-0 bg-navy-900/90 py-1 backdrop-blur z-10">
+                                        Objects & Symbols</p>
+                                    <div class="grid grid-cols-8 gap-1 mb-4">
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">👓</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🕶️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">👟</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">👠</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">💄</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">📢</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🔔</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎵</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎙️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎧</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎸</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🔋</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🎬</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">📸</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🏷️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">📍</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⌛</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⏰</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">💡</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🔒</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🔑</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚔️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🛡️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">⚖️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">🚩</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">♻️</button>
+                                        <button onclick="updatePreviewEmoji(this.innerText)"
+                                            class="aspect-square rounded flex items-center justify-center hover:bg-white/10 transition-colors text-xl">✅</button>
+                                    </div>
+                                </div>
+                                <div class="mt-2 relative">
+                                    <input type="text" placeholder="Buscar emojis..." class="input-field text-sm pl-9"
+                                        oninput="filterEmojis(this.value)">
+                                    <span
+                                        class="material-symbols-outlined absolute left-3 top-2.5 text-white/40 text-sm">search</span>
+                                </div>
+                            </div>
+
+                            <!-- Input Imagen -->
+                            <div id="inputImageSection" class="hidden animate-fade-in">
+                                <div
+                                    class="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-neon-teal/50 hover:bg-white/5 transition-all relative">
+                                    <input type="file" accept="image/png, image/svg+xml"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        onchange="handleSubtitleImage(this)">
+                                    <div class="flex flex-col items-center gap-2 pointer-events-none">
+                                        <div
+                                            class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-white/50">cloud_upload</span>
+                                        </div>
+                                        <p class="text-sm font-bold">Haz clic o arrastra tu imagen</p>
+                                        <p class="text-[10px] text-white/40 max-w-[200px] mx-auto">Recomendado:
+                                            512x512px. Formato PNG o SVG con fondo transparente para mejor resultado.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Fondo y Estilo -->
+                        <div class="space-y-4">
+                            <label
+                                class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">2.
+                                Estilo de Fondo</label>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Tipo de
+                                        Relleno</label>
+                                    <div class="flex gap-2">
+                                        <button onclick="setBadgeBgType('gradient')" id="btnBgGradient"
+                                            class="flex-1 py-2 rounded-lg border border-neon-teal text-neon-teal bg-neon-teal/10 text-xs font-bold transition-all">Gradiente</button>
+                                        <button onclick="setBadgeBgType('solid')" id="btnBgSolid"
+                                            class="flex-1 py-2 rounded-lg border border-white/10 bg-white/5 text-white/50 hover:text-white text-xs font-bold transition-all">Sólido</button>
+                                    </div>
+                                </div>
+
+                                <div id="bgGradientAngleBox">
+                                    <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Ángulo:
+                                        <span id="angleValue" class="text-white">135°</span></label>
+                                    <input type="range" min="0" max="360" value="135"
+                                        class="w-full accent-neon-teal h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                        oninput="updatePreviewBg(); document.getElementById('angleValue').innerText = this.value + '°'">
+                                </div>
+                            </div>
+
+                            <!-- Controls -->
+                            <div id="bgGradientControls" class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-white/50 mb-1 block">Color
+                                        Inicio</label>
+                                    <div class="h-10 rounded-lg overflow-hidden border border-white/20 relative">
+                                        <input type="color" id="gradColor1" value="#00f5d4"
+                                            class="absolute -top-2 -left-2 w-[150%] h-[150%] cursor-pointer p-0 m-0 border-0"
+                                            oninput="updatePreviewBg()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-white/50 mb-1 block">Color
+                                        Fin</label>
+                                    <div class="h-10 rounded-lg overflow-hidden border border-white/20 relative">
+                                        <input type="color" id="gradColor2" value="#3b82f6"
+                                            class="absolute -top-2 -left-2 w-[150%] h-[150%] cursor-pointer p-0 m-0 border-0"
+                                            oninput="updatePreviewBg()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="bgSolidControls" class="hidden">
+                                <label class="text-[10px] font-bold uppercase text-white/50 mb-1 block">Color de
+                                    Fondo</label>
+                                <div class="h-10 rounded-lg overflow-hidden border border-white/20 relative">
+                                    <input type="color" id="solidColor" value="#00f5d4"
+                                        class="absolute -top-2 -left-2 w-[150%] h-[150%] cursor-pointer p-0 m-0 border-0"
+                                        oninput="updatePreviewBg()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Información -->
+                        <div class="space-y-4">
+                            <label
+                                class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">3.
+                                Información</label>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Nombre</label>
+                                <input type="text" id="newBadgeName" placeholder="Ej: Leyenda del Gym"
+                                    class="input-field"
+                                    oninput="document.getElementById('previewBadgeNameText').innerText = this.value || 'Nueva Insignia'">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Descripción
+                                    Corta</label>
+                                <textarea id="newBadgeDesc" rows="2" placeholder="Otorgada por..."
+                                    class="input-field resize-none text-sm"></textarea>
+                            </div>
+                        </div>
+
+                        <button onclick="saveNewBadge()"
+                            class="btn-primary w-full py-4 text-sm font-bold flex items-center justify-center gap-2 shadow-glow hover:scale-[1.01] transition-transform">
+                            <span class="material-symbols-outlined">save</span>
+                            Guardar Insignia
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- CREATE REWARD MODAL -->
+        <div id="createRewardModal" class="modal-overlay hidden">
+            <div
+                class="modal-content glass-card p-0 relative max-w-3xl w-full mx-4 overflow-hidden flex flex-col h-[90vh]">
+                <button onclick="closeCreateRewardModal()"
+                    class="absolute top-4 right-4 z-50 text-white/40 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+
+                <div class="p-8 border-b border-white/10 bg-navy-900/50">
+                    <h3 class="text-2xl font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-neon-teal">add_card</span>
+                        Nueva Ficha de Recompensa
+                    </h3>
+                </div>
+
+                <div class="p-8 overflow-y-auto flex-1 space-y-8">
+
+                    <!-- 1. Información General -->
+                    <div class="space-y-4">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">1.
+                            Detalles del Premio</label>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="text-xs font-bold uppercase text-white/50">Nombre del Premio</label>
+                                <input id="rewardNameInput" type="text" placeholder="Ej: Gift Card $50 USD"
+                                    class="input-field font-bold text-lg">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase text-white/50">Icono / Emoji</label>
+                                <div class="relative group">
+                                    <input id="rewardIconInput" type="text" value="🎁" readonly
+                                        onclick="toggleRewardEmojiPicker()"
+                                        class="input-field text-center text-2xl cursor-pointer hover:bg-white/5 transition-colors focus:ring-2 focus:ring-neon-teal border-dashed border-white/20">
+
+                                    <div id="rewardEmojiPicker"
+                                        class="hidden absolute top-full right-0 mt-2 w-[320px] bg-navy-900/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-50 max-h-[300px] overflow-y-auto p-4 animate-fade-in custom-scrollbar">
+                                        <div
+                                            class="flex justify-between items-center mb-2 sticky top-0 bg-navy-900/95 z-10 py-2 border-b border-white/10">
+                                            <span class="text-[10px] font-bold uppercase text-white/50">Selecciona un
+                                                icono</span>
+                                            <button onclick="toggleRewardEmojiPicker()"
+                                                class="text-white/40 hover:text-white p-1 rounded hover:bg-white/10"><span
+                                                    class="material-symbols-outlined text-sm">close</span></button>
+                                        </div>
+                                        <div id="rewardEmojiContainer"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-span-full space-y-2">
+                                <label class="text-xs font-bold uppercase text-white/50">Descripción Atractiva</label>
+                                <textarea id="rewardDescInput" rows="2" placeholder="Describe qué gana el usuario..."
+                                    class="input-field resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Gestión de Stock -->
+                    <div class="space-y-4">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">2.
+                            Inventario y Códigos</label>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <button onclick="setStockType('unlimited')" id="btnStockUnlimited"
+                                class="p-4 rounded-xl border border-neon-teal bg-neon-teal/10 flex flex-col items-center gap-2 transition-all">
+                                <span class="material-symbols-outlined text-neon-teal">all_inclusive</span>
+                                <span class="text-xs font-bold">Ilimitado / Genérico</span>
+                            </button>
+                            <button onclick="setStockType('limited')" id="btnStockLimited"
+                                class="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center gap-2 transition-all opacity-60 hover:opacity-100">
+                                <span class="material-symbols-outlined">inventory_2</span>
+                                <span class="text-xs font-bold">Limitado / Códigos Únicos</span>
+                            </button>
+                        </div>
+
+                        <!-- Config: Ilimitado -->
+                        <div id="stockUnlimitedConfig"
+                            class="space-y-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase text-white/50">Código Genérico</label>
+                                <input id="rewardCodeInput" type="text" placeholder="Ej: WINNER2026"
+                                    class="input-field font-mono text-neon-teal font-bold">
+                                <p class="text-[10px] text-white/40">Este mismo código se mostrará a todos los
+                                    ganadores.</p>
+                            </div>
+
+                            <!-- Alerta de Stock (Simulado para ilimitado) -->
+                            <div class="flex items-center gap-2 mt-2">
+                                <input type="checkbox" id="stockAlert"
+                                    class="rounded bg-white/10 border-white/20 text-neon-teal focus:ring-neon-teal">
+                                <label for="stockAlert" class="text-xs text-white/70">Alertarme si los canjes
+                                    superan:</label>
+                                <input type="number" placeholder="500"
+                                    class="w-16 bg-black/20 border border-white/10 rounded px-2 py-1 text-xs">
+                            </div>
+                        </div>
+
+                        <!-- Config: Limitado -->
+                        <div id="stockLimitedConfig"
+                            class="hidden space-y-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                            <div
+                                class="flex justify-between items-center bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-amber-400">upload_file</span>
+                                    <div>
+                                        <p class="text-sm font-bold text-amber-200">Importar CSV</p>
+                                        <p class="text-[10px] text-white/50">Sube tu lista de códigos únicos</p>
+                                    </div>
+                                </div>
+                                <button class="btn-secondary text-xs">Seleccionar Archivo</button>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase text-white/50">Límite Total de Premios</label>
+                                <input type="number" placeholder="0" class="input-field font-mono font-bold" disabled
+                                    value="0">
+                                <p class="text-[10px] text-white/40">Se actualizará automáticamente al subir el CSV.
+                                    Este número se incluirá en los Términos.</p>
+                            </div>
+
+                            <!-- New Distribution Mode Selector -->
+                            <div class="pt-2 border-t border-white/5">
+                                <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Modo de
+                                    Entrega</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <label
+                                        class="flex items-start gap-3 p-3 rounded-lg border border-white/10 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors">
+                                        <input type="radio" name="distributionMode" value="pool" checked
+                                            class="mt-1 accent-neon-teal">
+                                        <div>
+                                            <span class="block text-xs font-bold text-white">Bolsa General (Mix)</span>
+                                            <span class="block text-[10px] text-white/50 mt-1">Cualquier código
+                                                disponible se asigna al ganador. Ideal para "Todos ganan".</span>
+                                        </div>
+                                    </label>
+                                    <label
+                                        class="flex items-start gap-3 p-3 rounded-lg border border-white/10 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors">
+                                        <input type="radio" name="distributionMode" value="sequential"
+                                            class="mt-1 accent-neon-teal">
+                                        <div>
+                                            <span class="block text-xs font-bold text-white">Ranking Secuencial</span>
+                                            <span class="block text-[10px] text-white/50 mt-1">Fila 1 = 1er Lugar, Fila
+                                                2 = 2do Lugar, etc. Estricto orden del CSV.</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Términos Legales -->
+                    <div class="space-y-4">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">3.
+                            Términos y Condiciones</label>
+                        <textarea rows="4" class="input-field text-xs text-white/70 resize-none"
+                            placeholder="Escribe aquí las restricciones, vigencia, sucursales válidas, etc."></textarea>
+                        <p class="text-[10px] text-white/30 text-right">Estos términos aparecerán obligatoriamente al
+                            usuario antes de aceptar el reto.</p>
+                    </div>
+
+                </div>
+
+                <div class="p-6 border-t border-white/10 bg-navy-900/50 flex justify-end gap-3">
+                    <button onclick="closeCreateRewardModal()" class="btn-secondary text-sm">Cancelar</button>
+                    <button onclick="saveReward()" class="btn-primary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined">save</span>
+                        Guardar en Biblioteca
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="redemptionModal" class="modal-overlay hidden">
+            <div class="modal-content glass-card p-0 relative max-w-2xl w-full mx-4 overflow-hidden flex flex-col">
+                <button onclick="closeRedemptionModal()"
+                    class="absolute top-4 right-4 z-50 text-white/40 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+
+                <!-- Header -->
+                <div class="p-8 border-b border-white/10 bg-navy-900/50">
+                    <div class="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-purple-400 text-2xl">redeem</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Configuración de Canjes</h3>
+                    <p class="text-white/60 text-sm mt-1">Define cómo se validarán las recompensas en tus puntos de
+                        venta.</p>
+                </div>
+
+                <!-- Body -->
+                <div class="p-8 overflow-y-auto max-h-[60vh] space-y-8">
+
+                    <!-- Step 1: Integration Method -->
+                    <div class="space-y-4">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">
+                            Método de Validación</label>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Option 1: Manual -->
+                            <div onclick="selectRedemptionType('manual')" id="cardTypeManual"
+                                class="p-4 rounded-xl border border-neon-teal bg-neon-teal/10 cursor-pointer hover:bg-neon-teal/20 transition-all group">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="material-symbols-outlined text-neon-teal">qr_code_scanner</span>
+                                    <div
+                                        class="h-4 w-4 rounded-full border border-neon-teal flex items-center justify-center">
+                                        <div class="h-2 w-2 rounded-full bg-neon-teal"></div>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-sm text-white">Escaneo Manual</h4>
+                                <p class="text-[10px] text-white/50 mt-1">Usa la App "Wellnessfy Business" para
+                                    escanear el QR del cliente.</p>
+                            </div>
+
+                            <!-- Option 2: Promo Codes -->
+                            <div onclick="selectRedemptionType('codes')" id="cardTypeCodes"
+                                class="p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-all group">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span
+                                        class="material-symbols-outlined text-white/50 group-hover:text-white">confirmation_number</span>
+                                    <div
+                                        class="h-4 w-4 rounded-full border border-white/20 flex items-center justify-center">
+                                        <div class="h-2 w-2 rounded-full bg-transparent"></div>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-sm text-white/70 group-hover:text-white">Códigos Promocionales
+                                </h4>
+                                <p class="text-[10px] text-white/40 mt-1">Genera códigos (Ej: RUN20) que funcionen en tu
+                                    POS actual.</p>
+                            </div>
+
+                            <!-- Option 3: API Integration -->
+                            <div onclick="selectRedemptionType('api')" id="cardTypeApi"
+                                class="p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-all group col-span-full">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span
+                                        class="material-symbols-outlined text-white/50 group-hover:text-white">webhook</span>
+                                    <div
+                                        class="h-4 w-4 rounded-full border border-white/20 flex items-center justify-center">
+                                        <div class="h-2 w-2 rounded-full bg-transparent"></div>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-sm text-white/70 group-hover:text-white">API / Webhook
+                                    (Enterprise)</h4>
+                                <p class="text-[10px] text-white/40 mt-1">Conecta Wellnessfy directamente con tu ERP,
+                                    Salesforce o Shopify para validación en tiempo real.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Area (Dynamic) -->
+                    <div id="configArea" class="p-6 rounded-xl bg-black/20 border border-white/5 space-y-4">
+
+                        <!-- Manual Config -->
+                        <div id="configManual">
+                            <h4 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-neon-teal text-sm">check_circle</span>
+                                Listo para usar
+                            </h4>
+                            <p class="text-xs text-white/50">No requiere configuración técnica. Solo descarga la App
+                                Business en los teléfonos de tu staff.</p>
+                            <div class="mt-4 flex gap-2">
+                                <button class="btn-secondary text-xs py-1.5">Descargar iOS</button>
+                                <button class="btn-secondary text-xs py-1.5">Descargar Android</button>
+                            </div>
+                        </div>
+
+                        <!-- Codes Config -->
+                        <div id="configCodes" class="hidden space-y-4">
+                            <h4 class="font-bold text-sm text-white mb-2">Configuración de Códigos</h4>
+
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase text-white/50">Tipo de Código</label>
+                                <select class="input-field text-sm">
+                                    <option>Código Único (Estático)</option>
+                                    <option>Lista de Códigos (Un solo uso)</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase text-white/50">Código a Mostrar</label>
+                                <input type="text" placeholder="Ej: VERANO2026"
+                                    class="input-field font-mono text-neon-teal font-bold">
+                                <p class="text-[10px] text-white/30">Este código aparecerá en la pantalla del usuario
+                                    tras ganar.</p>
+                            </div>
+                        </div>
+
+                        <!-- API Config -->
+                        <div id="configApi" class="hidden space-y-4">
+                            <h4 class="font-bold text-sm text-white mb-2">Configuración Webhook</h4>
+
+                            <div class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg flex gap-3 mb-4">
+                                <span class="material-symbols-outlined text-amber-400 text-sm">warning</span>
+                                <p class="text-[10px] text-amber-200">Requiere un equipo de desarrollo para implementar.
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase text-white/50">Endpoint URL</label>
+                                <input type="text" placeholder="https://api.tutienda.com/webhooks/wellnessfy"
+                                    class="input-field font-mono text-xs">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase text-white/50">API Key Secreta</label>
+                                <div class="flex gap-2">
+                                    <input type="password" value="sk_live_..." class="input-field font-mono text-xs"
+                                        disabled>
+                                    <button class="btn-secondary px-3"><span
+                                            class="material-symbols-outlined text-sm">visibility</span></button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 border-t border-white/10 bg-navy-900/50 flex justify-end gap-3">
+                    <button onclick="closeRedemptionModal()" class="btn-secondary text-sm">Cancelar</button>
+                    <button onclick="saveRedemptionConfig()" class="btn-primary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined">save</span>
+                        Guardar Configuración
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- SELECCIONAR RECOMPENSA MODAL -->
+        <div id="selectRewardModal"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+            <div
+                class="bg-navy-900 border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-fade-in relative">
+                <div
+                    class="p-6 border-b border-white/10 flex justify-between items-center bg-navy-900 sticky top-0 z-10 rounded-t-xl">
+                    <h3 class="font-bold text-lg text-white font-outfit">Seleccionar Recompensa</h3>
+                    <button onclick="closeRewardSelectorModal()"
+                        class="text-white/40 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4 custom-scrollbar"
+                    id="rewardSelectorGrid">
+                    <!-- Content populated by JS -->
+                </div>
+                <div class="p-4 border-t border-white/10 bg-navy-900/50 flex justify-between items-center rounded-b-xl">
+                    <p class="text-[10px] text-white/40">Selecciona una para vincular</p>
+                    <button onclick="closeRewardSelectorModal(); openCreateRewardModal()"
+                        class="text-xs font-bold text-neon-teal hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> Crear Nueva
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="dashboard.js"></script>
+</body>
+
+</html>

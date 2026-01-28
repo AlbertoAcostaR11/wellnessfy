@@ -1,0 +1,7 @@
+{
+    "type": "module",
+    "dependencies": {
+        "@fontsource/inter": "^5.2.8",
+        "@material-symbols/font-400": "^0.40.2"
+    }
+}

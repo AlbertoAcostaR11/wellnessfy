@@ -10,8 +10,15 @@ import { initGoogleIdentity, autoSyncIfReady } from './utils/googleHealth.js';
 import './utils/weeklyCharts.js'; // Auto-renderiza gráficas semanales
 import './utils/exploreMap.js'; // Google Maps para Explorar
 import * as activityAggregator from './utils/activityAggregator.js'; // Agregador de deportes
-import { initializeHealthProvider, healthProviderManager } from './utils/healthSync.js'; // Multi-platform health sync
+import { initializeHealthProvider, healthProviderManager } from './utils/healthSync_v2.js'; // Multi-platform health sync
 import './utils/friendRequestHandler.js'; // Friend request with deduplication
+import './utils/friendshipManager.js'; // Friendship and circles management
+import './components/CircleSelectorModal.js'; // Circle selector modal
+import './utils/friendManagement.js'; // Friend list management
+import { generateHistoricalData } from './utils/dummyHistoryGenerator.js'; // Historical data demo
+import './utils/debugLastWeek.js'; // Auditoría de Semana Pasada
+import './utils/runHistoryBackfill.js'; // Herramienta de reconstrucción de historial
+
 
 // Exponer agregador globalmente para sportsData.js
 window.activityAggregatorModule = activityAggregator;
@@ -22,20 +29,8 @@ import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/fi
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, orderBy, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyC9K_nqcTRPGtTpUfWDvkFhnAESaJ3I7Vs",
-    authDomain: "wellnessfy-cbc1b.firebaseapp.com",
-    projectId: "wellnessfy-cbc1b",
-    storageBucket: "wellnessfy-cbc1b.firebasestorage.app",
-    messagingSenderId: "232789372708",
-    appId: "1:232789372708:web:e7d5fcffa0ba39cf6e0db1",
-    measurementId: "G-0V7MV5E1CF"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const messaging = getMessaging(app);
+// Firebase Inits moved to config/firebaseInit.js to avoid circular deps
+import { app, auth, db, messaging } from './config/firebaseInit.js';
 
 // --- INFRAESTRUCTURA DE NOTIFICACIONES NATIVAS ---
 
@@ -116,6 +111,11 @@ console.log('Initializing Wellnessfy App (v1.1.0 - 18:38)...');
 // loadUserData(); // Deshabilitamos carga local pura para dar prioridad a la nube, aunque podríamos mantenerla como caché
 
 // Real-time Cloud Sync
+// Generate dummy history disabled by user request
+// if (!AppState.activities || AppState.activities.length < 50) {
+//    if (typeof generateHistoricalData === 'function') generateHistoricalData();
+// }
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log('User detected, syncing with cloud...', user.uid);
@@ -153,6 +153,39 @@ onAuthStateChanged(auth, async (user) => {
                 await setDoc(userDocRef, newUserProfile);
                 AppState.currentUser = newUserProfile;
                 console.log('✅ Unique username generated:', newUserProfile.username);
+            }
+
+            // 2.0 Cargar Resúmenes Diarios (PRIORIDAD ALTA: Historial Rápido)
+            try {
+                console.log('🔍 [BOOT] Iniciando carga de historial desde Firestore (PRIORITY)...');
+                const { getSummariesRange } = await import('./utils/dailySummaryManager.js');
+                const { getLocalISOString } = await import('./utils/dateHelper.js');
+
+                const endDay = new Date();
+                const startDay = new Date();
+                startDay.setDate(startDay.getDate() - 28); // 28 días = 4 semanas
+
+                const summaries = await getSummariesRange(user.uid, getLocalISOString(startDay), getLocalISOString(endDay));
+
+                console.log(`🔍 [BOOT] Resúmenes encontrados en DB: ${summaries.length}`);
+
+                if (summaries.length > 0) {
+                    console.log('🔍 [BOOT] Muestra primer resumen:', summaries[0]);
+                    AppState.dailyTotals = summaries.map(s => ({
+                        date: s.date,
+                        steps: s.totals?.steps || 0,
+                        calories: s.totals?.calories || 0,
+                        distance: s.totals?.distance || 0,
+                        activeMinutes: s.totals?.activeMinutes || 0,
+                        sleep: s.sleep,
+                        activities: s.activities || []
+                    }));
+                    console.log(`📑 [BOOT] Historial cargado en AppState exitosamente.`);
+                } else {
+                    console.warn('⚠️ [BOOT] La DB no devolvió ningún resumen.');
+                }
+            } catch (summaryError) {
+                console.warn('⚠️ [BOOT] Error cargando daily summaries:', summaryError);
             }
 
             // 2. Sync GLOBAL Data (Feed & Challenges)
@@ -309,7 +342,7 @@ async function syncAppGlobalData() {
             // Fetch circles where user is a member
             const memberCirclesQuery = query(
                 collection(db, "circles"),
-                where("membersList", "array-contains", currentUserId)
+                where("members", "array-contains", currentUserId)
             );
             const memberCirclesSnap = await getDocs(memberCirclesQuery);
 
@@ -340,6 +373,26 @@ async function syncAppGlobalData() {
                 AppState.circles = [];
                 localStorage.setItem('my_circles', JSON.stringify([]));
                 console.log('No circles found for this user.');
+            }
+
+            // D. Fetch Friendships (where user is involved)
+            const friendshipsQuery = query(
+                collection(db, "friendships"),
+                where("users", "array-contains", currentUserId)
+            );
+            const friendshipsSnap = await getDocs(friendshipsQuery);
+            const cloudFriendships = [];
+
+            friendshipsSnap.forEach((doc) => {
+                cloudFriendships.push({ id: doc.id, ...doc.data() });
+            });
+
+            if (cloudFriendships.length > 0) {
+                AppState.friendships = cloudFriendships;
+                console.log(`☁️ Synced ${cloudFriendships.length} friendships from cloud.`);
+            } else {
+                AppState.friendships = [];
+                console.log('No friendships found for this user.');
             }
         }
 
@@ -405,7 +458,7 @@ function listenToCloudNotifications(userId) {
 // Initialize Application - LIMPIEZA FASE 2
 window.onload = async () => {
     try {
-        console.log('🚀 Iniciando Wellnessfy (Modo Transición - Conversor Universal)...');
+        console.log('🚀 Iniciando Wellnessfy (v1.2.1 - Despliegue 27 Enero 19:50 - FORZADO v2)');
 
         // 0. Registrar Service Worker para Notificaciones Nativas
         if ('serviceWorker' in navigator) {

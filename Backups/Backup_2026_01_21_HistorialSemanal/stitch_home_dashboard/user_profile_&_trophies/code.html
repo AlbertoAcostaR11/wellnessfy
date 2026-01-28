@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Glass Profile - Wellnessfy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00F2FE",
+                        "neon-teal": "#14E2C7",
+                        "background-dark": "#050B0B",
+                        "glass-dark": "rgba(15, 25, 25, 0.7)",
+                        "deep-teal": "#00353F"
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --neon-glow: 0 0 15px rgba(20, 226, 199, 0.5);
+            --badge-glow: 0 0 20px rgba(0, 242, 254, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            @apply bg-glass-dark backdrop-blur-xl border border-white/10;
+        }
+        .neon-border {
+            border: 1px solid rgba(20, 226, 199, 0.3);
+            box-shadow: inset 0 0 10px rgba(20, 226, 199, 0.1);
+        }
+        .header-overlay {
+            background: linear-gradient(180deg, rgba(0, 53, 63, 0.8) 0%, rgba(5, 11, 11, 1) 100%);
+        }
+        .badge-glow-effect {
+            box-shadow: 0 0 25px rgba(20, 226, 199, 0.2);
+        }
+        .active-tab-glow {
+            text-shadow: 0 0 8px rgba(20, 226, 199, 0.6);
+        }
+        body {
+            background-color: #050B0B;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white selection:bg-neon-teal/30">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-dark shadow-[0_0_100px_rgba(0,0,0,1)] overflow-x-hidden border-x border-white/5">
+<div class="flex items-center bg-transparent p-4 pb-2 justify-between sticky top-0 z-50 backdrop-blur-md">
+<div class="text-white flex size-10 shrink-0 items-center justify-center cursor-pointer rounded-full bg-white/5 border border-white/10">
+<span class="material-symbols-outlined">chevron_left</span>
+</div>
+<h2 class="text-white text-base font-bold leading-tight tracking-wide flex-1 text-center">Profile</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/5 border border-white/10 text-white">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+</div>
+<div class="relative w-full overflow-hidden">
+<div class="absolute inset-0 h-[280px] bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpc-mLVSVruK_jjHYGwQIe48nDaLN6Z9vNLOcJr5cpyAu8eQJlazvxZH0Llxv8Epi9vdOCuHjrpvk_JYZZn066F0F1vJXEUo-iKBpewdgPem4t1RVjiLIxGC4IiHPQaUZCd8LouFUOmHZLlOuOWAtALp9j3fC4tMUXoTQFXREC8ET-dCa6J9YTQUJlLiqnJfPBQ6PME83KgVy7Mmoc8bOPVDZSDkoHcgEWitFBa_Wi54IjVSEffUoU177pLNO7AQcdZjk0E9a7z08");'>
+<div class="absolute inset-0 header-overlay"></div>
+</div>
+<div class="relative flex w-full flex-col items-center pt-8 px-4 pb-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-neon-teal/40 shadow-[0_0_20px_rgba(20,226,199,0.2)] p-1 overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpc-mLVSVruK_jjHYGwQIe48nDaLN6Z9vNLOcJr5cpyAu8eQJlazvxZH0Llxv8Epi9vdOCuHjrpvk_JYZZn066F0F1vJXEUo-iKBpewdgPem4t1RVjiLIxGC4IiHPQaUZCd8LouFUOmHZLlOuOWAtALp9j3fC4tMUXoTQFXREC8ET-dCa6J9YTQUJlLiqnJfPBQ6PME83KgVy7Mmoc8bOPVDZSDkoHcgEWitFBa_Wi54IjVSEffUoU177pLNO7AQcdZjk0E9a7z08");'>
+</div>
+<div class="absolute bottom-1 right-1 bg-neon-teal text-background-dark text-[10px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(20,226,199,0.5)]">
+                        LVL 24
+                    </div>
+</div>
+<div class="flex flex-col items-center mt-4">
+<p class="text-white text-2xl font-bold tracking-tight">Alex Rivera</p>
+<p class="text-neon-teal font-medium text-sm">@alex_wellness</p>
+<p class="text-white/60 text-sm font-light text-center mt-3 px-8 leading-relaxed">Chasing mindfulness and 10k steps daily 🧘‍♂️</p>
+</div>
+<div class="flex gap-3 w-full max-w-[320px] mt-6">
+<button class="flex-1 flex cursor-pointer items-center justify-center rounded-xl h-11 bg-neon-teal text-background-dark text-sm font-bold shadow-[0_0_15px_rgba(20,226,199,0.4)] active:scale-95 transition-all">
+                        Edit Profile
+                    </button>
+<button class="flex-1 flex cursor-pointer items-center justify-center rounded-xl h-11 bg-white/10 text-white text-sm font-bold border border-white/10 active:scale-95 transition-all">
+                        Share
+                    </button>
+</div>
+</div>
+</div>
+<div class="flex gap-3 px-4 py-6">
+<div class="flex flex-1 flex-col gap-1 rounded-2xl glass-panel p-4 items-center text-center">
+<p class="text-white text-xl font-bold">1.2k</p>
+<p class="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em]">Followers</p>
+</div>
+<div class="flex flex-1 flex-col gap-1 rounded-2xl glass-panel p-4 items-center text-center">
+<p class="text-white text-xl font-bold">850</p>
+<p class="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em]">Following</p>
+</div>
+<div class="flex flex-1 flex-col gap-1 rounded-2xl glass-panel p-4 items-center text-center">
+<p class="text-white text-xl font-bold">42</p>
+<p class="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em]">Workouts</p>
+</div>
+</div>
+<div class="px-4 py-2">
+<div class="flex items-center justify-between gap-4 rounded-2xl glass-panel p-4 neon-border">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-neon-teal">lock</span>
+<p class="text-white text-sm font-semibold">Private Profile</p>
+</div>
+<p class="text-white/40 text-[11px]">Followers only view activity</p>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full bg-white/10 p-1 has-[:checked]:bg-neon-teal/30 transition-all">
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm peer-checked:translate-x-[20px] transition-transform duration-200"></div>
+</label>
+</div>
+</div>
+<div class="mt-6">
+<div class="flex border-b border-white/5 px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-2 border-neon-teal text-neon-teal pb-3 pt-4 flex-1 active-tab-glow" href="#">
+<p class="text-xs font-bold uppercase tracking-widest">Trophies</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-white/40 pb-3 pt-4 flex-1" href="#">
+<p class="text-xs font-bold uppercase tracking-widest">Posts</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-white/40 pb-3 pt-4 flex-1" href="#">
+<p class="text-xs font-bold uppercase tracking-widest">Activity</p>
+</a>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 p-4 pb-28">
+<div class="flex flex-col items-center p-6 rounded-2xl glass-panel border-white/5 relative overflow-hidden group">
+<div class="absolute -top-12 -right-12 w-24 h-24 bg-yellow-400/10 blur-3xl group-hover:bg-yellow-400/20 transition-all"></div>
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.4)] mb-3 z-10">
+<span class="material-symbols-outlined text-white text-3xl">footprint</span>
+</div>
+<p class="text-white font-bold text-xs text-center z-10">10k Steps Club</p>
+<div class="mt-2 px-2 py-0.5 rounded-full bg-yellow-400/10 border border-yellow-400/20">
+<p class="text-yellow-400 text-[9px] font-black uppercase tracking-tighter">Earned</p>
+</div>
+</div>
+<div class="flex flex-col items-center p-6 rounded-3xl glass-panel border-neon-teal/20 relative overflow-hidden group badge-glow-effect">
+<div class="absolute inset-0 bg-neon-teal/5 opacity-40"></div>
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-neon-teal to-primary flex items-center justify-center shadow-[0_0_25px_rgba(20,226,199,0.5)] mb-3 z-10">
+<span class="material-symbols-outlined text-background-dark text-3xl font-bold">self_improvement</span>
+</div>
+<p class="text-white font-bold text-xs text-center z-10">Zen Master</p>
+<div class="mt-2 px-2 py-0.5 rounded-full bg-neon-teal text-background-dark">
+<p class="text-[9px] font-black uppercase tracking-tighter">Gold</p>
+</div>
+</div>
+<div class="flex flex-col items-center p-6 rounded-2xl glass-panel border-white/5 relative overflow-hidden group">
+<div class="absolute -bottom-10 -left-10 w-24 h-24 bg-purple-500/10 blur-3xl"></div>
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] mb-3 z-10">
+<span class="material-symbols-outlined text-white text-3xl">bolt</span>
+</div>
+<p class="text-white font-bold text-xs text-center z-10">HIIT King</p>
+<div class="mt-2 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+<p class="text-purple-400 text-[9px] font-black uppercase tracking-tighter">Earned</p>
+</div>
+</div>
+<div class="flex flex-col items-center p-6 rounded-2xl glass-panel border-white/5 opacity-50 relative">
+<div class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-white/30 text-3xl">military_tech</span>
+</div>
+<p class="text-white/40 font-bold text-xs text-center">Marathoner</p>
+<p class="text-white/20 text-[9px] font-black mt-2 uppercase tracking-tighter">Locked</p>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-[14px] text-white/20">lock</span>
+</div>
+</div>
+<div class="flex flex-col items-center p-6 rounded-2xl glass-panel border-white/5 relative overflow-hidden group">
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.4)] mb-3 z-10">
+<span class="material-symbols-outlined text-white text-3xl">local_fire_department</span>
+</div>
+<p class="text-white font-bold text-xs text-center z-10">30 Day Streak</p>
+<div class="mt-2 px-2 py-0.5 rounded-full bg-pink-500/10 border border-pink-500/20">
+<p class="text-pink-400 text-[9px] font-black uppercase tracking-tighter">Earned</p>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02]">
+<div class="w-12 h-12 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-white/20">add</span>
+</div>
+<p class="text-white/20 font-medium text-[10px] text-center uppercase tracking-widest">Next Goal</p>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-background-dark/80 backdrop-blur-2xl border-t border-white/5 flex justify-around py-4 px-6 z-50 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<span class="material-symbols-outlined text-white/40 cursor-pointer hover:text-white transition-colors">home</span>
+<span class="material-symbols-outlined text-white/40 cursor-pointer hover:text-white transition-colors">explore</span>
+<div class="bg-neon-teal h-14 w-14 rounded-full flex items-center justify-center -mt-12 shadow-[0_8px_20px_rgba(20,226,199,0.4)] text-background-dark cursor-pointer border-4 border-background-dark active:scale-90 transition-all">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</div>
+<span class="material-symbols-outlined text-white/40 cursor-pointer hover:text-white transition-colors">monitoring</span>
+<span class="material-symbols-outlined text-neon-teal cursor-pointer font-bold active-tab-glow">person</span>
+</div>
+</div>
+
+</body></html>

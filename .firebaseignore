@@ -1,0 +1,14 @@
+# Ignorar archivos viejos que ya no deberían existir
+src/utils/healthSync.js
+
+# Ignorar backups
+Backups/**
+_BACKUPS/**
+backup_*/**
+
+# Ignorar archivos de desarrollo
+*.cjs
+*.txt
+*.zip
+node_modules/**
+.git/**

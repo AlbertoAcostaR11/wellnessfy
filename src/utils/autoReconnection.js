@@ -154,7 +154,7 @@ window.reconnectProvider = async function (providerName) {
             window.showToast(`Reconectando con ${providerName}...`, 'info');
         }
 
-        const { connectHealthProvider } = await import('./healthSync.js');
+        const { connectHealthProvider } = await import('./healthSync_v2.js');
         await connectHealthProvider(providerName, true);
 
         if (window.showToast) {

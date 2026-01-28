@@ -115,7 +115,7 @@
 
                     <button
                         class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group nav-btn-desktop"
-                        onclick="showProfile()">
+                        data-page="profile" onclick="navigateTo('profile')">
                         <div class="size-7 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]">
                             <div class="bg-navy-900 rounded-full size-full flex items-center justify-center">
                                 <div class="bg-center bg-no-repeat bg-cover rounded-full size-full" id="sidebarAvatar">
@@ -195,7 +195,6 @@
                 <span class="material-symbols-outlined text-2xl">groups</span>
                 <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Círculos</span>
             </button>
-
             <button class="nav-btn" data-page="profile" onclick="navigateTo('profile')">
                 <span class="material-symbols-outlined text-2xl">person</span>
                 <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Perfil</span>

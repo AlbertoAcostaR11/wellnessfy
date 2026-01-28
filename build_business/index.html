@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Wellnessfy Business - Acceso Empresarial</title>
+    <link rel="icon" href="logo-icon.png" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Outfit:wght@700;900&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .split-bg {
+            background: radial-gradient(circle at 0% 0%, rgba(112, 0, 255, 0.15), transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(0, 245, 212, 0.1), transparent 40%);
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-navy-900 text-white font-inter h-screen overflow-hidden flex">
+
+    <!-- Left Side: Login Form -->
+    <div
+        class="w-full lg:w-[480px] xl:w-[560px] flex flex-col p-8 lg:p-12 relative z-10 bg-[#020617]/95 backdrop-blur-xl border-r border-white/5 h-full overflow-y-auto custom-scrollbar">
+
+        <!-- Logo -->
+        <div class="mb-16">
+            <div class="flex items-center gap-3 mb-2">
+                <img src="logo-icon.png" alt="Wellnessfy" class="h-8 w-8 object-contain">
+                <span class="font-outfit font-bold text-xl tracking-tight">Wellnessfy Business</span>
+            </div>
+            <p class="text-xs font-bold text-neon-teal uppercase tracking-widest pl-11">Plataforma de Gestión</p>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
+
+            <h1 class="text-3xl font-outfit font-black mb-2">Bienvenido de nuevo</h1>
+            <p class="text-white/50 mb-8">Administra tus comunidades y desafíos desde un solo lugar.</p>
+
+            <!-- Login Form (REMOVED: Email/Password) -->
+            <!-- SSO Only Section -->
+
+            <div class="space-y-6 mt-8">
+                <!-- Google Sign-In Button (Official Design) -->
+                <button id="btnLogin"
+                    class="w-full h-12 bg-white rounded-md flex items-center justify-center gap-3 transition-all hover:bg-gray-100 active:scale-[0.98] shadow-md border border-gray-200 group">
+
+                    <!-- Official Google 'G' SVG Logo -->
+                    <div class="w-5 h-5">
+                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="block">
+                            <path fill="#EA4335"
+                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z">
+                            </path>
+                            <path fill="#4285F4"
+                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z">
+                            </path>
+                            <path fill="#FBBC05"
+                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z">
+                            </path>
+                            <path fill="#34A853"
+                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z">
+                            </path>
+                        </svg>
+                    </div>
+
+                    <span class="text-[#1f1f1f] font-roboto font-medium text-sm tracking-wide">Sign in with
+                        Google</span>
+                </button>
+
+                <p class="text-xs text-white/40 text-center px-8 leading-relaxed">
+                    Utiliza la misma cuenta de Google con la que gestionas tu perfil personal en Wellnessfy.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-8 text-[10px] text-white/20 text-center">
+            &copy; 2026 Wellnessfy Inc. · Privacidad · Términos
+        </div>
+    </div>
+
+    <!-- Right Side: Visual Showcase -->
+    <div class="hidden lg:flex flex-1 relative bg-navy-800 items-center justify-center overflow-hidden split-bg">
+
+        <!-- Abstract Background Shapes -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple/20 rounded-full blur-[128px]"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-teal/20 rounded-full blur-[128px]"></div>
+
+        <!-- Content Content -->
+        <div class="relative z-10 max-w-xl text-center space-y-12">
+
+            <div class="space-y-4">
+                <h2 class="text-4xl md:text-5xl font-outfit font-black tracking-tight leading-tight">
+                    Impulsa la salud de <br>
+                    <span class="text-neon-teal">tu organización</span>
+                </h2>
+                <p class="text-lg text-white/60 max-w-md mx-auto">
+                    Conecta con tus colaboradores o clientes a través de desafíos gamificados y métricas de impacto
+                    real.
+                </p>
+            </div>
+
+            <!-- Fake UI Card Floating -->
+            <div class="relative mx-auto w-[400px] group perspective">
+                <!-- Main Card -->
+                <div
+                    class="glass-card p-6 rotate-y-12 rotate-x-6 transform transition-transform duration-700 group-hover:rotate-0 bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl">
+                    <div class="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
+                        <div
+                            class="h-12 w-12 rounded-xl bg-gradient-to-br from-neon-purple to-pink-500 flex items-center justify-center text-2xl font-bold">
+                            💪</div>
+                        <div class="text-left">
+                            <p class="font-bold text-sm">Reto de Verano</p>
+                            <p class="text-xs text-white/50">Activo · Termina en 3 días</p>
+                        </div>
+                        <div
+                            class="ml-auto px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">
+                            98%</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs font-bold text-white/50 mb-1">
+                            <span>Meta Global</span>
+                            <span class="text-white">1.2M Pasos</span>
+                        </div>
+                        <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full w-[85%] bg-gradient-to-r from-neon-teal to-neon-turquoise"></div>
+                        </div>
+
+                        <div class="flex -space-x-2 pt-2">
+                            <img class="w-8 h-8 rounded-full border-2 border-[#0f172a]"
+                                src="https://ui-avatars.com/api/?background=random&color=fff" alt="">
+                            <img class="w-8 h-8 rounded-full border-2 border-[#0f172a]"
+                                src="https://ui-avatars.com/api/?background=random&color=fff" alt="">
+                            <img class="w-8 h-8 rounded-full border-2 border-[#0f172a]"
+                                src="https://ui-avatars.com/api/?background=random&color=fff" alt="">
+                            <div
+                                class="w-8 h-8 rounded-full border-2 border-[#0f172a] bg-white/10 flex items-center justify-center text-[10px] font-bold">
+                                +240</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Badge -->
+                <div
+                    class="absolute -top-6 -right-6 glass-card p-3 rounded-xl flex items-center gap-2 animate-bounce shadow-[0_0_30px_rgba(0,245,212,0.2)]">
+                    <span class="material-symbols-outlined text-neon-teal">verified</span>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-white/50">Engagement</p>
+                        <p class="text-sm font-black">+45%</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+</body>
+
+<script type="module">
+    import { auth } from './src/config/firebaseInit.js';
+    import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // 1. Auth State Listener (Auto Redirect)
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log("User authenticated:", user.email);
+            window.location.href = 'dashboard.html';
+        }
+    });
+
+    // 2. Login Logic
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+            // Redirect handled by onAuthStateChanged
+        } catch (error) {
+            console.error("Login Error:", error);
+            alert("Error al iniciar sesión: " + error.message);
+        }
+    });
+</script>
+
+</html>

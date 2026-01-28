@@ -2,17 +2,32 @@
 import { AppState, saveUserData } from '../utils/state.js';
 import { requestGoogleSync } from '../utils/googleHealth.js';
 import { healthProviderManager } from '../utils/healthProviders/HealthProviderManager.js';
-import { syncHealthData } from '../utils/healthSync.js';
+import { syncHealthData } from '../utils/healthSync_v2.js';
 import { renderWeeklyCharts } from '../utils/weeklyCharts.js';
-import { getLocalISOString } from '../utils/dateHelper.js';
+import { getLocalISOString, getCurrentWeekDays, getWeekNumber, getWeekStart, getWeekEnd, getWeekStartFromNumber, getWeekEndFromNumber, getFullWeekDays, formatWeekRange } from '../utils/dateHelper.js';
+import { renderHistorialTab } from '../utils/historialTabHelper.js';
+import { isPhysicalSport, isMindfulnessActivity } from '../utils/activityClassifier.js';
 
 // --- Tab Switching Logic ---
 window.switchActivityTab = (tabName) => {
+    console.log('🔄 Switching to tab:', tabName);
+
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    const targetTab = document.getElementById(`tab-${tabName}`);
+
+    if (!targetTab) {
+        console.error('❌ Tab not found:', `tab-${tabName}`);
+        return;
+    }
+
+    targetTab.classList.remove('hidden');
+    console.log('✅ Tab visible:', tabName);
 
     document.querySelectorAll('.activity-tab').forEach(el => el.classList.remove('active'));
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (targetButton) {
+        targetButton.classList.add('active');
+    }
 };
 
 // --- Main Sync Handler ---
@@ -30,10 +45,10 @@ async function handleHealthSync() {
 
         console.log(`🚀 [ACTIVITY] Iniciando sincronización con ${providerName}...`);
 
-        // Rango de 7 días
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 6);
+        // Sincronizar desde el lunes de la semana actual hasta hoy
+        const { getWeekStart } = await import('../utils/dateHelper.js');
+        const startDate = getWeekStart(); // Lunes de esta semana
+        const endDate = new Date(); // Hoy
 
         // Fetch data
         const result = await syncHealthData(startDate, endDate);
@@ -47,8 +62,24 @@ async function handleHealthSync() {
                 AppState.activities = result.normalized;
             }
             if (result.todayMetrics) AppState.todayStats = result.todayMetrics;
-            if (result.sleepHistory) AppState.sleepHistory = result.sleepHistory;
-            if (result.dailyTotals) AppState.dailyTotals = result.dailyTotals;
+            if (result.sleepHistory) AppState.sleepHistory = result.sleepHistory; // TODO: Merge sleep history too if needed
+
+            // 🔥 CRITICAL FIX: Merge daily totals instead of overwriting
+            if (result.dailyTotals && Array.isArray(result.dailyTotals)) {
+                const currentTotalsMap = new Map();
+                // 1. Indexar existentes
+                (AppState.dailyTotals || []).forEach(d => currentTotalsMap.set(d.date.split('T')[0], d));
+
+                // 2. Fusionar nuevos (Prioridad a lo nuevo fresco del motor)
+                result.dailyTotals.forEach(newDay => {
+                    const dateKey = newDay.date.split('T')[0];
+                    currentTotalsMap.set(dateKey, newDay);
+                });
+
+                // 3. Guardar array fusionado
+                AppState.dailyTotals = Array.from(currentTotalsMap.values())
+                    .sort((a, b) => new Date(a.date) - new Date(b.date)); // Ordenar por fecha
+            }
 
             saveUserData();
 
@@ -107,6 +138,57 @@ export { handleHealthSync as syncHealthConnect };
 
 // --- Main Render Function ---
 export function renderActivity() {
+    // 🚑 FAILSAFE: Auto-Carga de Historial si está vacío (Bypass main.js)
+    if ((!AppState.dailyTotals || AppState.dailyTotals.length === 0) && !window.isHistoryLoading) {
+        console.log('🚑 [ACTIVITY] Historial vacío detectado. Iniciando carga en segundo plano...');
+        window.isHistoryLoading = true;
+
+        (async () => {
+            try {
+                const { getSummariesRange } = await import('../utils/dailySummaryManager.js');
+                const { getLocalISOString } = await import('../utils/dateHelper.js');
+                const { auth } = await import('../utils/firebaseConfig.js');
+
+                const user = auth.currentUser || AppState.currentUser;
+                if (user && user.uid) {
+                    const endDay = new Date();
+                    const startDay = new Date();
+                    startDay.setDate(startDay.getDate() - 28);
+
+                    const summaries = await getSummariesRange(user.uid, getLocalISOString(startDay), getLocalISOString(endDay));
+
+                    if (summaries.length > 0) {
+                        AppState.dailyTotals = summaries.map(s => ({
+                            date: s.date,
+                            steps: s.totals?.steps || 0,
+                            calories: s.totals?.calories || 0,
+                            distance: s.totals?.distance || 0,
+                            activeMinutes: s.totals?.activeMinutes || 0,
+                            sleep: s.sleep,
+                            activities: s.activities || []
+                        }));
+                        console.log(`🚑 [ACTIVITY] Historial recuperado (${summaries.length} días). Refrescando UI...`);
+
+                        // Refrescar solo si seguimos en la página
+                        if (AppState.currentPage === 'activity') {
+                            const mainContent = document.getElementById('mainContent');
+                            if (mainContent) mainContent.innerHTML = renderActivity();
+                            // Re-inicializar tabs post-render
+                            setTimeout(() => {
+                                const activeTab = document.querySelector('.activity-tab.active');
+                                if (activeTab) window.switchActivityTab(activeTab.dataset.tab);
+                            }, 50);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('🚑 [ACTIVITY] Falló carga background:', e);
+            } finally {
+                window.isHistoryLoading = false;
+            }
+        })();
+    }
+
     const activeProvider = healthProviderManager.activeProvider || 'googleFit';
     let providerIcon = activeProvider === 'fitbit'
         ? 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Fitbit_logo_2016.svg'
@@ -129,8 +211,6 @@ export function renderActivity() {
                     <div class="flex items-center gap-2 opacity-80 cursor-pointer bg-white/5 py-2 px-4 rounded-full hover:opacity-100 backdrop-blur-md" onclick="window.syncHealthConnect()" id="syncBtn">
                         <span class="material-symbols-outlined text-[16px] text-[#00f5d4]" id="syncIcon">sync</span>
                         <p class="text-white text-[11px] font-bold uppercase tracking-widest" id="syncLabel">Sincronizar</p>
-                        <div class="w-px h-3 bg-white/20 mx-1"></div>
-                        <img src="${providerIcon}" class="size-4 object-contain">
                     </div>
                     <button class="relative p-2 rounded-full hover:bg-white/5 transition-all text-white/80 hover:text-white lg:hidden" onclick="navigateTo('notifications')">
                         <span class="material-symbols-outlined text-xl">notifications</span>
@@ -150,6 +230,9 @@ export function renderActivity() {
             <button class="activity-tab flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all" data-tab="deportes" onclick="window.switchActivityTab('deportes')">
                 <span class="material-symbols-outlined text-lg mr-2 align-middle">sports_tennis</span>Mis Deportes
             </button>
+            <button class="activity-tab flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all" data-tab="historial" onclick="window.switchActivityTab('historial')">
+                <span class="material-symbols-outlined text-lg mr-2 align-middle">history</span>Historial
+            </button>
         </div>
 
         <div id="tab-resumen" class="tab-content">
@@ -157,6 +240,9 @@ export function renderActivity() {
         </div>
         <div id="tab-deportes" class="tab-content hidden">
             ${renderDeportesTab()}
+        </div>
+        <div id="tab-historial" class="tab-content hidden">
+            ${renderHistorialTab()}
         </div>
     `;
 }
@@ -193,7 +279,11 @@ function renderResumenTab() {
             return actDateStr === todayISO;
         } catch (e) { return false; }
     });
-    todaysActivities.forEach(act => activeMinutes += (act.duration || 0));
+    todaysActivities.forEach(act => {
+        if (isPhysicalSport(act)) {
+            activeMinutes += (act.duration || 0);
+        }
+    });
     const activeValText = activeMinutes > 0 ? fmtTime(activeMinutes) : '-- m';
 
     // Wellbeing Calculation
@@ -221,44 +311,33 @@ function renderResumenTab() {
             </div>
             
             <div class="flex flex-col items-center gap-6 relative z-10">
-                <!-- Simple SVG Ring Placeholder -->
-                <div class="relative size-48">
-                     <svg class="size-full overflow-visible">
-                        <circle class="stroke-white/5" cx="96" cy="96" r="80" stroke-width="12" fill="none"></circle>
-                        <circle cx="96" cy="96" r="80" stroke-width="12" fill="none" stroke="#00d2ff" stroke-dasharray="500" stroke-dashoffset="100" stroke-linecap="round"></circle>
-                     </svg>
-                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="material-symbols-outlined text-[#00f5d4] text-4xl">bolt</span>
-                        <span class="text-[10px] text-white/40 mt-1 font-bold">ENERGÍA</span>
-                     </div>
-                </div>
 
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-3 gap-2 w-full">
-                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#00ff9d] mb-1">directions_walk</span>
+                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
+                        <span class="material-symbols-outlined text-[#00ff9d] text-xl mb-1">directions_walk</span>
                         <span class="text-[10px] text-white/50 mb-1">Pasos</span>
                         <span class="text-lg font-bold text-[#00ff9d]">${stepsVal}</span>
                     </div>
-                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#00d2ff] mb-1">fitness_center</span>
+                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
+                        <span class="material-symbols-outlined text-[#00d2ff] text-xl mb-1">fitness_center</span>
                         <span class="text-[10px] text-white/50 mb-1">Activo</span>
                         <span class="text-lg font-bold text-[#00d2ff]">${activeValText}</span>
                     </div>
-                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#d946ef] mb-1">bedtime</span>
+                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
+                        <span class="material-symbols-outlined text-[#d946ef] text-xl mb-1">bedtime</span>
                         <span class="text-[10px] text-white/50 mb-1">Sueño</span>
                         <span class="text-lg font-bold text-[#d946ef]">${sleepVal}</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 w-full">
-                     <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#fb923c] mb-1">local_fire_department</span>
+                     <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
+                        <span class="material-symbols-outlined text-[#fb923c] text-xl mb-1">local_fire_department</span>
                         <span class="text-[10px] text-white/50 mb-1">Calorías</span>
                         <span class="text-lg font-bold text-[#fb923c]">${caloriesVal}</span>
                     </div>
-                     <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#f43f5e] mb-1">favorite</span>
+                     <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
+                        <span class="material-symbols-outlined text-[#f43f5e] text-xl mb-1">favorite</span>
                         <span class="text-[10px] text-white/50 mb-1">Ritmo</span>
                         <span class="text-lg font-bold text-white">${heartVal}</span>
                     </div>
@@ -329,7 +408,7 @@ function renderWeeklyStats() {
         <section class="glass-card rounded-3xl p-6 mb-6 relative overflow-hidden mt-6">
             <div class="flex items-center justify-between mb-6 relative z-10">
                 <h3 class="text-lg font-bold tracking-tight text-white">Estadísticas</h3>
-                <span class="text-[#00f5d4] text-[10px] font-bold bg-[#00f5d4]/10 border border-[#00f5d4]/20 px-3 py-1 rounded-full uppercase tracking-tighter">Últimos 7 días</span>
+                <span class="text-[#00f5d4] text-[10px] font-bold bg-[#00f5d4]/10 border border-[#00f5d4]/20 px-3 py-1 rounded-full uppercase tracking-tighter">Semana Actual</span>
             </div>
 
             <!-- Activity by Hour Chart (MOVED TO DAILY ANALYSIS) -->
@@ -350,7 +429,7 @@ function renderWeeklyStats() {
             <div class="mb-4">
                 <h4 class="text-sm font-bold text-white/80 mb-4 flex items-center gap-2">
                     <span class="material-symbols-outlined text-[#818cf8] text-lg">bedtime</span>
-                    Sueño (Últimos 7 días)
+                    Sueño (Semana Actual)
                 </h4>
                 <div id="sleepChart" class="flex items-end justify-between gap-2 h-24">
                      <!-- Populated by weeklyCharts.js -->
@@ -371,17 +450,17 @@ function renderWeeklyStats() {
             <!-- Weekly Totals -->
             <div class="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/10">
                 <div class="text-center flex flex-col items-center">
-                    <span class="material-symbols-outlined text-[#00ff9d] text-2xl mb-1">directions_walk</span>
+                    <span class="material-symbols-outlined text-[#00ff9d] text-2xl mb-2">directions_walk</span>
                     <p class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Total Pasos</p>
                     <p class="text-xl font-bold text-[#00ff9d]" id="weeklySteps">--</p>
                 </div>
                 <div class="text-center flex flex-col items-center">
-                    <span class="material-symbols-outlined text-[#00d9ff] text-2xl mb-1">map</span>
+                    <span class="material-symbols-outlined text-[#00d9ff] text-2xl mb-2">map</span>
                     <p class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Distancia</p>
                     <p class="text-xl font-bold text-[#00d9ff]"><span id="weeklyDistance">--</span><span class="text-xs ml-1">km</span></p>
                 </div>
                 <div class="text-center flex flex-col items-center">
-                    <span class="material-symbols-outlined text-[#ff9100] text-2xl mb-1">local_fire_department</span>
+                    <span class="material-symbols-outlined text-[#ff9100] text-2xl mb-2">local_fire_department</span>
                     <p class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Calorías</p>
                     <p class="text-xl font-bold text-[#ff9100]" id="weeklyCalories">--</p>
                 </div>
@@ -392,24 +471,21 @@ function renderWeeklyStats() {
 
 // --- Data Adapter: Normalized Activities -> Legacy Weekly Format ---
 function calculateWeeklyStatsFromActivities(activities, sleepHistory = [], dailyTotals = []) {
-    // Generación Robusta de Fechas basada en String Local
-    const todayISO = getLocalISOString();
-    const [tYear, tMonth, tDay] = todayISO.split('-').map(Number);
-    const todayBase = new Date(tYear, tMonth - 1, tDay);
+    // Usar el nuevo sistema de semanas (Lunes-Domingo)
+    // getCurrentWeekDays() retorna desde lunes hasta HOY
+    // Si hoy es miércoles: [lun, mar, mié]
+    // Si hoy es domingo: [lun, mar, mié, jue, vie, sáb, dom]
+    const currentWeekDays = getCurrentWeekDays();
 
-    const last7Days = [...Array(7)].map((_, i) => {
-        const d = new Date(todayBase);
-        d.setDate(d.getDate() - (6 - i));
-        return getLocalISOString(d);
-    });
+    console.log(`📅 Calculando stats para semana actual (${currentWeekDays.length} días):`, currentWeekDays);
 
     // 1. Totales, Días de Ejercicio y Días de Mindfulness
-    let totalSteps = 0, totalDist = 0, totalCal = 0;
+    let totalSteps = 0, totalDist = 0, totalCal = 0, totalActiveMinutes = 0;
     const exerciseDaysMap = {}; // fecha -> { hasExercise: bool }
     const mindfulnessDaysMap = {}; // fecha -> { hasMindfulness: bool }
 
     // Init con fechas vacías
-    last7Days.forEach(date => {
+    currentWeekDays.forEach(date => {
         exerciseDaysMap[date] = { date, hasExercise: false, steps: 0, calories: 0 };
         mindfulnessDaysMap[date] = { date, hasMindfulness: false };
     });
@@ -433,41 +509,48 @@ function calculateWeeklyStatsFromActivities(activities, sleepHistory = [], daily
 
             // A. Sumar a totales semanales (Fallback si no hay dailyTotals)
             if (exerciseDaysMap[dateStr]) {
-                exerciseDaysMap[dateStr].hasExercise = true;
-                // NOTA: Si hay dailyTotals, esto se sobrescribe abajo para la tarjeta principal,
-                // pero se mantiene aquí para saber qué día hubo "ejercicio explícito".
+                // Verificar clasificación centralizada
+                const isPhysical = isPhysicalSport(act);
+                const duration = act.duration || 0;
+
+                // Lógica de Círculos Verdes (Días de Ejercicio):
+                // SOLO si es actividad física Y dura >= 10 minutos
+                if (isPhysical && duration >= 10) {
+                    exerciseDaysMap[dateStr].hasExercise = true;
+                }
+
+                // NOTA: Si hay dailyTotals, steps y calories se sobrescriben abajo para la tarjeta principal,
+                // pero se mantiene aquí para acumulados parciales si fallara dailyTotals.
                 exerciseDaysMap[dateStr].steps += (act.steps || 0);
                 exerciseDaysMap[dateStr].calories += (act.calories || 0);
 
-                // Verificar si es Mindfulness (Yoga, Meditación, Respiración)
-                const sportKeyLower = (act.sportKey || '').toLowerCase();
-                const nameLower = (act.name || '').toLowerCase();
-
-                const isMindfulness = sportKeyLower.includes('yoga') ||
-                    sportKeyLower.includes('meditation') ||
-                    sportKeyLower.includes('breath') ||
-                    nameLower.includes('yoga') ||
-                    nameLower.includes('meditación') ||
-                    nameLower.includes('respiración') ||
-                    nameLower.includes('mindfulness');
-
-                if (isMindfulness) {
+                // Si es MINDFULNESS (Yoga, Meditación), marcar en su propio mapa
+                if (isMindfulnessActivity(act)) {
                     mindfulnessDaysMap[dateStr].hasMindfulness = true;
                 }
 
                 totalSteps += (act.steps || 0);
                 totalDist += (act.distance || 0);
                 totalCal += (act.calories || 0);
+
+                // CORRECCIÓN: Solo sumar minutos activos al total semanal si es DEPORTE FÍSICO
+                if (isPhysical) {
+                    totalActiveMinutes += duration;
+                }
             }
 
             // B. Distribución por Hora (SOLO HOY para la gráfica diaria)
-            if (dateStr === todayDateStr) {
+            // CORRECCIÓN: Solo graficar movimiento físico
+            const isPhysicalForGraph = isPhysicalSport(act);
+
+            if (dateStr === todayDateStr && isPhysicalForGraph) {
                 const start = new Date(act.startTime);
                 const end = act.endTime ? new Date(act.endTime) : new Date(start.getTime() + (act.duration * 60000));
 
                 const startHour = start.getHours();
                 const endHour = end.getHours();
 
+                // ... logic to distribute hours ...
                 const totalDuration = (end - start) || 1; // ms
 
                 // Distribuir proporcionalmente en las horas que abarca
@@ -506,7 +589,7 @@ function calculateWeeklyStatsFromActivities(activities, sleepHistory = [], daily
         let hasData = false;
 
         dailyTotals.forEach(dayStat => {
-            if (last7Days.includes(dayStat.date)) {
+            if (currentWeekDays.includes(dayStat.date)) {
                 dtSteps += (dayStat.steps || 0);
                 dtDist += (dayStat.distance || 0);
                 dtCal += (dayStat.calories || 0);
@@ -529,13 +612,13 @@ function calculateWeeklyStatsFromActivities(activities, sleepHistory = [], daily
     };
 
     // 3. Formatear para legacy charts
-    const exerciseDays = last7Days.map(date => ({
+    const exerciseDays = currentWeekDays.map(date => ({
         day: getLabel(date),
         ...exerciseDaysMap[date]
     }));
 
     // 4. Real Sleep Data from History
-    const sleepData = last7Days.map(dateStr => {
+    const sleepData = currentWeekDays.map(dateStr => {
         const entry = sleepHistory.find(s => s.date === dateStr);
         return {
             day: getLabel(dateStr),
@@ -543,13 +626,18 @@ function calculateWeeklyStatsFromActivities(activities, sleepHistory = [], daily
         };
     });
 
-    const mindfulnessDays = last7Days.map(date => ({
+    const mindfulnessDays = currentWeekDays.map(date => ({
         day: getLabel(date),
         ...mindfulnessDaysMap[date]
     }));
 
     return {
-        weeklyTotals: { steps: totalSteps, distance: totalDist, calories: totalCal },
+        weeklyTotals: {
+            steps: totalSteps,
+            distance: totalDist,
+            calories: totalCal,
+            activeMinutes: totalActiveMinutes
+        },
         activityByHour: activityByHour,
         exerciseDays: exerciseDays,
         mindfulnessDays: mindfulnessDays,
@@ -784,3 +872,4 @@ function aggregateSportsData(activities) {
 window.renderResumenTab = renderResumenTab;
 window.renderWeeklyStats = renderWeeklyStats;
 window.renderDeportesTab = renderDeportesTab;
+window.renderHistorialTab = renderHistorialTab;

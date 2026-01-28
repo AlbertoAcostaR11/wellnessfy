@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wellnessfy Neon Glass Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00f5d4",
+                        "secondary": "#00d2ff",
+                        "accent": "#7000ff",
+                        "navy-900": "#020617",
+                        "navy-800": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "3xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --neon-teal: #00f5d4;
+            --neon-turquoise: #00d2ff;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 245, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(112, 0, 255, 0.1) 0px, transparent 50%);
+        }
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+        }
+        .neon-text-glow {
+            text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+        }
+        .neon-box-glow {
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            filter: drop-shadow(0 0 4px var(--neon-teal));
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-white min-h-screen pb-28">
+<header class="sticky top-0 z-50">
+<div class="glass-card px-4 pt-6 pb-8 rounded-b-3xl border-t-0 border-x-0 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full border-2 border-primary/50 p-0.5">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnaEo31uSRC4GhqybXfh_vmEAB2JnLM_l4dAesDoyeozCXLAcF-10kmDYGAWMJzYK-CYdcx773E8Buef43Pzrg8pRc3rFXu6C07hfwMGsefYkx_Gq7INbcMSUIg0_TsHlbSw1O2poi71O1gpsQ3VH98A8KkofTWhpPo_Mc2fYvCnm4HUrozmb89SyDFpAAi-tTWC3OUXYIlapGe9ocsHCTIpIr80ceel1XI2Ai07y7pI-OkeKeDJ4liXyl8ADn2myFHAn9DM9aJQg");'></div>
+</div>
+<div>
+<h2 class="text-white text-lg font-bold leading-tight neon-text-glow">Hi, Alex</h2>
+<div class="flex items-center gap-1 opacity-70">
+<span class="material-symbols-outlined text-[14px] text-primary">sync</span>
+<p class="text-white/80 text-xs font-medium uppercase tracking-wider">Synced 2m ago</p>
+</div>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-2xl h-11 w-11 glass-card border-white/20 text-primary shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="px-4 mt-6">
+<section class="glass-card rounded-3xl p-6 mb-6">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-lg font-bold tracking-tight">Today's Vitals</h3>
+<span class="text-primary text-xs font-bold bg-primary/10 border border-primary/20 px-3 py-1 rounded-full uppercase tracking-tighter">Live Stats</span>
+</div>
+<div class="flex flex-col items-center gap-8">
+<div class="relative size-56">
+<svg class="size-full">
+<defs>
+<linearGradient id="neon-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00f5d4"></stop>
+<stop offset="100%" stop-color="#00d2ff"></stop>
+</linearGradient>
+<filter id="neon-glow">
+<feGaussianBlur result="blur" stdDeviation="2.5"></feGaussianBlur>
+<feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
+</filter>
+</defs>
+<circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="95" stroke-width="12"></circle>
+<circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="75" stroke-width="12"></circle>
+<circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="55" stroke-width="12"></circle>
+<circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="95" stroke="url(#neon-gradient)" stroke-dasharray="597" stroke-dashoffset="120" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="75" stroke="#00d2ff" stroke-dasharray="471" stroke-dashoffset="180" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="55" stroke="#7000ff" stroke-dasharray="345" stroke-dashoffset="60" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl neon-text-glow" style="font-variation-settings: 'FILL' 1">bolt</span>
+<span class="text-[10px] font-bold text-white/40 mt-1 uppercase tracking-[0.2em]">Energy</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-3 w-full">
+<div class="flex flex-col items-center p-3 glass-card rounded-2xl">
+<span class="text-[10px] font-bold text-primary uppercase mb-1 tracking-wider">Steps</span>
+<span class="text-sm font-bold text-white">8,421</span>
+</div>
+<div class="flex flex-col items-center p-3 glass-card rounded-2xl border-secondary/20">
+<span class="text-[10px] font-bold text-secondary uppercase mb-1 tracking-wider">Active</span>
+<span class="text-sm font-bold text-white">45<span class="text-[10px] ml-0.5 text-white/50">m</span></span>
+</div>
+<div class="flex flex-col items-center p-3 glass-card rounded-2xl border-accent/20">
+<span class="text-[10px] font-bold text-[#b794f4] uppercase mb-1 tracking-wider">Sleep</span>
+<span class="text-sm font-bold text-white">7<span class="text-[10px] ml-0.5 text-white/50">h</span> 20</span>
+</div>
+</div>
+</div>
+</section>
+<div class="flex items-center justify-between px-1 mb-4">
+<h2 class="text-xl font-bold tracking-tight">Active Challenge</h2>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-xl border border-primary/20">auto_awesome</span>
+</div>
+<div class="relative overflow-hidden glass-card rounded-3xl p-6 mb-8 border-primary/30">
+<div class="absolute -right-8 -top-8 size-32 bg-primary/20 blur-3xl"></div>
+<div class="relative z-10 flex items-center gap-5">
+<div class="flex-shrink-0 size-16 glass-card rounded-2xl flex items-center justify-center border-white/20 shadow-xl">
+<div class="size-11 bg-gradient-to-tr from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-navy-900 text-2xl" style="font-variation-settings: 'FILL' 1">military_tech</span>
+</div>
+</div>
+<div class="flex-1">
+<h4 class="text-lg font-bold text-primary neon-text-glow">Neon Sprinter</h4>
+<p class="text-white/60 text-xs font-medium mt-1 leading-relaxed">Top 5% this week. Maintain pace to unlock the glow.</p>
+</div>
+</div>
+<div class="mt-6 bg-navy-900/50 rounded-2xl p-4 border border-white/5">
+<div class="flex justify-between items-end mb-2">
+<p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">Mastery</p>
+<p class="text-primary text-sm font-bold">80%</p>
+</div>
+<div class="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full shadow-[0_0_15px_rgba(0,245,212,0.6)]" style="width: 80%;"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between px-1 mb-4">
+<h2 class="text-xl font-bold tracking-tight">The Collective</h2>
+<span class="text-primary text-sm font-bold uppercase tracking-widest text-[10px]">View All</span>
+</div>
+<div class="flex gap-5 overflow-x-auto pb-6 no-scrollbar -mx-1 px-1">
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5 shadow-lg shadow-primary/20">
+<div class="size-full rounded-full border-2 border-navy-900 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALWqUmm2RteQn9v9oLFwCnvIn1bpnWLinJYl_HprFo0bb2oBTQ9ybyr_bNs3zVZpwOBRoJ9vKAVLJpDryPDm0o33SmRyAYzTyXCy_u-ALLZR1K2wrf2di32GxQ282OdP7FS3ThWHhyGBpSk4XOFKziGOrWQ6soIgEC9Q2evgBL-oXHfFojhtJZHRvmRPSHnLw786QKS2LPUdLSqnQZh7JcQecxBEj9datSeF_wgJ3ByNBYDB7dYy3AjlbMoz3uP57xRF_QIWDaxFQ");'></div>
+</div>
+<span class="text-[10px] font-bold text-white/60 uppercase tracking-tighter">Sarah</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5 shadow-lg shadow-primary/20">
+<div class="size-full rounded-full border-2 border-navy-900 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA5ACOFvT94xduLrDupvuGs6pikx9yz4tRnbNAZHwFCyyH26CWU1G5dfbPSnpgVlcsDMLRBuzMLJ6Etv-FyoSOvOUqK34EhwtZzBPp8Ke0NFjR7RptVKqitdjWU2AHnmgCYPeYBKLrOqzHDaZ4vHEPwWCe5Hd66mAYbrjTETbCXp4Rh0Sd1LcULnk-KIrUGj5jP9YTkee3CwjjXMhjM8WAX2Sq6pbOleZMcryOs85WN4dFsaOLfY-FqRifqWXUDcolv0Qa4SkiTNFc");'></div>
+</div>
+<span class="text-[10px] font-bold text-white/60 uppercase tracking-tighter">Mike</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0 opacity-50">
+<div class="size-16 rounded-full glass-card p-0.5">
+<div class="size-full rounded-full border-2 border-navy-900 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc_zm6LQrEitltjFfilczyLhg_totaaadoQlzBqsRhjeI2IFIbEPUvEPJj5EtTWKJnzO6CPkfH9H5L12Y_Z-t5aOWWAC3dDO1qPsy3CPXypDAEWRLY5Z9Eaz4iMYjR0wYeLI2MLNp_wTLEBKew1xci3WUFTlYopaubtngqhHVXiao09GYEno1yH8dbwad7x-E6XHGjzQ75SJ7ZDx3aG70cE-aK3eIUpeew90JnLZsEoCFoRtFSbHXCnHvZUvRrxFDlUJ1zYQJizbs");'></div>
+</div>
+<span class="text-[10px] font-bold text-white/40 uppercase tracking-tighter">Leo</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0 opacity-50">
+<div class="size-16 rounded-full glass-card p-0.5">
+<div class="size-full rounded-full border-2 border-navy-900 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCxM7Xz7_yblKFxhjUa4uZy5uvn0XTbKw756T4jAKtP-fmPRUKTJ2L_qwTlESpDJ3c8NXL-vD-E6u69wug1rnQbHzXDFvcN9XiYEWN8CPG6PWn4igS5hliHulh-sDSxkp89lAEIgg42BNjbPigImt6dO5XSvBoIvZwWhYFZIGKWUcNygoKCzklVSbjr6GZwSLfeSP0yt_ND-JsRisWy_2Mo51pjejMIv5EidYNsooWPHAt0ubR6Rh--vFl189vAJqgvsMkmzoQCk0Y");'></div>
+</div>
+<span class="text-[10px] font-bold text-white/40 uppercase tracking-tighter">Emma</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-2">
+<div class="glass-card rounded-3xl p-5 border-white/5">
+<div class="flex items-center gap-2 mb-3">
+<div class="bg-primary/10 p-1.5 rounded-lg border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1">local_fire_department</span>
+</div>
+<span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Burn</span>
+</div>
+<p class="text-2xl font-bold">1,840</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-primary text-sm">trending_up</span>
+<p class="text-[9px] text-primary font-bold uppercase tracking-tighter">+12% peak</p>
+</div>
+</div>
+<div class="glass-card rounded-3xl p-5 border-white/5">
+<div class="flex items-center gap-2 mb-3">
+<div class="bg-rose-500/10 p-1.5 rounded-lg border border-rose-500/20">
+<span class="material-symbols-outlined text-rose-500 text-[18px]" style="font-variation-settings: 'FILL' 1">favorite</span>
+</div>
+<span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Heart</span>
+</div>
+<p class="text-2xl font-bold">72</p>
+<p class="text-[9px] text-white/40 mt-1 font-bold uppercase tracking-tighter">BPM Resting</p>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 glass-card bg-navy-900/80 backdrop-blur-2xl border-t border-white/10 px-8 py-5 flex justify-between items-end z-50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<button class="flex flex-col items-center gap-1 text-primary neon-text-glow">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">dashboard</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Hub</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-white/80">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Feed</span>
+</button>
+<div class="relative">
+<button class="bg-gradient-to-br from-primary to-secondary size-14 rounded-2xl flex items-center justify-center text-navy-900 shadow-[0_0_20px_rgba(0,245,212,0.4)] -translate-y-8 border-4 border-navy-900 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-white/80">
+<span class="material-symbols-outlined text-2xl">leaderboard</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Rank</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-white/80">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[9px] font-bold uppercase tracking-widest">Self</span>
+</button>
+</nav>
+
+</body></html>

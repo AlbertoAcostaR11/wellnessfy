@@ -1,0 +1,78 @@
+
+function renderDashboard() {
+    const { stats } = AppState.currentUser;
+    
+    return `
+        <section class="glass-card rounded-3xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-lg font-bold tracking-tight">Estadísticas de Hoy</h3>
+                <span class="text-primary text-xs font-bold bg-primary/10 border border-primary/20 px-3 py-1 rounded-full uppercase tracking-tighter">En Vivo</span>
+            </div>
+            
+            <div class="flex flex-col items-center gap-8">
+                <div class="relative size-56">
+                    <svg class="size-full">
+                        <defs>
+                            <linearGradient id="neon-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+                                <stop offset="0%" stop-color="#00f5d4"></stop>
+                                <stop offset="100%" stop-color="#00d2ff"></stop>
+                            </linearGradient>
+                        </defs>
+                        <circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="95" stroke-width="12"></circle>
+                        <circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="75" stroke-width="12"></circle>
+                        <circle class="stroke-slate-800/50" cx="112" cy="112" fill="transparent" r="55" stroke-width="12"></circle>
+                        <circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="95" stroke="url(#neon-gradient)" stroke-dasharray="597" stroke-dashoffset="120" stroke-linecap="round" stroke-width="12"></circle>
+                        <circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="75" stroke="#00d2ff" stroke-dasharray="471" stroke-dashoffset="180" stroke-linecap="round" stroke-width="12"></circle>
+                        <circle class="progress-ring-circle" cx="112" cy="112" fill="transparent" r="55" stroke="#7000ff" stroke-dasharray="345" stroke-dashoffset="60" stroke-linecap="round" stroke-width="12"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-4xl neon-text-glow" style="font-variation-settings: 'FILL' 1">bolt</span>
+                        <span class="text-[10px] font-bold text-white/40 mt-1 uppercase tracking-[0.2em]">Energía</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-3 w-full">
+                    <div class="flex flex-col items-center p-3 glass-card rounded-2xl">
+                        <span class="text-[10px] font-bold text-primary uppercase mb-1 tracking-wider">Pasos</span>
+                        <span class="text-sm font-bold text-white">${stats.steps.toLocaleString()}</span>
+                    </div>
+                    <div class="flex flex-col items-center p-3 glass-card rounded-2xl border-secondary/20">
+                        <span class="text-[10px] font-bold text-secondary uppercase mb-1 tracking-wider">Activo</span>
+                        <span class="text-sm font-bold text-white">${stats.activeMinutes}<span class="text-[10px] ml-0.5 text-white/50">m</span></span>
+                    </div>
+                    <div class="flex flex-col items-center p-3 glass-card rounded-2xl border-accent/20">
+                        <span class="text-[10px] font-bold text-[#b794f4] uppercase mb-1 tracking-wider">Sueño</span>
+                        <span class="text-sm font-bold text-white">${Math.floor(stats.sleepHours)}<span class="text-[10px] ml-0.5 text-white/50">h</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div class="glass-card rounded-3xl p-5 border-white/5">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="bg-primary/10 p-1.5 rounded-lg border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1">local_fire_department</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Calorías</span>
+                </div>
+                <p class="text-2xl font-bold">${stats.calories || 0}</p>
+                <div class="flex items-center gap-1 mt-1">
+                    <span class="material-symbols-outlined text-primary text-sm">trending_up</span>
+                    <p class="text-[9px] text-primary font-bold uppercase tracking-tighter">+12% pico</p>
+                </div>
+            </div>
+            
+            <div class="glass-card rounded-3xl p-5 border-white/5">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="bg-rose-500/10 p-1.5 rounded-lg border border-rose-500/20">
+                        <span class="material-symbols-outlined text-rose-500 text-[18px]" style="font-variation-settings: 'FILL' 1">favorite</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Corazón</span>
+                </div>
+                <p class="text-2xl font-bold">${stats.heartRate || 72}</p>
+                <p class="text-[9px] text-white/40 mt-1 font-bold uppercase tracking-tighter">BPM Reposo</p>
+            </div>
+        </div>
+    `;
+}

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Google Health Sync</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0e1a;
+            color: #fff;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .test-card h2 {
+            margin-top: 0;
+            color: #00f5d4;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00f5d4, #00b8ff);
+            border: none;
+            color: #0a0e1a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .status.info {
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .data-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .data-item .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .data-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00f5d4;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test de Sincronización Google Health</h1>
+
+    <div class="test-card">
+        <h2>1. Estado del Sistema</h2>
+        <div id="systemStatus"></div>
+        <button onclick="checkSystemStatus()">🔍 Verificar Estado</button>
+    </div>
+
+    <div class="test-card">
+        <h2>2. Token de Acceso</h2>
+        <div id="tokenStatus"></div>
+        <button onclick="checkToken()">🔑 Verificar Token</button>
+        <button onclick="clearToken()">🗑️ Limpiar Token</button>
+    </div>
+
+    <div class="test-card">
+        <h2>3. Datos en localStorage</h2>
+        <div id="localStorageData"></div>
+        <button onclick="showLocalStorage()">📦 Ver Datos</button>
+    </div>
+
+    <div class="test-card">
+        <h2>4. Última Sincronización</h2>
+        <div id="lastSyncInfo"></div>
+        <button onclick="checkLastSync()">⏰ Ver Última Sync</button>
+    </div>
+
+    <div class="test-card">
+        <h2>5. Datos de Actividad</h2>
+        <div id="activityData"></div>
+        <button onclick="showActivityData()">📊 Ver Datos</button>
+    </div>
+
+    <div class="test-card">
+        <h2>6. Logs de Consola</h2>
+        <p style="color: #888; font-size: 14px;">
+            Abre la consola del navegador (F12) para ver logs detallados con emojis:
+        </p>
+        <ul style="color: #888; font-size: 14px;">
+            <li>✅ = Éxito</li>
+            <li>❌ = Error</li>
+            <li>⚠️ = Advertencia</li>
+            <li>🔄 = Proceso en curso</li>
+            <li>📊 = Datos</li>
+            <li>🔐 = Autenticación</li>
+        </ul>
+    </div>
+
+    <script>
+        function checkSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            let html = '';
+
+            // Check if Google SDK is loaded
+            const googleLoaded = typeof google !== 'undefined' && google.accounts && google.accounts.oauth2;
+            html += `<div class="status ${googleLoaded ? 'success' : 'error'}">
+                Google SDK: ${googleLoaded ? '✅ Cargado' : '❌ No cargado'}
+            </div>`;
+
+            // Check if app is loaded
+            const appLoaded = typeof window.AppState !== 'undefined';
+            html += `<div class="status ${appLoaded ? 'success' : 'error'}">
+                AppState: ${appLoaded ? '✅ Disponible' : '❌ No disponible'}
+            </div>`;
+
+            // Check if sync function exists
+            const syncExists = typeof window.syncHealthConnect === 'function';
+            html += `<div class="status ${syncExists ? 'success' : 'error'}">
+                Función de Sync: ${syncExists ? '✅ Disponible' : '❌ No disponible'}
+            </div>`;
+
+            status.innerHTML = html;
+        }
+
+        function checkToken() {
+            const status = document.getElementById('tokenStatus');
+            const token = localStorage.getItem('google_health_token');
+            const expiry = localStorage.getItem('google_health_token_expiry');
+
+            let html = '';
+
+            if (token) {
+                const expiryDate = new Date(parseInt(expiry));
+                const now = new Date();
+                const isValid = now < expiryDate;
+
+                html += `<div class="status ${isValid ? 'success' : 'error'}">
+                    Token: ${isValid ? '✅ Válido' : '❌ Expirado'}
+                </div>`;
+                html += `<div class="status info">
+                    Expira: ${expiryDate.toLocaleString()}<br>
+                    Tiempo restante: ${Math.floor((expiryDate - now) / 60000)} minutos
+                </div>`;
+                html += `<pre>${token.substring(0, 50)}...</pre>`;
+            } else {
+                html += `<div class="status error">❌ No hay token guardado</div>`;
+            }
+
+            status.innerHTML = html;
+        }
+
+        function clearToken() {
+            localStorage.removeItem('google_health_token');
+            localStorage.removeItem('google_health_token_expiry');
+            localStorage.removeItem('last_health_sync');
+            alert('✅ Token y datos de sincronización eliminados');
+            checkToken();
+            checkLastSync();
+        }
+
+        function showLocalStorage() {
+            const container = document.getElementById('localStorageData');
+            const keys = ['google_health_token', 'google_health_token_expiry', 'last_health_sync', 'wellnessfy_user'];
+
+            let html = '<div class="data-grid">';
+
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                let displayValue = value ? '✅ Existe' : '❌ No existe';
+
+                if (key.includes('expiry') || key.includes('sync')) {
+                    if (value) {
+                        displayValue = new Date(parseInt(value)).toLocaleString();
+                    }
+                }
+
+                html += `
+                    <div class="data-item">
+                        <div class="label">${key}</div>
+                        <div class="value" style="font-size: 12px;">${displayValue}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function checkLastSync() {
+            const container = document.getElementById('lastSyncInfo');
+            const lastSync = localStorage.getItem('last_health_sync');
+
+            if (lastSync) {
+                const syncDate = new Date(parseInt(lastSync));
+                const now = new Date();
+                const diffMinutes = Math.floor((now - syncDate) / 60000);
+
+                let timeAgo;
+                if (diffMinutes < 1) {
+                    timeAgo = 'Hace un momento';
+                } else if (diffMinutes < 60) {
+                    timeAgo = `Hace ${diffMinutes} minutos`;
+                } else {
+                    const diffHours = Math.floor(diffMinutes / 60);
+                    timeAgo = `Hace ${diffHours} horas`;
+                }
+
+                container.innerHTML = `
+                    <div class="status success">
+                        ✅ Última sincronización: ${syncDate.toLocaleString()}<br>
+                        ${timeAgo}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="status error">❌ Nunca se ha sincronizado</div>`;
+            }
+        }
+
+        function showActivityData() {
+            const container = document.getElementById('activityData');
+            const userData = localStorage.getItem('wellnessfy_user');
+
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const stats = user.stats || {};
+
+                    container.innerHTML = `
+                        <div class="data-grid">
+                            <div class="data-item">
+                                <div class="label">Pasos</div>
+                                <div class="value">${(stats.steps || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="label">Calorías</div>
+                                <div class="value">${(stats.calories || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="label">Ritmo Cardíaco</div>
+                                <div class="value">${stats.heartRate || '--'}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="label">Minutos Activos</div>
+                                <div class="value">${stats.activeMinutes || 0}</div>
+                            </div>
+                        </div>
+                        <pre>${JSON.stringify(stats, null, 2)}</pre>
+                    `;
+                } catch (e) {
+                    container.innerHTML = `<div class="status error">❌ Error al parsear datos: ${e.message}</div>`;
+                }
+            } else {
+                container.innerHTML = `<div class="status error">❌ No hay datos de usuario</div>`;
+            }
+        }
+
+        // Auto-check on load
+        window.onload = () => {
+            checkSystemStatus();
+            checkToken();
+            showLocalStorage();
+            checkLastSync();
+            showActivityData();
+        };
+    </script>
+</body>
+
+</html>
