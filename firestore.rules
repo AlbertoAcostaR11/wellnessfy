@@ -24,8 +24,8 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
       // PERMITIR leer perfil público (nombre, avatar). 
-      // TODO: En el futuro, separar datos privados (email, teléfono) a una subcolección 'private'.
-      allow read: if isAuthenticated();
+      // Se permite lectura pública para soportar el modo invitado.
+      allow read: if true;
       
       // SOLO el dueño puede editar su perfil
       allow create, update, delete: if isOwner(userId);
@@ -42,12 +42,30 @@ service cloud.firestore {
       }
     }
     
+    // --- NUEVA COLECCIÓN: COMPANIES (Fase 1 Business) ---
+    match /companies/{companyId} {
+      allow read: if isAuthenticated(); // Lectura pública básica
+      allow create: if isAuthenticated(); // Creación libre para usuarios
+      
+      // SOLO el owner registrado puede editar o borrar
+      allow update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+    
     // Posts collection (Feed)
     match /posts/{postId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      // Solo el autor puede editar o borrar
-      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.author.uid;
+      
+      // Permitir actualizar reacciones y comentarios a cualquier usuario autenticado
+      allow update: if isAuthenticated() && (
+        // El autor puede editar todo
+        request.auth.uid == resource.data.author.id ||
+        // Cualquier usuario puede actualizar SOLO reacciones y comentarios
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'commentsList', 'comments'])
+      );
+      
+      // Solo el autor puede borrar
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.author.id;
     }
     
     // Challenges collection (BLINDADO)
@@ -108,6 +126,14 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == resource.data.to;
       allow create: if isAuthenticated(); // Permitir que el sistema o users envíen notifs
       allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.to;
+    }
+    // Reglas para Notificaciones de Usuario
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Permitimos CREAR si el usuario está autenticado (para enviar notificaciones p2p)
+      // Bloqueamos update/delete para evitar manipulación, solo el dueño podría borrar (marcar leída se hace con update)
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == userId; // Para marcar como leída
     }
   }
 }

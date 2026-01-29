@@ -97,12 +97,12 @@
         <!-- User Footer -->
         <div class="mt-auto pt-6 border-t border-white/10 flex items-center gap-3">
             <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]">
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=random"
-                    class="rounded-full h-full w-full">
+                <img id="sidebarUserAvatar" src="https://ui-avatars.com/api/?name=Admin+User&background=random"
+                    class="rounded-full h-full w-full object-cover">
             </div>
-            <div class="flex-1">
-                <p class="text-xs font-bold">Admin User</p>
-                <p class="text-[10px] text-white/50">admin@empresa.com</p>
+            <div class="flex-1 overflow-hidden">
+                <p id="sidebarUserName" class="text-xs font-bold truncate">Admin User</p>
+                <p id="sidebarUserEmail" class="text-[10px] text-white/50 truncate">admin@empresa.com</p>
             </div>
             <button class="text-white/40 hover:text-white">
                 <span class="material-symbols-outlined text-lg">logout</span>
@@ -283,32 +283,35 @@
             <!-- Header: Cover Image & Logo -->
             <div class="relative mb-24">
                 <!-- Cover Image Upload -->
-                <div
+                <div onclick="document.getElementById('brandCoverInput').click()"
                     class="h-48 w-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden relative group cursor-pointer flex items-center justify-center">
                     <span class="material-symbols-outlined text-6xl text-white/5" id="coverPlaceholder">image</span>
                     <img src=""
                         class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-75 transition-opacity hidden"
                         id="coverPreview">
+                    <input type="file" id="brandCoverInput" class="hidden" accept="image/*"
+                        onchange="handleBrandImageUpload(event, 'cover')">
                     <div
                         class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
+                        <div
                             class="bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 border border-white/20">
                             <span class="material-symbols-outlined">add_photo_alternate</span>
                             Cambiar Portada
-                        </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Logo Upload (Floating) -->
                 <div class="absolute -bottom-10 left-8 z-50">
-                    <div
+                    <div onclick="document.getElementById('brandLogoInput').click()"
                         class="h-32 w-32 rounded-2xl bg-navy-900 p-1 border border-white/10 shadow-2xl relative group cursor-pointer">
                         <div
                             class="h-full w-full rounded-xl bg-white/10 flex items-center justify-center overflow-hidden relative">
                             <span class="material-symbols-outlined text-4xl text-white/20"
                                 id="logoPlaceholder">domain</span>
                             <img src="" class="hidden p-4 w-full h-full object-cover" id="logoPreview">
-
+                            <input type="file" id="brandLogoInput" class="hidden" accept="image/*"
+                                onchange="handleBrandImageUpload(event, 'logo')">
                             <!-- Overlay Edit -->
                             <div
                                 class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -343,7 +346,7 @@
                             <div class="space-y-2">
                                 <label class="text-xs font-bold uppercase tracking-wider text-white/50">Nombre
                                     Comercial</label>
-                                <input type="text" id="brandName" value="Empresa Demo"
+                                <input type="text" id="brandName" placeholder="Nombre de tu marca"
                                     class="input-field font-bold text-lg">
                             </div>
 
@@ -352,15 +355,15 @@
                                     (@usuario)</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">@</span>
-                                    <input type="text" id="brandHandle" value="empresa_demo" class="input-field pl-8">
+                                    <input type="text" id="brandHandle" placeholder="usuario_de_marca"
+                                        class="input-field pl-8">
                                 </div>
                             </div>
 
                             <div class="col-span-full space-y-2">
                                 <label class="text-xs font-bold uppercase tracking-wider text-white/50">Slogan / Bio
                                     Corta</label>
-                                <input type="text" id="brandBio"
-                                    value="Impulsando el bienestar corporativo y la salud de nuestros equipos."
+                                <input type="text" id="brandBio" placeholder="Escribe un slogan o bio corta..."
                                     class="input-field">
                                 <p class="text-[10px] text-white/30 text-right">62/140 caracteres</p>
                             </div>
@@ -368,8 +371,8 @@
                             <div class="col-span-full space-y-2">
                                 <label class="text-xs font-bold uppercase tracking-wider text-white/50">Descripción
                                     ("Sobre Nosotros")</label>
-                                <textarea rows="4"
-                                    class="input-field resize-none">Somos una organización comprometida con crear un entorno de trabajo saludable y motivador, fomentando hábitos positivos y el desarrollo personal de cada miembro de nuestra comunidad.</textarea>
+                                <textarea id="brandFullDesc" rows="4" placeholder="Describe tu empresa o servicios..."
+                                    class="input-field resize-none"></textarea>
                             </div>
                         </div>
                     </div>
@@ -386,7 +389,7 @@
                                 <label class="text-xs font-bold uppercase tracking-wider text-white/50">Dirección
                                     Principal</label>
                                 <div class="flex gap-2">
-                                    <input type="text" value="Av. Reforma 222, Ciudad de México"
+                                    <input type="text" id="brandAddress" placeholder="Ingresa la dirección física..."
                                         class="input-field flex-1">
                                     <button class="btn-secondary px-4"><span
                                             class="material-symbols-outlined">my_location</span></button>
@@ -437,7 +440,7 @@
                             <div class="space-y-2">
                                 <label class="text-xs font-bold uppercase tracking-wider text-white/50">Enlace
                                     Destino</label>
-                                <input type="text" value="https://empresa.com"
+                                <input type="text" id="brandCTAUrl" placeholder="https://tu-sitio.com"
                                     class="input-field text-neon-teal font-medium">
                             </div>
                         </div>
@@ -455,7 +458,7 @@
                                 <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
                                     <span class="text-xs font-bold">IG</span>
                                 </div>
-                                <input type="text" placeholder="@usuario" value="@empresa_demo"
+                                <input type="text" id="brandIG" placeholder="@usuario"
                                     class="input-field flex-1 text-sm">
                             </div>
 
@@ -470,8 +473,7 @@
                                 <div class="h-8 w-8 rounded bg-white/10 flex items-center justify-center text-white/50">
                                     <span class="text-xs font-bold">WA</span>
                                 </div>
-                                <input type="text" placeholder="+52..." value="+52 55 1234 5678"
-                                    class="input-field flex-1 text-sm">
+                                <input type="text" id="brandWA" placeholder="+52..." class="input-field flex-1 text-sm">
                             </div>
 
                             <div class="flex items-center gap-3">
@@ -498,9 +500,9 @@
                             <span class="material-symbols-outlined text-sm">lock</span>
                         </div>
                         <p class="text-xs text-white/50">Solo visible para administración</p>
-                        <div class="mt-2 text-xs font-mono bg-black/20 p-2 rounded">
-                            RFC: GEN010101ABC<br>
-                            Razón: Empresa Demo S.A. de C.V.
+                        <div id="fiscalDataBox" class="mt-2 text-xs font-mono bg-black/20 p-2 rounded">
+                            RFC: <span id="brandRFC">---</span><br>
+                            Razón: <span id="brandLegalName">---</span>
                         </div>
                     </div>
 

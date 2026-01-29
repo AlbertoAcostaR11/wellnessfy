@@ -1,18 +1,20 @@
 import { db, auth } from './src/config/firebaseInit.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { collection, addDoc, setDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, addDoc, setDoc, doc, serverTimestamp, getDoc, getDocs, query, where, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Auth Guard
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        // Prevent redirect loop if already on index (though dashboard.js shouldn't be loaded on index)
         if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
             window.location.href = 'index.html';
         }
+    } else {
+        console.log("👤 Usuario autenticado:", user.email);
+        await bootstrapDashboard(user);
     }
 });
 
-const ORG_ID = "DEMO_CORP_001";
+let ORG_ID = "DEMO_CORP_001";
 
 /**
  * Wellnessfy Business - Dashboard Logic
@@ -20,7 +22,19 @@ const ORG_ID = "DEMO_CORP_001";
  */
 
 // Estado Global
-
+let state = {
+    organization: {
+        id: ORG_ID,
+        name: "Mi Empresa",
+        handle: "mi_empresa"
+    },
+    newChallenge: {
+        sports: [],
+        cover: ''
+    },
+    rewardsLibrary: [],
+    currentUser: null
+};
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
@@ -428,6 +442,188 @@ function showToast(message, type = 'info') {
         toast.classList.add('translate-y-10', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// ==========================================
+// 4. BOOTSTRAP DINÁMICO
+// ==========================================
+
+async function bootstrapDashboard(user) {
+    try {
+        // 1. Cargar Perfil de Usuario
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+        if (userSnap.exists()) {
+            state.currentUser = { uid: user.uid, ...userSnap.data() };
+            updateUserSidebar(state.currentUser);
+        }
+
+        // 2. Buscar Empresa del Usuario
+        const companyQuery = query(collection(db, "companies"), where("ownerId", "==", user.uid), limit(1));
+        const companySnap = await getDocs(companyQuery);
+
+        if (!companySnap.empty) {
+            const companyDoc = companySnap.docs[0];
+            const companyData = companyDoc.data();
+            ORG_ID = companyDoc.id;
+
+            state.organization = {
+                id: ORG_ID,
+                name: companyData.name,
+                handle: companyData.handle || companyData.name.toLowerCase().replace(/\s+/g, '_'),
+                ...companyData
+            };
+
+            console.log("🏢 Dashboard vinculado a:", state.organization.name);
+            updateOrganizationUI();
+            loadTeamMembers(ORG_ID);
+        } else {
+            console.warn("⚠️ No se encontró empresa vinculada. Usando modo DEMO.");
+            loadTeamMembers(ORG_ID); // Load demo team or empty
+        }
+
+    } catch (error) {
+        console.error("❌ Error en bootstrap:", error);
+    }
+}
+
+function updateUserSidebar(user) {
+    const avatar = document.getElementById('sidebarUserAvatar');
+    const name = document.getElementById('sidebarUserName');
+    const email = document.getElementById('sidebarUserEmail');
+
+    if (avatar) avatar.src = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random`;
+    if (name) name.innerText = user.name || 'Admin User';
+    if (email) email.innerText = user.email || 'admin@empresa.com';
+}
+
+function updateOrganizationUI() {
+    const org = state.organization;
+
+    // 1. Inputs de Perfil
+    const brandNameInput = document.getElementById('brandName');
+    const brandHandleInput = document.getElementById('brandHandle');
+    const brandBioInput = document.getElementById('brandBio');
+    const brandFullDesc = document.getElementById('brandFullDesc');
+    const brandAddress = document.getElementById('brandAddress');
+    const brandCTAUrl = document.getElementById('brandCTAUrl');
+    const brandIG = document.getElementById('brandIG');
+    const brandWA = document.getElementById('brandWA');
+
+    if (brandNameInput) brandNameInput.value = org.name || '';
+    if (brandHandleInput) brandHandleInput.value = org.handle || '';
+    if (brandBioInput) brandBioInput.value = org.bio || '';
+    if (brandFullDesc) brandFullDesc.value = org.description || '';
+    if (brandAddress) brandAddress.value = org.address || '';
+    if (brandCTAUrl) brandCTAUrl.value = org.ctaUrl || '';
+    if (brandIG) brandIG.value = org.instagram || '';
+    if (brandWA) brandWA.value = org.whatsapp || '';
+
+    // 2. Datos Fiscales
+    const brandRFC = document.getElementById('brandRFC');
+    const brandLegalName = document.getElementById('brandLegalName');
+    if (brandRFC) brandRFC.innerText = org.rfc || '---';
+    if (brandLegalName) brandLegalName.innerText = org.legalName || '---';
+
+    // 3. Imágenes (Portadas y Logo)
+    const logoPreview = document.getElementById('logoPreview');
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+    const coverPreview = document.getElementById('coverPreview');
+    const coverPlaceholder = document.getElementById('coverPlaceholder');
+
+    if (org.logoURL) {
+        if (logoPreview) {
+            logoPreview.src = org.logoURL;
+            logoPreview.classList.remove('hidden');
+        }
+        if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
+    }
+
+    if (org.coverURL) {
+        if (coverPreview) {
+            coverPreview.src = org.coverURL;
+            coverPreview.classList.remove('hidden');
+        }
+        if (coverPlaceholder) coverPlaceholder.classList.add('hidden');
+    }
+
+    // 4. Dashboard Header
+    const dashboardTitle = document.querySelector('#dashboardSection h1');
+    if (dashboardTitle) dashboardTitle.innerText = `${org.name} Insights`;
+}
+
+async function loadTeamMembers(companyId) {
+    const tbody = document.getElementById('adminTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-white/20"><span class="material-symbols-outlined animate-spin">sync</span> Cargando equipo...</td></tr>`;
+
+    try {
+        // 1. Obtener Propietario (Creator)
+        const companyRef = doc(db, 'companies', companyId);
+        const companySnap = await getDoc(companyRef);
+
+        let membersHtml = '';
+
+        if (companySnap.exists()) {
+            const companyData = companySnap.data();
+            const ownerId = companyData.ownerId;
+
+            // Cargar datos del owner
+            const ownerSnap = await getDoc(doc(db, 'users', ownerId));
+            if (ownerSnap.exists()) {
+                const owner = ownerSnap.data();
+                membersHtml += createMemberRowHtml({
+                    uid: ownerId,
+                    ...owner
+                }, 'PROPIETARIO', 'ACTIVO');
+            }
+        } else if (companyId === "DEMO_CORP_001") {
+            // Fallback User
+            membersHtml += createMemberRowHtml({
+                name: 'Administrador',
+                username: '@admin',
+                email: 'admin@wellnessfy.io',
+                avatar: null
+            }, 'PROPIETARIO', 'ACTIVO');
+        }
+
+        // 2. Cargar Invitados / Otros Miembros (Si existiera la subcolección)
+        // Por ahora mantenemos la lógica simple de mostrar al creador.
+
+        tbody.innerHTML = membersHtml || '<tr><td colspan="5" class="px-6 py-8 text-center text-white/30 text-xs italic">No hay miembros en el equipo</td></tr>';
+
+    } catch (error) {
+        console.error("Error cargando equipo:", error);
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-red-400 text-xs italic">Error al cargar equipo</td></tr>';
+    }
+}
+
+function createMemberRowHtml(user, role, status) {
+    const avatarUrl = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random`;
+    return `
+        <tr class="hover:bg-white/5 transition-colors animate-fade-in">
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                        <img src="${avatarUrl}" class="size-full object-cover">
+                    </div>
+                    <div>
+                        <p class="font-bold text-white">${user.name || 'Usuario'}</p>
+                        <p class="text-[10px] text-white/50">${user.username || user.email}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4"><span class="px-2 py-1 rounded text-[10px] font-bold bg-white/10 text-neon-teal border border-neon-teal/20">${role}</span></td>
+            <td class="px-6 py-4"><span class="text-xs text-emerald-400 font-bold">${status}</span></td>
+            <td class="px-6 py-4 text-white/50 text-xs">Recientemente</td>
+            <td class="px-6 py-4 text-right">
+                ${role !== 'PROPIETARIO' ? `
+                <button class="text-white/40 hover:text-white">
+                    <span class="material-symbols-outlined">more_vert</span>
+                </button>` : ''}
+            </td>
+        </tr>
+    `;
 }
 
 // ==========================================
@@ -1376,23 +1572,97 @@ window.saveReward = async () => {
 
 window.saveBrandProfile = async () => {
     const brandName = document.getElementById('brandName')?.value;
+    const brandHandle = document.getElementById('brandHandle')?.value;
     const brandBio = document.getElementById('brandBio')?.value;
+    const brandFullDesc = document.getElementById('brandFullDesc')?.value;
+    const brandAddress = document.getElementById('brandAddress')?.value;
+    const brandCTAUrl = document.getElementById('brandCTAUrl')?.value;
+    const brandIG = document.getElementById('brandIG')?.value;
+    const brandWA = document.getElementById('brandWA')?.value;
 
     if (!brandName) return showToast('Nombre de marca requerido', 'error');
     showToast('Actualizando perfil...', 'info');
 
     try {
-        const orgRef = doc(db, 'organizations', ORG_ID);
-        await setDoc(orgRef, {
+        const companyRef = doc(db, 'companies', ORG_ID);
+        const updateData = {
             name: brandName,
+            handle: brandHandle,
             bio: brandBio,
+            description: brandFullDesc,
+            address: brandAddress,
+            ctaUrl: brandCTAUrl,
+            instagram: brandIG,
+            whatsapp: brandWA,
             updatedAt: serverTimestamp()
-        }, { merge: true });
+        };
+
+        // Incluir imágenes si hay cambios pendientes
+        if (state.pendingLogo) updateData.logoURL = state.pendingLogo;
+        if (state.pendingCover) updateData.coverURL = state.pendingCover;
+
+        await setDoc(companyRef, updateData, { merge: true });
+
+        // Actualizar estado local
+        state.organization = {
+            ...state.organization,
+            ...updateData
+        };
+
+        // Limpiar pendientes
+        delete state.pendingLogo;
+        delete state.pendingCover;
 
         showToast('Perfil actualizado correctamente', 'success');
+        updateOrganizationUI();
     } catch (e) {
         console.error(e);
         showToast('Error al actualizar perfil', 'error');
+    }
+};
+
+window.handleBrandImageUpload = async (event, type) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validar tamaño (Base64 puede ser pesado, limitar a ~2MB por seguridad de Firestore doc limit 1MB, pero let's try 500KB)
+    if (file.size > 800000) {
+        showToast('La imagen es demasiado pesada (Máx 800KB)', 'error');
+        return;
+    }
+
+    try {
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        if (type === 'logo') {
+            state.pendingLogo = base64;
+            const preview = document.getElementById('logoPreview');
+            const placeholder = document.getElementById('logoPlaceholder');
+            if (preview) {
+                preview.src = base64;
+                preview.classList.remove('hidden');
+            }
+            if (placeholder) placeholder.classList.add('hidden');
+        } else {
+            state.pendingCover = base64;
+            const preview = document.getElementById('coverPreview');
+            const placeholder = document.getElementById('coverPlaceholder');
+            if (preview) {
+                preview.src = base64;
+                preview.classList.remove('hidden');
+            }
+            if (placeholder) placeholder.classList.add('hidden');
+        }
+
+        showToast('Imagen lista (clic en Guardar para confirmar)');
+    } catch (err) {
+        console.error('Error procesando imagen:', err);
+        showToast('Error al cargar la imagen', 'error');
     }
 };
 

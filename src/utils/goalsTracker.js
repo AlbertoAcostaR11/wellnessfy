@@ -5,6 +5,7 @@
 
 import { AppState } from './state.js';
 import { goalsManager } from './goalsManager.js';
+import { db } from '../config/firebaseInit.js';
 import { getLocalISOString, getCurrentWeekDays } from './dateHelper.js';
 
 export class GoalsTracker {
@@ -272,7 +273,40 @@ export class GoalsTracker {
             const exists = goals._milestones[today].some(m => m.type === milestone.type);
             if (!exists) {
                 goals._milestones[today].push(milestone.type);
-                console.log('🏆 Logro detectado (sin UI):', milestone);
+
+                // Mapa de nombres amigables
+                const goalNames = {
+                    dailySteps: 'Pasos',
+                    dailyCalories: 'Calorías',
+                    dailyActiveMinutes: 'Minutos Activos',
+                    dailySleepHours: 'Sueño',
+                    dailyMeditationMinutes: 'Meditación',
+                    dailyBreathingSessions: 'Respiración',
+                    weeklyExerciseDays: 'Días de Ejercicio',
+                    weeklyMindfulnessDays: 'Días de Mindfulness'
+                };
+
+                const friendlyName = goalNames[milestone.type] || milestone.type;
+
+                console.log(`🏆 Logro detectado: ${friendlyName}`, milestone);
+
+                // Trigger Notification (Frontend -> DB)
+                if (window.NotificationService && this.userId) {
+                    window.NotificationService.send('DAILY_GOAL', {
+                        targetUserId: this.userId,
+                        actor: {
+                            id: 'system',
+                            name: 'Wellnessfy Coach',
+                            avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' // Trophy Icon
+                        },
+                        title: '¡Objetivo Alcanzado! 🎯',
+                        message: `¡Felicidades! Has completado tu meta de ${friendlyName} hoy.`,
+                        data: {
+                            click_action: '/activity',
+                            goalType: milestone.type
+                        }
+                    });
+                }
             }
         });
     }

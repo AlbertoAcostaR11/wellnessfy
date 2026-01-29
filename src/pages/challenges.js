@@ -9,12 +9,8 @@ import { mountSportSelector } from '../utils/sportSelectorInit.js';
 
 let currentTab = 'mine'; // 'mine' | 'explore'
 
-// Datos Mock para pestaña Explorar
-const PUBLIC_CHALLENGES = [
-    // Retos públicos reales vendrán de la base de datos
-];
-
-export function renderChallenges() {
+export function renderChallenges(tab = 'mine') {
+    currentTab = tab;
     return `
         <div class="space-y-6">
             <!-- Header Standard -->
@@ -55,15 +51,7 @@ export function renderChallenges() {
 }
 
 window.switchChallengeTab = function (tab) {
-    currentTab = tab;
-    // Simple re-render logic handling
-    const container = document.getElementById('mainContent'); // Assuming mainContent is the wrapper
-    container.innerHTML = renderChallenges();
-
-    // Init Explore Module if tab is active
-    if (tab === 'explore') {
-        setTimeout(() => ExploreModule.init(), 100);
-    }
+    navigateTo('challenges', tab);
 };
 
 // --- SUBMÓDULO: MIS DESAFÍOS ---
@@ -242,15 +230,35 @@ function renderChallengeCard(challenge, isMine = true) {
 
     // Render Controls
     let controlsHtml = '';
+    // Dynamic Avatar (Live Update for Owner)
+    // En AppState la propiedad es 'avatar', no 'photoURL' (aunque Firebase usa photoURL)
+    let creatorAvatar = challenge.creator.photoURL || challenge.creator.avatar;
+
+    if (isOwner && (AppState.currentUser.avatar || AppState.currentUser.photoURL)) {
+        creatorAvatar = AppState.currentUser.avatar || AppState.currentUser.photoURL;
+    }
+
+    if (!creatorAvatar) {
+        creatorAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=00f5d4&color=0f172a&bold=true`;
+    }
+
     if (isMine) {
-        // ... (Menú existente)
+        // Creator info on left + Menu on right
         controlsHtml = `
-            <div class="absolute top-3 right-3 flex items-center gap-2">
+            <!-- Creator Info (Top Left) -->
+            <div class="absolute top-3 left-3 flex items-center gap-3 z-10">
+                <div class="size-12 rounded-full border-2 border-white/20 overflow-hidden shadow-lg">
+                    <img src="${creatorAvatar}" alt="${creatorName}" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=00f5d4&color=0f172a&bold=true'">
+                </div>
                 <div class="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                     <span class="text-[9px] font-bold text-white uppercase tracking-wider">${creatorName}</span>
                     ${challenge.creator.isBrand ? '<span class="material-symbols-outlined text-[12px] text-[#00d2ff]" style="font-variation-settings: \'FILL\' 1">verified</span>' : ''}
                 </div>
-                <button class="size-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors z-20"
+            </div>
+            
+            <!-- Menu Button (Top Right) -->
+            <div class="absolute top-3 right-3">
+                <button class="size-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors z-20"
                         onclick="event.stopPropagation(); showChallengeMenu('${challenge.id}')">
                     <span class="material-symbols-outlined text-sm text-white">more_vert</span>
                 </button>
@@ -276,14 +284,17 @@ function renderChallengeCard(challenge, isMine = true) {
             </div>
          `;
     } else {
-        // Botón UNIRSE
+        // Creator info on left only (no menu for explore cards)
         controlsHtml = `
-            <div class="absolute top-3 right-3 flex items-center gap-2">
-                 <div class="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+            <!-- Creator Info (Top Left) -->
+            <div class="absolute top-3 left-3 flex items-center gap-3 z-10">
+                <div class="size-12 rounded-full border-2 border-white/20 overflow-hidden shadow-lg">
+                    <img src="${creatorAvatar}" alt="${creatorName}" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=00f5d4&color=0f172a&bold=true'">
+                </div>
+                <div class="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                     <span class="text-[9px] font-bold text-white uppercase tracking-wider">${creatorName}</span>
                     ${challenge.creator.isBrand ? '<span class="material-symbols-outlined text-[12px] text-[#00d2ff]" style="font-variation-settings: \'FILL\' 1">verified</span>' : ''}
                 </div>
-                <!-- Join Button Action handled by parent click or specific logic -->
             </div>
          `;
     }
@@ -1047,7 +1058,14 @@ window.handleCreateChallenge = async function () {
             const newChallenge = {
                 participants: 1,
                 progress: 0,
-                creator: { name: AppState.currentUser.name || 'Tú', isBrand: false },
+                creator: {
+                    name: AppState.currentUser.name || 'Tú',
+                    username: AppState.currentUser.username,
+                    avatar: AppState.currentUser.avatar || AppState.currentUser.photoURL,
+                    photoURL: AppState.currentUser.avatar || AppState.currentUser.photoURL,
+                    id: AppState.currentUser.id,
+                    isBrand: false
+                },
                 createdAt: Date.now(),
                 ...challengeData
             };

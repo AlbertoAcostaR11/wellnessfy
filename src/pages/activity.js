@@ -6,6 +6,7 @@ import { syncHealthData } from '../utils/healthSync_v2.js';
 import { renderWeeklyCharts } from '../utils/weeklyCharts.js';
 import { getLocalISOString, getCurrentWeekDays, getWeekNumber, getWeekStart, getWeekEnd, getWeekStartFromNumber, getWeekEndFromNumber, getFullWeekDays, formatWeekRange } from '../utils/dateHelper.js';
 import { renderHistorialTab } from '../utils/historialTabHelper.js';
+import { renderGoalIndicator } from '../utils/goalsProgressComponents.js';
 import { isPhysicalSport, isMindfulnessActivity } from '../utils/activityClassifier.js';
 
 // --- Tab Switching Logic ---
@@ -296,14 +297,121 @@ function renderResumenTab() {
         if (key.includes('breath') || key.includes('respiracion')) breathMins += d;
     });
 
+    // Goals Summary Logic
+    // Resilient Loading: Si no hay objetivos, intentamos cargarlos (Lazy Load)
+    if (!AppState.goalsData && !window._isLoadingActivityGoals) {
+        window._isLoadingActivityGoals = true;
+        console.log('⚠️ [ACTIVITY] Goals data missing. Lazy loading...');
+        import('../utils/goalsManager.js').then(({ goalsManager }) => {
+            if (AppState.currentUser?.uid) {
+                goalsManager.loadGoals(AppState.currentUser.uid).then(() => {
+                    console.log('✅ [ACTIVITY] Goals lazy loaded.');
+                    window._isLoadingActivityGoals = false;
+                    // Re-render ONLY if current page is still activity
+                    if (AppState.currentPage === 'activity') {
+                        const tab = document.getElementById('tab-resumen');
+                        if (tab) tab.innerHTML = renderResumenTab();
+                    }
+                });
+            }
+        });
+
+        // Return placeholder while loading
+        return `
+            <div class="glass-card rounded-2xl p-6 mb-6 animate-pulse flex items-center justify-center gap-4 bg-white/5 border border-white/5">
+                <div class="size-12 rounded-full bg-white/10"></div>
+                <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-white/10 rounded w-1/3"></div>
+                    <div class="h-2 bg-white/10 rounded w-full"></div>
+                </div>
+            </div>
+            
+            ${renderStatsGrid(todayStats, stepsVal, activeValText, sleepVal, caloriesVal, heartVal, medMins, yogaMins, breathMins)}
+        `;
+    }
+
+    const goalsHTML = AppState.goalsData ? (() => {
+        const goals = AppState.goalsData;
+        const dailyGoals = [
+            { key: 'dailySteps', current: todayStats.steps || 0 },
+            { key: 'dailyCalories', current: todayStats.calories || 0 },
+            { key: 'dailyActiveMinutes', current: activeMinutes },
+            { key: 'dailySleepHours', current: (todayStats.sleep?.duration || 0) / 60 },
+            { key: 'dailyMeditationMinutes', current: medMins }
+        ];
+
+        const enabledGoals = dailyGoals.filter(g => goals[g.key]?.enabled);
+        if (enabledGoals.length === 0) return '';
+
+        const reachedCount = enabledGoals.filter(g => {
+            const goal = goals[g.key];
+            return g.current >= goal.target;
+        }).length;
+
+        // NEW LOGIC: Progress is simply (Goals Reached / Total Enabled Goals)
+        const totalProgress = (reachedCount / enabledGoals.length) * 100;
+
+        return `
+            <section class="glass-card rounded-2xl p-5 mb-4 border border-white/5 bg-gradient-to-br from-[#00f5d4]/5 to-transparent">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#00f5d4]">flag</span>
+                        <h3 class="text-white font-bold">Objetivos de Hoy</h3>
+                    </div>
+                    <button onclick="window.navigateTo('goals')" class="text-[#00f5d4] text-xs font-bold hover:underline">
+                        Editar
+                    </button>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative size-16">
+                        <svg class="transform -rotate-90 size-16" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"/>
+                            <circle cx="50" cy="50" r="45" stroke="#00f5d4" stroke-width="8" fill="none"
+                                    stroke-dasharray="${2 * Math.PI * 45}"
+                                    stroke-dashoffset="${2 * Math.PI * 45 * (1 - totalProgress / 100)}"
+                                    stroke-linecap="round"
+                                    style="filter: drop-shadow(0 0 4px #00f5d440)"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-sm font-bold text-[#00f5d4]">${Math.round(totalProgress)}%</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white/60 text-xs mb-1">${reachedCount} de ${enabledGoals.length} completados</p>
+                        <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full bg-gradient-to-r from-[#00f5d4] to-[#00d2ff]" 
+                                 style="width: ${totalProgress}%; box-shadow: 0 0 8px #00f5d440"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
+    })() : '';
+
+    return `
+        ${goalsHTML}
+        ${renderStatsGrid(todayStats, stepsVal, activeValText, sleepVal, caloriesVal, heartVal, medMins, yogaMins, breathMins, activeMinutes)}
+    `;
+}
+
+// Helper to render the grid (refactored to avoid code dupe)
+function renderStatsGrid(todayStats, stepsVal, activeValText, sleepVal, caloriesVal, heartVal, medMins, yogaMins, breathMins, activeMinutes) {
+    // Helper scopes (Restored)
+    const todayISO = getLocalISOString();
     const fmt = (min) => {
         if (!min) return `<span class="text-white/40">0</span><span class="text-xs text-white/20 ml-1">m</span>`;
         const h = Math.floor(min / 60), m = Math.round(min % 60);
         return h > 0 ? `${h}<span class="text-xs text-white/40">h</span> ${m}m` : `${m}<span class="text-xs text-white/40">m</span>`;
     };
 
+    const { renderGoalIndicator } = window.GoalComponents || { renderGoalIndicator: () => '' };
+    // Note: renderGoalIndicator imported at top of file, but let's assume it's available or use dynamic import if needed.
+    // Actually, checking lines 1-10, we imported { renderGoalIndicator } from '../utils/goalsProgressComponents.js';
+    // So we can use it directly.
+
     return `
         <section class="glass-card rounded-3xl p-6 mb-6 relative overflow-hidden shadow-2xl">
+
             <!-- Neon Ring & Header -->
             <div class="flex items-center justify-between mb-8 relative z-10">
                 <h3 class="text-lg font-bold text-white">Análisis Diario</h3>
@@ -314,31 +422,55 @@ function renderResumenTab() {
 
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-3 gap-2 w-full">
-                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#00ff9d] text-xl mb-1">directions_walk</span>
-                        <span class="text-[10px] text-white/50 mb-1">Pasos</span>
+                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-[#00ff9d] mb-1">directions_walk</span>
+                        <span class="text-[10px] text-white/50 mb-1 text-center">Pasos</span>
                         <span class="text-lg font-bold text-[#00ff9d]">${stepsVal}</span>
+                        ${AppState.goalsData?.dailySteps?.enabled ? renderGoalIndicator(
+        todayStats.steps || 0,
+        AppState.goalsData.dailySteps.target,
+        '',
+        '#00ff9d'
+    ) : ''}
                     </div>
-                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#00d2ff] text-xl mb-1">fitness_center</span>
-                        <span class="text-[10px] text-white/50 mb-1">Activo</span>
+                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-[#00d2ff] mb-1">fitness_center</span>
+                        <span class="text-[10px] text-white/50 mb-1 text-center">Activo</span>
                         <span class="text-lg font-bold text-[#00d2ff]">${activeValText}</span>
+                        ${AppState.goalsData?.dailyActiveMinutes?.enabled ? renderGoalIndicator(
+        activeMinutes,
+        AppState.goalsData.dailyActiveMinutes.target,
+        'min',
+        '#00d2ff'
+    ) : ''}
                     </div>
-                    <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#d946ef] text-xl mb-1">bedtime</span>
-                        <span class="text-[10px] text-white/50 mb-1">Sueño</span>
+                    <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-[#d946ef] mb-1">bedtime</span>
+                        <span class="text-[10px] text-white/50 mb-1 text-center">Sueño</span>
                         <span class="text-lg font-bold text-[#d946ef]">${sleepVal}</span>
+                        ${AppState.goalsData?.dailySleepHours?.enabled ? renderGoalIndicator(
+        (todayStats.sleep?.duration || 0) / 60,
+        AppState.goalsData.dailySleepHours.target,
+        'h',
+        '#d946ef'
+    ) : ''}
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 w-full">
-                     <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#fb923c] text-xl mb-1">local_fire_department</span>
-                        <span class="text-[10px] text-white/50 mb-1">Calorías</span>
+                     <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-[#fb923c] mb-1">local_fire_department</span>
+                        <span class="text-[10px] text-white/50 mb-1 text-center">Calorías</span>
                         <span class="text-lg font-bold text-[#fb923c]">${caloriesVal}</span>
+                        ${AppState.goalsData?.dailyCalories?.enabled ? renderGoalIndicator(
+        todayStats.calories || 0,
+        AppState.goalsData.dailyCalories.target,
+        'kcal',
+        '#fb923c'
+    ) : ''}
                     </div>
-                     <div class="p-4 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center">
-                        <span class="material-symbols-outlined text-[#f43f5e] text-xl mb-1">favorite</span>
-                        <span class="text-[10px] text-white/50 mb-1">Ritmo</span>
+                     <div class="p-3 glass-card bg-[#0f172a]/50 rounded-xl flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-[#f43f5e] mb-1">favorite</span>
+                        <span class="text-[10px] text-white/50 mb-1 text-center">Ritmo</span>
                         <span class="text-lg font-bold text-white">${heartVal}</span>
                     </div>
                 </div>
@@ -363,22 +495,38 @@ function renderResumenTab() {
         <section class="glass-card rounded-3xl p-6 mb-24 mt-6 border border-white/5">
             <h3 class="text-lg font-bold text-white mb-4">Bienestar Emocional</h3>
             <div class="grid grid-cols-2 gap-3">
-                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center border border-white/5">
+                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center justify-center border border-white/5">
                     <span class="material-symbols-outlined text-[#a78bfa] text-2xl mb-1">spa</span>
                     <span class="text-[10px] text-[#a78bfa] font-bold">MEDITACIÓN</span>
                     <span class="text-xl font-bold text-white/90">${fmt(medMins)}</span>
+                    ${AppState.goalsData?.dailyMeditationMinutes?.enabled ? renderGoalIndicator(
+        medMins,
+        AppState.goalsData.dailyMeditationMinutes.target,
+        'min',
+        '#a78bfa'
+    ) : ''}
                 </div>
-                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center border border-white/5">
+                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center justify-center border border-white/5">
                     <span class="material-symbols-outlined text-[#f472b6] text-2xl mb-1">self_improvement</span>
                     <span class="text-[10px] text-[#f472b6] font-bold">YOGA</span>
                     <span class="text-xl font-bold text-white/90">${fmt(yogaMins)}</span>
                 </div>
-                 <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center border border-white/5">
+                 <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center justify-center border border-white/5">
                     <span class="material-symbols-outlined text-[#38bdf8] text-2xl mb-1">air</span>
                     <span class="text-[10px] text-[#38bdf8] font-bold">RESPIRACIÓN</span>
                     <span class="text-xl font-bold text-white/90">${fmt(breathMins)}</span>
+                    ${AppState.goalsData?.dailyBreathingSessions?.enabled ? renderGoalIndicator(
+        (AppState.activities || []).filter(act => {
+            const actDate = getLocalISOString(new Date(act.startTime));
+            const key = (act.sportKey || '').toLowerCase();
+            return actDate === todayISO && (key.includes('breath') || key.includes('respiracion')) && act.duration >= 1;
+        }).length,
+        AppState.goalsData.dailyBreathingSessions.target,
+        'sesiones',
+        '#38bdf8'
+    ) : ''}
                 </div>
-                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center border border-white/5">
+                <div class="p-4 bg-[#151b2e]/60 rounded-xl flex flex-col items-center justify-center border border-white/5">
                     <span class="material-symbols-outlined text-orange-400 text-2xl mb-1">psychology</span>
                     <span class="text-[10px] text-orange-400 font-bold">ESTRÉS</span>
                     <span class="text-xl font-bold text-white/40">--</span>

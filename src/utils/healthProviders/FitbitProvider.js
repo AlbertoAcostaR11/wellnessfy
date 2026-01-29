@@ -280,31 +280,46 @@ export class FitbitProvider extends HealthProvider {
     }
 
     /**
+     * Helper para realizar peticiones a través del Proxy de Firebase
+     * Evita problemas de CORS en producción
+     */
+    async _fetchThroughProxy(endpoint) {
+        if (!this.token) throw new Error('Token de Fitbit no disponible');
+
+        try {
+            const response = await fetch(this.proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    endpoint: endpoint,
+                    token: this.token
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error en Proxy Fitbit:', response.status, errorData);
+                throw new Error(errorData.details || `Error del servidor: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetch proxy:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Obtener actividades de un día específico
-     * Usa proxy CORS temporal para desarrollo
+     * Usa el proxy de Wellnessfy para evitar CORS
      */
     async getActivitiesForDate(dateStr) {
-        const fitbitUrl = `${this.baseUrl}/user/-/activities/date/${dateStr}.json`;
+        const endpoint = `/1/user/-/activities/date/${dateStr}.json`;
+        console.log(`🔄 Solicitando actividades vía Proxy para: ${dateStr}`);
 
-        // TEMPORAL: Usar proxy CORS público mientras se activa Firebase Functions
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
-
-        console.log(`🔄 Solicitando actividades vía CORS proxy para: ${dateStr}`);
-
-        const response = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text().catch(() => 'Unknown error');
-            console.error('Fitbit API error:', response.status, errorText);
-            throw new Error(`Fitbit API error: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await this._fetchThroughProxy(endpoint);
         return data.activities || [];
     }
 
@@ -313,18 +328,12 @@ export class FitbitProvider extends HealthProvider {
      */
     async getSteps(date) {
         const dateStr = this.formatDate(date);
-        const fitbitUrl = `${this.baseUrl}/user/-/activities/steps/date/${dateStr}/1d.json`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
+        const endpoint = `/1/user/-/activities/steps/date/${dateStr}/1d.json`;
 
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
-        });
-
-        if (!response.ok) return 0;
-        const data = await response.json();
-        return parseInt(data['activities-steps']?.[0]?.value || 0);
+        try {
+            const data = await this._fetchThroughProxy(endpoint);
+            return parseInt(data['activities-steps']?.[0]?.value || 0);
+        } catch (e) { return 0; }
     }
 
     /**
@@ -332,23 +341,19 @@ export class FitbitProvider extends HealthProvider {
      */
     async getHeartRate(date) {
         const dateStr = this.formatDate(date);
-        const fitbitUrl = `${this.baseUrl}/user/-/activities/heart/date/${dateStr}/1d.json`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
+        const endpoint = `/1/user/-/activities/heart/date/${dateStr}/1d.json`;
 
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
-        });
+        try {
+            const data = await this._fetchThroughProxy(endpoint);
+            const heartData = data['activities-heart']?.[0]?.value;
 
-        if (!response.ok) return { resting: null, zones: [] };
-        const data = await response.json();
-        const heartData = data['activities-heart']?.[0]?.value;
-
-        return {
-            resting: heartData?.restingHeartRate || null,
-            zones: heartData?.heartRateZones || []
-        };
+            return {
+                resting: heartData?.restingHeartRate || null,
+                zones: heartData?.heartRateZones || []
+            };
+        } catch (e) {
+            return { resting: null, zones: [] };
+        }
     }
 
     /**
@@ -392,25 +397,11 @@ export class FitbitProvider extends HealthProvider {
         const startStr = this.formatDate(startDate);
         const endStr = this.formatDate(endDate);
 
-        // Fitbit API v1.2 soporta rangos
-        const fitbitUrl = `https://api.fitbit.com/1.2/user/-/sleep/date/${startStr}/${endStr}.json`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
-
-        console.log(`💤 Solicitando sueño (Rango) para: ${startStr} a ${endStr}`);
+        const endpoint = `/1.2/user/-/sleep/date/${startStr}/${endStr}.json`;
+        console.log(`💤 Solicitando sueño (Rango vía Proxy) para: ${startStr} a ${endStr}`);
 
         try {
-            const response = await fetch(proxyUrl, {
-                headers: {
-                    'Authorization': `Bearer ${this.token}`
-                }
-            });
-
-            if (!response.ok) {
-                console.warn('Error fetching sleep range:', response.status);
-                return [];
-            }
-
-            const data = await response.json();
+            const data = await this._fetchThroughProxy(endpoint);
             const sleepLogs = data.sleep || [];
 
             // Procesar y normalizar logs de sueño
@@ -459,10 +450,8 @@ export class FitbitProvider extends HealthProvider {
         // Endpoints de Series Temporales
         const resources = ['steps', 'calories', 'distance'];
         const requests = resources.map(res => {
-            const url = `https://api.fitbit.com/1/user/-/activities/${res}/date/${startStr}/${endStr}.json`;
-            return fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            }).then(r => r.json());
+            const endpoint = `/1/user/-/activities/${res}/date/${startStr}/${endStr}.json`;
+            return this._fetchThroughProxy(endpoint);
         });
 
         try {
@@ -504,18 +493,12 @@ export class FitbitProvider extends HealthProvider {
      */
     async getCalories(date) {
         const dateStr = this.formatDate(date);
-        const fitbitUrl = `${this.baseUrl}/user/-/activities/calories/date/${dateStr}/1d.json`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(fitbitUrl)}`;
+        const endpoint = `/1/user/-/activities/calories/date/${dateStr}/1d.json`;
 
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
-        });
-
-        if (!response.ok) return 0;
-        const data = await response.json();
-        return parseInt(data['activities-calories']?.[0]?.value || 0);
+        try {
+            const data = await this._fetchThroughProxy(endpoint);
+            return parseInt(data['activities-calories']?.[0]?.value || 0);
+        } catch (e) { return 0; }
     }
 
     /**

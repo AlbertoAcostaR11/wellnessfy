@@ -24,7 +24,8 @@ export const AppState = {
     wellnessApps: [],
     notifications: [],
     activities: [],
-    todayStats: null
+    todayStats: null,
+    userCompany: null // Fase 1: Soporte para Empresa/Business
 };
 
 // Load user data from localStorage

@@ -1,14 +1,54 @@
 
 import { AppState } from '../utils/state.js';
-// Dynamic imports for Firebase are handled inside functions to ensure stability
-
 const CATEGORIES = [
-    { id: 'social', title: 'Social', icon: 'favorite' },
-    { id: 'friend_requests', title: 'Solicitudes de Amistad', icon: 'person_add' },
-    { id: 'challenges', title: 'Desafíos', icon: 'emoji_events' },
-    { id: 'goals', title: 'Objetivos y Logros', icon: 'track_changes' },
-    { id: 'activity', title: 'Recordatorios de Actividad', icon: 'directions_run' },
-    { id: 'wellness', title: 'Bienestar y Mindfulness', icon: 'self_improvement' }
+    {
+        id: 'social',
+        title: 'Social',
+        description: 'Comentarios, reacciones y menciones',
+        icon: 'chat_bubble'
+    },
+    {
+        id: 'friends',
+        title: 'Amigos',
+        description: 'Solicitudes de amistad y nuevos amigos',
+        icon: 'person_add'
+    },
+    {
+        id: 'challenges',
+        title: 'Desafíos',
+        description: 'Invitaciones, progreso y finales de retos',
+        icon: 'emoji_events'
+    },
+    {
+        id: 'wellness',
+        title: 'Bienestar',
+        description: 'Recordatorios de actividad y objetivos diarios',
+        icon: 'self_improvement'
+    },
+    {
+        id: 'competition',
+        title: 'Competición',
+        description: 'Alertas de ranking y adelantamientos',
+        icon: 'trending_up'
+    },
+    {
+        id: 'streaks',
+        title: 'Rachas y Récords',
+        description: 'Rachas activas y nuevos récords personales',
+        icon: 'local_fire_department'
+    },
+    {
+        id: 'brands',
+        title: 'Desafíos de Marca',
+        description: 'Eventos patrocinados y promociones especiales',
+        icon: 'campaign'
+    },
+    {
+        id: 'rewards',
+        title: 'Recompensas',
+        description: 'Insignias desbloqueadas y premios',
+        icon: 'military_tech'
+    }
 ];
 
 export function renderNotificationsSettings() {
@@ -65,7 +105,10 @@ export function renderNotificationsSettings() {
                         <div class="flex items-center justify-between p-4 hover:bg-white/5 transition-colors group">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-white/40 group-hover:text-white/80 transition-colors text-lg">${cat.icon}</span>
-                                <span class="text-sm font-medium text-white/80 group-hover:text-white transition-colors">${cat.title}</span>
+                                <div>
+                                    <span class="text-sm font-medium text-white/80 group-hover:text-white transition-colors block">${cat.title}</span>
+                                    <span class="text-[10px] text-white/40 block leading-tight">${cat.description}</span>
+                                </div>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" 
@@ -87,6 +130,8 @@ export function renderNotificationsSettings() {
 
 window.toggleMasterNotifications = async function (enable) {
     const masterSwitch = document.getElementById('masterNotifToggle');
+    // Force UI state to match logic immediately
+    masterSwitch.checked = enable;
 
     // 1. Permission Check (Only if enabling)
     if (enable && Notification.permission !== 'granted') {
@@ -105,11 +150,12 @@ window.toggleMasterNotifications = async function (enable) {
 
     const subSwitches = document.querySelectorAll('.sub-notif-toggle');
 
+    // Set all categories to match the master switch
     CATEGORIES.forEach(cat => {
         user.notificationPreferences[cat.id] = enable;
     });
 
-    // 3. Update Visuals
+    // 3. Update Visuals (All sub-switches follow master)
     subSwitches.forEach(sw => {
         sw.checked = enable;
     });
@@ -123,24 +169,25 @@ window.toggleSingleCategory = function (catId, enable) {
     const user = AppState.currentUser;
     if (!user.notificationPreferences) user.notificationPreferences = {};
 
+    // Update specific preference
     user.notificationPreferences[catId] = enable;
 
     // Check Master Switch State logic
-    // If explicit disable -> Master OFF
-    // If enable -> Check if ALL others are authorized
     const masterSwitch = document.getElementById('masterNotifToggle');
 
-    if (!enable) {
-        masterSwitch.checked = false;
-    } else {
-        // Check if all others are strictly true
-        const allTrue = CATEGORIES.every(c => user.notificationPreferences[c.id] !== false);
-        masterSwitch.checked = allTrue;
+    // Logic: 
+    // If ANY category is OFF -> Master is OFF
+    // If ALL categories are ON -> Master is ON
 
-        // If enabling a category, assume we need system permission if not present
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
+    const allEnabled = CATEGORIES.every(c => user.notificationPreferences[c.id] !== false);
+
+    if (masterSwitch) {
+        masterSwitch.checked = allEnabled;
+    }
+
+    // If enabling a category, assume we need system permission if not present
+    if (enable && Notification.permission !== 'granted') {
+        Notification.requestPermission();
     }
 
     savePreferences(user);

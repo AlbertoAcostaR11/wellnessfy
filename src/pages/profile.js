@@ -1,4 +1,4 @@
-
+﻿
 import { AppState, saveUserData } from '../utils/state.js';
 import { navigateTo } from '../router.js';
 import { getSportIcon, getSportDisplayName } from '../utils/sportIcons.js';
@@ -33,23 +33,36 @@ let pendingAvatarBlob = null;
 // RENDER PROFILE PAGE (View Mode)
 // ==========================================
 export async function renderProfilePage(userId = null) {
+    const isLoggedIn = localStorage.getItem('wellnessfy_logged_in') === 'true';
     let user;
     let isOwnProfile = true;
     let isFriend = false;
 
     // 1. Resolve User
-    if (userId && userId !== AppState.currentUser.uid) {
+    const currentUID = AppState.currentUser.uid || AppState.currentUser.id;
+    const currentUsername = AppState.currentUser.username?.replace('@', '').toLowerCase();
+
+    if (userId && userId !== currentUID && userId.toLowerCase() !== currentUsername) {
         isOwnProfile = false;
         try {
-            // Check if userId is actually a username (starts with @)
-            if (userId.startsWith('@')) {
-                const uQuery = query(collection(db, 'users'), where('username', '==', userId));
+            // Try searching by username (with and without @)
+            const usernamesToTry = [
+                userId.startsWith('@') ? userId : '@' + userId,
+                userId.replace('@', '')
+            ];
+
+            for (const uname of usernamesToTry) {
+                const uQuery = query(collection(db, 'users'), where('username', '==', uname));
                 const uSnap = await getDocs(uQuery);
                 if (!uSnap.empty) {
                     user = { uid: uSnap.docs[0].id, ...uSnap.docs[0].data() };
                     userId = user.uid;
+                    break;
                 }
-            } else {
+            }
+
+            if (!user && userId.length >= 20) {
+                // Try as UID if no username match and looks like a UID
                 const userDoc = await getDoc(doc(db, 'users', userId));
                 if (userDoc.exists()) {
                     user = { uid: userId, ...userDoc.data() };
@@ -57,39 +70,75 @@ export async function renderProfilePage(userId = null) {
             }
 
             if (!user) {
-                user = AppState.currentUser;
-                isOwnProfile = true;
+                // Keep user as null to trigger Error Screen
                 if (window.showToast) window.showToast('Usuario no encontrado', 'error');
             } else {
-                // Check Friendship
-                const fQuery = query(collection(db, 'friendships'),
-                    where('users', 'array-contains', AppState.currentUser.uid));
-                const fSnap = await getDocs(fQuery);
-                isFriend = fSnap.docs.some(d => d.data().users.includes(user.uid) && d.data().status === 'accepted');
+                // Check Friendship (Only if logged in)
+                if (isLoggedIn && currentUID) {
+                    const fQuery = query(collection(db, 'friendships'),
+                        where('users', 'array-contains', currentUID));
+                    const fSnap = await getDocs(fQuery);
+                    isFriend = fSnap.docs.some(d => d.data().users.includes(user.uid) && d.data().status === 'accepted');
+                }
             }
         } catch (error) {
             console.error('Error loading user profile:', error);
-            user = AppState.currentUser;
-            isOwnProfile = true;
+            if (isLoggedIn) {
+                user = AppState.currentUser;
+                isOwnProfile = true;
+            }
         }
-    } else {
+    } else if (isLoggedIn) {
         user = AppState.currentUser;
+    } else {
+        // Base /perfil with no session -> Login
+        window.location.href = 'login.html';
+        return '';
     }
 
-    const showPrivateContent = isOwnProfile || user.isPublic !== false || isFriend;
+    const showPrivateContent = user && (isOwnProfile || user.isPublic !== false || isFriend);
 
-    // Mock counts
-    const postsCount = AppState.feedPosts ? AppState.feedPosts.filter(p => p.author.username === user.username).length : 0;
+    // counts
+    const postsCount = (user && AppState.feedPosts) ? AppState.feedPosts.filter(p => p.author?.username === user.username).length : 0;
     const followersCount = "0";
     const followingCount = "0";
 
-    // Dynamic Sport Icons (Imported)
-    // No need for local sportIcons map anymore
-
+    if (!user) {
+        return `
+            ${!isLoggedIn ? `
+            <div class="fixed top-0 left-0 right-0 h-16 bg-[#020617]/80 backdrop-blur-xl border-b border-white/10 z-[60] flex items-center justify-between px-6 lg:px-12">
+                <img src="logo-full.png" alt="Wellnessfy" class="h-8 w-auto">
+                <button onclick="window.location.href='login.html'" class="bg-[#00f5d4] text-[#0f172a] px-5 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,245,212,0.3)]">
+                    Entrar
+                </button>
+            </div>` : ''}
+            <div class="flex flex-col items-center justify-center h-[60vh] text-center px-10">
+                <span class="material-symbols-outlined text-6xl text-white/10 mb-4">person_off</span>
+                <h2 class="text-xl font-bold text-white mb-2">Usuario no encontrado</h2>
+                <p class="text-white/40 text-sm mb-6">El perfil "@${(userId || '').replace('@', '')}" no existe o es privado.</p>
+                <button onclick="${isLoggedIn ? "window.navigateTo('feed')" : "window.location.href='login.html'"}" class="bg-white/5 border border-white/10 text-white px-8 py-3 rounded-xl font-bold">
+                    ${isLoggedIn ? 'Volver al Inicio' : 'Iniciar Sesión'}
+                </button>
+            </div>
+        `;
+    }
 
     return `
-        <!-- Header -->
-        <!-- Header Standard -->
+        <!-- Top Bar for Guests -->
+        ${!isLoggedIn ? `
+            <div class="fixed top-0 left-0 right-0 h-16 bg-[#020617]/80 backdrop-blur-xl border-b border-white/10 z-[60] flex items-center justify-between px-6 lg:px-12 animate-fade-in">
+                <div class="flex items-center gap-2">
+                    <img src="logo-full.png" alt="Wellnessfy" class="h-8 w-auto">
+                </div>
+                <button onclick="window.location.href='login.html'" class="bg-[#00f5d4] text-[#0f172a] px-5 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,245,212,0.3)] hover:scale-105 transition-all">
+                    Entrar / Unirse
+                </button>
+            </div>
+            <div class="h-16 lg:h-8"></div> <!-- Spacer -->
+        ` : ''}
+
+        <!-- Header Standard (Hidden for Guests) -->
+        ${isLoggedIn ? `
         <div class="flex items-center justify-between mb-6 lg:hidden">
             <div class="flex items-center gap-2">
                 ${!isOwnProfile ? `
@@ -113,6 +162,7 @@ export async function renderProfilePage(userId = null) {
                 </button>
             </div>
         </div>
+        ` : ''}
 
         <section class="pb-24">
             <!-- Avatar -->
@@ -156,6 +206,9 @@ export async function renderProfilePage(userId = null) {
                     <p class="text-[10px] text-white/50 uppercase tracking-widest">Following</p>
                 </div>
             </div>
+            
+            <!-- BADGES SECTION -->
+            ${renderBadgesSection(user)}
 
             <!-- NEW: Interests / Activities Display (Moved Up) -->
             ${(showPrivateContent && user.interests && Array.isArray(user.interests) && user.interests.length > 0) ? `
@@ -174,15 +227,27 @@ export async function renderProfilePage(userId = null) {
 
             <!-- Action Buttons -->
             <div class="mb-8 px-8">
-                ${isOwnProfile ? `
-                    <button class="w-full bg-white/5 border border-white/10 rounded-xl py-3 text-sm font-bold hover:bg-white/10 transition-colors active:scale-[0.98]">
-                        Compartir Perfil
+                ${!isLoggedIn ? `
+                    <button class="w-full bg-[#00f5d4] text-[#0f172a] rounded-xl py-4 text-sm font-black uppercase tracking-widest hover:scale-[1.02] shadow-[0_0_30px_rgba(0,245,212,0.2)] transition-all active:scale-[0.98]" 
+                            onclick="window.location.href='login.html'">
+                        Únete para seguir a ${user.name || user.username.replace('@', '')}
                     </button>
+                ` : (isOwnProfile ? `
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-white/5 border border-white/10 rounded-xl py-3 text-sm font-bold hover:bg-white/10 transition-colors active:scale-[0.98] text-white" onclick="window.navigateTo('goals')">
+                            <span class="material-symbols-outlined text-sm align-middle mr-1">track_changes</span>
+                            Objetivos
+                        </button>
+                        <button class="bg-white/5 border border-white/10 rounded-xl py-3 text-sm font-bold hover:bg-white/10 transition-colors active:scale-[0.98] text-white" onclick="window.showEditProfile()">
+                            <span class="material-symbols-outlined text-sm align-middle mr-1">edit</span>
+                            Editar
+                        </button>
+                    </div>
                 ` : `
                     <button class="w-full ${isFriend ? 'bg-white/10 text-white' : 'bg-[#00f5d4] text-black'} rounded-xl py-3 text-sm font-bold hover:brightness-110 transition-colors active:scale-[0.98]" onclick="window.sendFriendRequest('${user.uid}')">
                         ${isFriend ? 'Amigos' : 'Agregar Amigo'}
                     </button>
-                `}
+                `)}
             </div>
 
             <!-- Details Grid -->
@@ -619,4 +684,141 @@ window.handleEditProfileSubmit = async function (isOnboarding) {
         btn.disabled = false;
     }
 };
+
+// ==========================================
+// BADGE SYSTEM LOGIC
+// ==========================================
+
+function renderBadgesSection(user) {
+    const badges = user.earnedBadges || [];
+
+    // Estado VACÍO (Placeholder de motivación)
+    if (badges.length === 0) {
+        return `
+        <div class="mb-4 px-4 animate-fade-in relative z-10 opacity-50 grayscale">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="text-white/80 font-bold text-sm tracking-wide flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#ffd700] text-lg">military_tech</span>
+                    Insignias
+                </h3>
+            </div>
+            
+            <div class="flex justify-center gap-3 flex-wrap">
+                ${[1, 2, 3, 4, 5].map(() => `
+                    <div class="w-14 h-14 rounded-full border border-dashed border-white/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white/10 text-xl">lock</span>
+                    </div>
+                `).join('')}
+            </div>
+            <p class="text-center text-[9px] text-white/30 mt-2">Aún no hay insignias desbloqueadas</p>
+        </div>
+        `;
+    }
+
+    const displayBadges = badges.slice(0, 5);
+    const remaining = badges.length - 5;
+
+    return `
+    <div class="mb-8 px-4 animate-fade-in relative z-10">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <h3 class="text-white/80 font-bold text-sm tracking-wide flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ffd700] text-lg">military_tech</span>
+                Insignias (${badges.length})
+            </h3>
+            ${badges.length > 5 ? `
+                <button onclick="window.showAllBadges('${user.uid}')" class="text-xs text-[#00f5d4] font-bold hover:underline">
+                    Ver todas
+                </button>
+            ` : ''}
+        </div>
+        
+        <div class="flex justify-center gap-3 flex-wrap">
+             ${displayBadges.map(badge => `
+                <div class="flex flex-col items-center gap-1 group cursor-pointer" onclick="window.showBadgeDetail('${badge.id}')">
+                    ${renderBadgeBubble(badge, 'w-14 h-14')}
+                    <span class="text-[9px] text-white/60 font-medium truncate max-w-[60px]">${badge.name}</span>
+                </div>
+             `).join('')}
+             
+             ${remaining > 0 ? `
+                <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="window.showAllBadges('${user.uid}')">
+                    <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <span class="text-xs font-bold text-white/50">+${remaining}</span>
+                    </div>
+                     <span class="text-[9px] text-white/40 font-medium">Más</span>
+                </div>
+             ` : ''}
+        </div>
+    </div>
+    `;
+}
+function renderBadgeBubble(badge, sizeClass = 'w-16 h-16') {
+    let style = '';
+    if (badge.bgType === 'gradient' && badge.bgGradient) {
+        style = `background: linear-gradient(${badge.bgGradient.angle}deg, ${badge.bgGradient.c1}, ${badge.bgGradient.c2});`;
+    } else if (badge.bgType === 'solid' && badge.bgSolid) {
+        style = `background: ${badge.bgSolid};`;
+    } else {
+        style = `background: linear-gradient(135deg, #3b82f6, #8b5cf6);`; // Default fallback
+    }
+
+    return `
+    <div class="${sizeClass} rounded-full p-[2px] shadow-lg group-hover:scale-110 transition-transform duration-300" style="${style}">
+        <div class="w-full h-full rounded-full bg-black/20 backdrop-blur-[1px] flex items-center justify-center overflow-hidden border border-white/20">
+            ${badge.contentType === 'image' && badge.image ?
+            `<img src="${badge.image}" class="w-full h-full object-cover">` :
+            `<span class="text-2xl filter drop-shadow-md">${badge.emoji || '🏅'}</span>`
+        }
+        </div>
+    </div>
+    `;
+}
+
+window.showBadgeDetail = (badgeId) => {
+    // Placeholder for simple toast desc
+    //    window.showToast('Insignia Verificada', 'info');
+};
+
+window.showAllBadges = (userId) => {
+    // We access the user directly from AppState if it is the current one, or we would have to fetch it.
+    // Simplifying: assumes we are viewing AppState.currentUser or we passed the user.
+    // For now, let's just re-use the stored user in memory if possible, or fetch via ID logic.
+    // A quick hack for this demo:
+    const user = AppState.currentUser.uid === userId ? AppState.currentUser : { earnedBadges: [] };
+    const badges = user.earnedBadges || [];
+
+    const modal = `
+    <div class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in" onclick="this.remove()">
+        <div class="bg-[#0f172a] border border-white/10 rounded-2xl w-full max-w-sm max-h-[80vh] flex flex-col shadow-2xl relative overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="p-6 border-b border-white/5 bg-[#020617]/50">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-white text-lg flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#ffd700]">military_tech</span>
+                        Colección de Insignias
+                    </h3>
+                    <button class="text-white/40 hover:text-white" onclick="this.closest('.fixed').remove()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Grid -->
+            <div class="p-6 overflow-y-auto grid grid-cols-3 gap-6 custom-scrollbar">
+                ${badges.map(badge => `
+                    <div class="flex flex-col items-center gap-2">
+                        ${renderBadgeBubble(badge, 'w-20 h-20 shadow-[0_0_15px_rgba(255,255,255,0.15)]')}
+                        <div class="text-center">
+                            <p class="text-xs font-bold text-white leading-tight">${badge.name}</p>
+                            <p class="text-[9px] text-white/40 mt-1">${new Date(badge.earnedAt || Date.now()).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modal);
+};
+
 

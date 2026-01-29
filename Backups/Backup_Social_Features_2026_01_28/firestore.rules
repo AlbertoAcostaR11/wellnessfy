@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- FUNCIONES AUXILIARES DE SEGURIDAD ---
+    
+    // Verifica si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica si el usuario es el dueño del documento (por campo userId o id)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Verifica si el usuario es el creador del recurso (campo createdBy)
+    function isCreator() {
+      return isAuthenticated() && request.auth.uid == resource.data.createdBy;
+    }
+
+    // --- COLECCIONES ---
+
+    // Users collection
+    match /users/{userId} {
+      // PERMITIR leer perfil público (nombre, avatar). 
+      // TODO: En el futuro, separar datos privados (email, teléfono) a una subcolección 'private'.
+      allow read: if isAuthenticated();
+      
+      // SOLO el dueño puede editar su perfil
+      allow create, update, delete: if isOwner(userId);
+      
+      // Subcolecciones privadas del usuario
+      match /goals/{goalId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /dailySummaries/{summaryId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /credentials/{docId} {
+         allow read, write: if isOwner(userId); // Tokens de Fitbit/Google Fit
+      }
+    }
+    
+    // Posts collection (Feed)
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      
+      // Permitir actualizar reacciones y comentarios a cualquier usuario autenticado
+      allow update: if isAuthenticated() && (
+        // El autor puede editar todo
+        request.auth.uid == resource.data.author.id ||
+        // Cualquier usuario puede actualizar SOLO reacciones y comentarios
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'commentsList', 'comments'])
+      );
+      
+      // Solo el autor puede borrar
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.author.id;
+    }
+    
+    // Challenges collection (BLINDADO)
+    match /challenges/{challengeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      
+      // Permitir actualizar SOLO si eres el creador O si te estás uniendo (agregando tu ID a participantes)
+      allow update: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid || 
+        // Permitir unirse (la lógica de validación compleja debería ir en Cloud Functions preferiblemente)
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'stats'])
+      );
+      
+      // SOLO el creador puede borrar el desafío
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Activities collection
+    match /activities/{activityId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Circles collection (BLINDADO)
+    match /circles/{circleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      
+      // SOLO el creador (Admin) puede borrar el círculo
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+      
+      // Actualización restringida:
+      // 1. Creador puede editar todo.
+      // 2. Miembros pueden actualizar array de miembros (unirse/salir) pero NO cambiar nombre/reglas.
+      allow update: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members']) && request.auth.uid in resource.data.members)
+      );
+    }
+    
+    // Friendships & Requests (Mantenemos lógica social)
+    match /friendRequests/{requestId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to);
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to);
+    }
+    
+    match /friendships/{friendshipId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.users;
+      allow create: if isAuthenticated(); // Debería validarse que el usuario es parte de la amistad
+      allow update, delete: if isAuthenticated() && request.auth.uid in resource.data.users;
+    }
+    
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.to;
+      allow create: if isAuthenticated(); // Permitir que el sistema o users envíen notifs
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.to;
+    }
+    // Reglas para Notificaciones de Usuario
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Permitimos CREAR si el usuario está autenticado (para enviar notificaciones p2p)
+      // Bloqueamos update/delete para evitar manipulación, solo el dueño podría borrar (marcar leída se hace con update)
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == userId; // Para marcar como leída
+    }
+  }
+}

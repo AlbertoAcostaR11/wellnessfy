@@ -18,6 +18,7 @@ import './utils/friendManagement.js'; // Friend list management
 import { generateHistoricalData } from './utils/dummyHistoryGenerator.js'; // Historical data demo
 import './utils/debugLastWeek.js'; // Auditoría de Semana Pasada
 import './utils/runHistoryBackfill.js'; // Herramienta de reconstrucción de historial
+import './utils/notificationService.js'; // Servicio Central de Notificaciones
 
 
 // Exponer agregador globalmente para sportsData.js
@@ -26,7 +27,7 @@ window.activityAggregatorModule = activityAggregator;
 // Firebase Imports
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, orderBy, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, orderBy, arrayUnion, onSnapshot, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
 // Firebase Inits moved to config/firebaseInit.js to avoid circular deps
@@ -44,7 +45,7 @@ window.requestNotificationPermission = async function () {
         if (permission === 'granted') {
             console.log('✅ Permiso concedido.');
             const token = await getToken(messaging, {
-                vapidKey: 'BMD-z83qK2L_ID6WpUPK2yqP8p8_R_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1_x1' // TODO: Reemplazar con clave real de Firebase Console
+                vapidKey: 'BPnGNiPJCBVLbNNDMfViwU2RqYan58YW01lTkYzmQpHt9yMeFVV16Xzuc0Sk'
             });
 
             if (token) {
@@ -155,6 +156,31 @@ onAuthStateChanged(auth, async (user) => {
                 console.log('✅ Unique username generated:', newUserProfile.username);
             }
 
+
+
+            // 1.05 Sync Company Profile (Fase 1 Business)
+            try {
+                const companyQuery = query(collection(db, "companies"), where("ownerId", "==", user.uid), limit(1));
+                const companySnap = await getDocs(companyQuery);
+                if (!companySnap.empty) {
+                    AppState.userCompany = { id: companySnap.docs[0].id, ...companySnap.docs[0].data() };
+                    console.log('🏢 Empresa vinculada encontrada:', AppState.userCompany.name);
+                } else {
+                    AppState.userCompany = null;
+                }
+            } catch (errComp) {
+                console.warn('⚠️ Error buscando empresa vinculada:', errComp);
+            }
+
+            // 1.1 Load Goals (Early Load)
+            try {
+                const { goalsManager } = await import('./utils/goalsManager.js');
+                const goals = await goalsManager.loadGoals(user.uid);
+                console.log('🎯 Objetivos cargados en el arranque:', Object.keys(goals).length);
+            } catch (errGoals) {
+                console.warn('⚠️ Error loading goals on startup:', errGoals);
+            }
+
             // 2.0 Cargar Resúmenes Diarios (PRIORIDAD ALTA: Historial Rápido)
             try {
                 console.log('🔍 [BOOT] Iniciando carga de historial desde Firestore (PRIORITY)...');
@@ -223,32 +249,16 @@ onAuthStateChanged(auth, async (user) => {
                 console.warn('⚠️ Error iniciando monitoreo de conexión:', error);
             }
 
-            // Refresh current view
-            updateProfileUI(); // Update Nav Icon
-            const currentPage = localStorage.getItem('wellnessfy_last_page') || 'feed';
-
-            // Auto-sync Universal (Si hay token)
-            // autoSyncIfReady(); // Legacy Google Removed
-
-            // Check manual rápido de token para disparar sync
-            const hasFitbit = localStorage.getItem('fitbit_access_token');
-            const hasGoogle = localStorage.getItem('google_access_token');
-
-            if (hasFitbit || hasGoogle) {
-                console.log('🔄 Auto-iniciando Motor Universal...');
-                // Pequeño delay para asegurar que el DOM y Router estén listos
-                setTimeout(() => {
-                    if (window.syncHealthConnect) window.syncHealthConnect();
-                }, 1000);
-            }
-
-            navigateTo(currentPage);
+            // Refresh current view (Only if not already on a specific public path)
+            // The router handles initial path, so we mostly need to update UI
+            updateProfileUI();
 
         } catch (error) {
             console.error('Error syncing with cloud:', error);
         }
     } else {
         console.log('No user signed in (Guest mode)');
+        updateProfileUI(); // Ensure nav shows guest state
     }
 });
 
@@ -290,20 +300,28 @@ async function syncAppGlobalData() {
 
     // PASO 2: Actualizar desde Firestore en SEGUNDO PLANO (no bloqueante)
     try {
-        // A. Fetch Posts (Ordered by timestamp desc)
+        // A. Real-time Posts Listener (syncs reactions, comments, new posts instantly)
         const postsQuery = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-        const postsSnap = await getDocs(postsQuery);
-        const cloudPosts = [];
-        postsSnap.forEach((doc) => {
-            cloudPosts.push({ id: doc.id, ...doc.data() });
-        });
 
-        // Actualizar solo si hay datos nuevos
-        if (cloudPosts.length > 0) {
-            AppState.feedPosts = cloudPosts;
-            localStorage.setItem('my_posts', JSON.stringify(cloudPosts));
-            console.log(`☁️ Synced ${cloudPosts.length} posts from cloud.`);
-        }
+        onSnapshot(postsQuery, (snapshot) => {
+            const cloudPosts = [];
+            snapshot.forEach((doc) => {
+                cloudPosts.push({ id: doc.id, ...doc.data() });
+            });
+
+            if (cloudPosts.length > 0) {
+                AppState.feedPosts = cloudPosts;
+                localStorage.setItem('my_posts', JSON.stringify(cloudPosts));
+                console.log(`🔄 Real-time sync: ${cloudPosts.length} posts updated`);
+
+                // Re-render feed if user is currently viewing it
+                if (AppState.currentPage === 'feed') {
+                    navigateTo('feed');
+                }
+            }
+        }, (error) => {
+            console.error('Error in posts listener:', error);
+        });
 
         // B. Fetch Challenges
         const challengesQuery = query(collection(db, "challenges"), orderBy("createdAt", "desc"));
@@ -411,45 +429,94 @@ function listenToCloudNotifications(userId) {
         where("to", "==", userId)
     );
 
-    // Importamos onSnapshot para escucha pasiva
-    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js').then(({ onSnapshot }) => {
+    // --- SISTEMA DE NOTIFICACIONES UNIFICADO (Requests + General) ---
+
+    // Lista temporal para mezclar fuentes
+    let friendRequestsList = [];
+    let generalNotificationsList = [];
+
+    const updateUnifiedNotifications = () => {
+        // Combinar, ordenar por fecha descendente
+        const unified = [...friendRequestsList, ...generalNotificationsList]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        AppState.notifications = unified;
+        updateNotificationBadges();
+
+        // Si estamos en la página de notificaciones, refrescar
+        if (AppState.currentPage === 'notifications') {
+            const mainContent = document.getElementById('mainContent');
+            import('./pages/notifications.js').then(({ renderNotifications }) => {
+                if (mainContent) mainContent.innerHTML = renderNotifications();
+            });
+        }
+    };
+
+    // 1. Escuchar Solicitudes de Amistad (Legacy)
+    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js').then(({ onSnapshot, collection, query, orderBy, limit }) => {
+
+        console.log(`👂 [Notifs] Iniciando listeners para usuario: ${userId}`);
+
+        // Listener A: Friend Requests
         onSnapshot(notifQuery, (snapshot) => {
-            const newNotifications = [];
+            console.log(`📨 [Notifs] FriendRequests snapshot: ${snapshot.size} docs`);
+            friendRequestsList = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 if (data.status === 'pending') {
-                    newNotifications.push({
+                    friendRequestsList.push({
                         id: doc.id,
                         type: 'friend_request',
+                        category: 'social', // Add category
                         actor: {
                             id: data.from,
                             name: data.fromName || 'Alguien',
                             username: data.fromUsername || 'usuario',
                             avatar: data.fromAvatar
                         },
+                        title: 'Solicitud de Amistad', // Add Title
+                        message: 'quiere ser tu amigo', // Add Message
                         date: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        read: data.read || false
+                        read: false
                     });
                 }
             });
-
-            // Actualizamos el estado global solo con las nuevas si hay cambios
-            AppState.notifications = [...newNotifications];
-            updateNotificationBadges();
-
-            // Si el usuario está en la página de notificaciones, re-renderizar
-            if (AppState.currentPage === 'notifications') {
-                const mainContent = document.getElementById('mainContent');
-                import('./pages/notifications.js').then(({ renderNotifications }) => {
-                    if (mainContent) mainContent.innerHTML = renderNotifications();
-                });
-            }
-        }, (error) => {
-            console.error('❌ Error en el escuchador de notificaciones:', error);
-            if (error.code === 'failed-precondition') {
-                console.warn('⚠️ Se requiere un índice en Firestore. Revisa el link en la consola para crearlo.');
-            }
+            updateUnifiedNotifications();
         });
+
+        // Listener B: General Notifications (Likes, Comments, Accepted, System)
+        try {
+            // Asegurar referencia correcta
+            const notifRef = collection(db, 'users', userId, 'notifications');
+            const generalNotifQuery = query(
+                notifRef,
+                orderBy('createdAt', 'desc'),
+                limit(50) // Limit to last 50 to save bandwidth
+            );
+
+            onSnapshot(generalNotifQuery, (snapshot) => {
+                console.log(`🔔 [Notifs] General snapshot: ${snapshot.size} docs`);
+                generalNotificationsList = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Debug primer doc
+                    if (generalNotificationsList.length === 0) console.log('🔍 [Notifs] Sample doc:', data);
+
+                    generalNotificationsList.push({
+                        id: doc.id,
+                        ...data,
+                        // Ensure date format is consistent
+                        date: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+                    });
+                });
+                updateUnifiedNotifications();
+            }, (error) => {
+                console.error('❌ Error listening to general notifications:', error);
+            });
+        } catch (err) {
+            console.error('❌ Error configurando listener general:', err);
+        }
+
     });
 }
 
@@ -476,9 +543,8 @@ window.onload = async () => {
             initGoogleIdentity();
         }
 
-        // 2. Inicializar Router y UI - CORREGIDO
-        const startPage = localStorage.getItem('wellnessfy_last_page') || 'activity';
-        navigateTo(startPage);
+        // 2. Inicializar Router - El router ya se inicializa en DOMContentLoaded
+        // navigateTo(startPage); 
 
         if (typeof renderLayout === 'function') renderLayout();
 
@@ -596,20 +662,14 @@ function generateMockNotifications() {
     AppState.notifications = [];
 }
 
+import { initRouter } from './router.js';
+
+window.navigateTo = navigateTo;
+
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Security Check: If not logged in, redirect to login page
-    const isLoggedIn = localStorage.getItem('wellnessfy_logged_in') === 'true';
-    if (!isLoggedIn) {
-        // Double check: if last page exists, maybe allow? No, strict mode.
-        // If user is actually logged in via Firebase persistence, login.html will redirect back.
-        window.location.href = 'login.html';
-        return;
-    }
-
-    const lastPage = localStorage.getItem('wellnessfy_last_page') || 'feed';
     updateProfileUI(); // Update UI on load
-    navigateTo(lastPage);
+    initRouter(); // Handles initial path and history setup
 });
 
 // Update Profile Selectors in Nav
@@ -620,6 +680,13 @@ window.updateProfileUI = function () {
     // Desktop
     const sidebarAvatar = document.getElementById('sidebarAvatar');
     if (sidebarAvatar) {
+        // Cleanup prepended img if it exists (from previous bug)
+        const desktopBtn = sidebarAvatar.closest('button');
+        if (desktopBtn) {
+            const leakedImg = desktopBtn.querySelector('img.profile-nav-img');
+            if (leakedImg) leakedImg.remove();
+        }
+
         if (hasAvatar) {
             sidebarAvatar.style.backgroundImage = `url('${avatar}')`;
             sidebarAvatar.classList.remove('bg-white/10');
@@ -632,7 +699,7 @@ window.updateProfileUI = function () {
     }
 
     // Mobile
-    const mobileBtn = document.querySelector('nav button[data-page="profile"]');
+    const mobileBtn = document.querySelector('.nav-btn[data-page="profile"]');
     if (mobileBtn) {
         const icon = mobileBtn.querySelector('.material-symbols-outlined');
         let img = mobileBtn.querySelector('img.profile-nav-img');

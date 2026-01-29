@@ -19,18 +19,7 @@ export function renderNotifications() {
     // Filter notifications
     let filteredNotifications = [...notifications];
     if (currentFilter !== 'all') {
-        filteredNotifications = notifications.filter(n => {
-            if (currentFilter === 'social') {
-                return ['friend_request', 'post_comment', 'post_reaction', 'new_post'].includes(n.type);
-            }
-            if (currentFilter === 'challenges') {
-                return ['challenge_invite', 'ranking_update'].includes(n.type);
-            }
-            if (currentFilter === 'health') {
-                return ['achievement', 'goal_reached', 'sedentary_reminder'].includes(n.type);
-            }
-            return true;
-        });
+        filteredNotifications = notifications.filter(n => n.category === currentFilter);
     }
 
     // Sort by date (most recent first)
@@ -57,9 +46,14 @@ export function renderNotifications() {
                 <!-- Filter Tabs -->
                 <div class="flex justify-center gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
                     ${renderFilterBtn('all', 'Todas', 'notifications')}
-                    ${renderFilterBtn('social', 'Social', 'group')}
+                    ${renderFilterBtn('social', 'Social', 'chat_bubble')}
+                    ${renderFilterBtn('friends', 'Amigos', 'person_add')}
                     ${renderFilterBtn('challenges', 'Desafíos', 'emoji_events')}
-                    ${renderFilterBtn('health', 'Bienestar', 'auto_awesome')}
+                    ${renderFilterBtn('wellness', 'Bienestar', 'self_improvement')}
+                    ${renderFilterBtn('competition', 'Competición', 'trending_up')}
+                    ${renderFilterBtn('streaks', 'Rachas', 'local_fire_department')}
+                    ${renderFilterBtn('brands', 'Marcas', 'campaign')}
+                    ${renderFilterBtn('rewards', 'Premios', 'military_tech')}
                 </div>
             </div>
 
@@ -105,80 +99,117 @@ function renderNotificationItem(notif) {
     let actions = '';
 
     switch (notif.type) {
+        // --- SOCIAL ---
         case 'friend_request':
             icon = 'person_add';
             iconBg = 'bg-blue-500/20 text-blue-400';
             content = `<strong>${notif.actor.name}</strong> (@${notif.actor.username}) te ha enviado una solicitud de amistad.`;
 
-            // Check if already processed
             if (notif.processed) {
                 actions = `
                     <div class="flex items-center gap-2 mt-3 px-3 py-1.5 rounded-lg bg-[#00f5d4]/20 border border-[#00f5d4]/30">
                         <span class="material-symbols-outlined text-[#00f5d4] text-sm">check_circle</span>
                         <span class="text-[#00f5d4] text-[10px] font-bold">Agregado a círculos</span>
-                    </div>
-                `;
+                    </div>`;
             } else {
                 actions = `
                     <div class="flex gap-2 mt-3">
                         <button onclick="showCircleSelectorModal('${notif.actor.id}', '${notif.actor.name}', '${notif.actor.username}', '${notif.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00f5d4] text-navy-900 text-[10px] font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(0,245,212,0.3)]">
                             <span class="material-symbols-outlined text-sm">group_add</span>
-                            Agregar a círculos
+                            Agregar
                         </button>
-                        <button onclick="rejectFriendRequestWithUpdate('${notif.actor.id}', '${notif.id}')" class="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-all">Rechazar</button>
-                    </div>
-                `;
+                        <button onclick="markAsRead('${notif.id}')" class="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-all">Omitir</button>
+                    </div>`;
             }
             break;
-        case 'challenge_invite':
-            icon = 'emoji_events';
-            iconBg = 'bg-amber-500/20 text-amber-400';
-            content = `<strong>${notif.actor.name}</strong> te ha invitado a unirte al desafío <strong>"${notif.data?.challengeTitle || 'Reto'}"</strong>.`;
-            actions = `
-                <div class="flex gap-2 mt-3">
-                    <button onclick="navigateTo('challenge-detail', '${notif.data?.challengeId}')" class="px-3 py-1.5 rounded-lg bg-primary text-navy-900 text-[10px] font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all">Ver Desafío</button>
-                </div>
-            `;
-            break;
+
         case 'post_comment':
             icon = 'chat_bubble';
             iconBg = 'bg-purple-500/20 text-purple-400';
-            content = `<strong>${notif.actor.name}</strong> comentó en tu publicación: <span class="italic text-white/60">"${notif.data?.commentPreview || '...'}"</span>`;
+            content = `<strong>${notif.actor.name}</strong> comentó: <span class="italic text-white/60">"${notif.data?.commentPreview || '...'}"</span>`;
             break;
+
         case 'post_reaction':
             icon = 'favorite';
-            iconBg = 'bg-rose-500/20 text-rose-400';
-            content = `A <strong>${notif.actor.name}</strong> le ha gustado tu publicación.`;
+            iconBg = 'bg-purple-500/20 text-purple-400';
+            content = `A <strong>${notif.actor.name}</strong> le gustó tu publicación.`;
             break;
-        case 'new_post':
-            icon = 'add_circle';
-            iconBg = 'bg-emerald-500/20 text-emerald-400';
-            content = `<strong>${notif.actor.name}</strong> ha compartido una nueva actividad.`;
+
+        // --- CHALLENGES ---
+        case 'challenge_invite':
+            icon = 'emoji_events';
+            iconBg = 'bg-amber-500/20 text-amber-400';
+            content = `<strong>${notif.actor.name}</strong> te invitó al desafío <strong>"${notif.data?.challengeTitle || 'Reto'}"</strong>.`;
+            actions = `<div class="mt-3"><button onclick="navigateTo('challenge-detail', '${notif.data?.challengeId}')" class="px-3 py-1.5 rounded-lg bg-amber-500 text-navy-900 text-[10px] font-black uppercase">Ver Desafío</button></div>`;
             break;
-        case 'achievement':
-            icon = 'verified';
-            iconBg = 'bg-yellow-500/20 text-yellow-400';
-            content = `¡Felicidades! Has completado tu objetivo de <strong>${notif.data?.goalName || 'ejercicio'}</strong>.`;
+
+        case 'challenge_goal_reached':
+            icon = 'emoji_events';
+            iconBg = 'bg-amber-500/20 text-amber-400';
+            content = `¡Has completado el desafío <strong>"${notif.data?.challengeTitle}"</strong>! 🎉`;
             break;
+
+        // --- COMPETITION ---
+        case 'ranking_overtake':
         case 'ranking_update':
             icon = 'trending_up';
-            iconBg = 'bg-blue-500/20 text-blue-400';
-            content = `<strong>${notif.actor.name}</strong> te ha adelantado en el ranking del desafío <strong>"${notif.data?.challengeTitle || 'Reto'}"</strong>.`;
-            break;
-        case 'goal_reached':
-            icon = 'stars';
-            iconBg = 'bg-amber-500/20 text-amber-400';
-            content = `¡Enhorabuena! Has llegado a tu meta de <strong>${notif.data?.metric || 'pasos'}</strong> de hoy. 🏆`;
-            break;
-        case 'sedentary_reminder':
-            icon = 'chair';
             iconBg = 'bg-rose-500/20 text-rose-400';
-            content = `Llevas mucho tiempo sentado, ¿qué tal un paseo de 5 minutos? 🚶‍♂️`;
+            content = `<strong>${notif.actor.name}</strong> te ha superado en el ranking de <strong>"${notif.data?.challengeTitle}"</strong>. ¡Recupera tu puesto! 📉`;
             break;
+
+        case 'leaderboard_closing':
+            icon = 'timer';
+            iconBg = 'bg-rose-500/20 text-rose-400';
+            content = `El ranking semanal cierra en breve. Estás a poco del Top 3.`;
+            break;
+
+        // --- WELLNESS ---
+        case 'sedentary_reminder':
+            icon = 'accessibility_new';
+            iconBg = 'bg-emerald-500/20 text-emerald-400';
+            content = `Llevas tiempo sentado. ¡Un paseo de 5 minutos te vendría genial! 🌿`;
+            break;
+
+        case 'daily_goal_reached':
+        case 'goal_reached': // Legacy
+            icon = 'check_circle';
+            iconBg = 'bg-emerald-500/20 text-emerald-400';
+            content = `¡Objetivo cumplido! Has alcanzado tu meta diaria de <strong>${notif.data?.metric || 'actividad'}</strong>.`;
+            break;
+
+        // --- STREAKS ---
+        case 'streak_danger':
+            icon = 'local_fire_department';
+            iconBg = 'bg-orange-500/20 text-orange-400';
+            content = `🔥 ¡Cuidado! Tu racha de ${notif.data?.streakDays || 5} días está en peligro. Muévete hoy para mantenerla.`;
+            break;
+
+        case 'personal_record':
+            icon = 'show_chart';
+            iconBg = 'bg-orange-500/20 text-orange-400';
+            content = `🏅 ¡Nuevo Récord Personal! Nunca habías hecho tantos ${notif.data?.metric} en un día.`;
+            break;
+
+        // --- BRANDS ---
+        case 'brand_promotion':
+        case 'brand_event_start':
+            icon = 'campaign';
+            iconBg = 'bg-cyan-500/20 text-cyan-400';
+            content = `<strong>${notif.actor.name}</strong> ha lanzado un nuevo evento exclusivo. ¡Participa y gana premios!`;
+            break;
+
+        // --- REWARDS ---
+        case 'badge_unlocked':
+        case 'achievement': // Legacy
+            icon = 'military_tech';
+            iconBg = 'bg-yellow-500/20 text-yellow-400';
+            content = `🏆 ¡Has desbloqueado la insignia <strong>${notif.data?.badgeName || 'Campeón'}</strong>!`;
+            break;
+
         default:
             icon = 'notifications';
             iconBg = 'bg-white/10 text-white';
-            content = notif.message || 'Nueva notificación';
+            content = notif.message || 'Nueva notificación recibida.';
     }
 
     return `

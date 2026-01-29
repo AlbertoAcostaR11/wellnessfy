@@ -21,25 +21,6 @@ export function renderHealthConnections() {
             name: 'Fitbit',
             icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Fitbit_logo_2016.svg',
             description: 'Obtén datos detallados de sueño y ejercicio de tus dispositivos Fitbit.'
-        },
-        {
-            id: 'samsung',
-            name: 'Samsung Health',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Samsung_Health_icon.png/120px-Samsung_Health_icon.png',
-            description: 'Conecta con el ecosistema Galaxy para tus registros diarios.'
-        },
-        {
-            id: 'huawei',
-            name: 'Huawei Health',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Huawei_Health_icon.svg/100px-Huawei_Health_icon.svg.png',
-            description: 'Sincroniza tus relojes y bandas Huawei.'
-        },
-        {
-            id: 'apple',
-            name: 'Apple Health',
-            icon: 'heart', // Placeholder emoji logic
-            isComingSoon: true,
-            description: 'Próximamente: Integración nativa para usuarios de iPhone.'
         }
     ];
 

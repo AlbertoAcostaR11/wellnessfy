@@ -271,8 +271,8 @@ function renderWeightGoalCard(goals) {
                                    step="0.1" 
                                    value="${currentHeight}"
                                    placeholder="0.0">
-                            <span class="text-white/30 text-xs mt-1 block">${height.unit || 'cm'}</span>
-                        </div>
+                                <span class="text-white/30 text-xs mt-1 block">${height.unit || 'cm'}</span>
+                            </div>
                     </div>
                 ` : `
                     <p class="text-white/30 text-xs italic">Objetivo desactivado</p>

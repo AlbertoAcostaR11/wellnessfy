@@ -12,10 +12,10 @@ export const FEATURES = {
     ENABLE_APPLE_HEALTH: false,
 
     // Integración con Samsung Health (futuro)
-    ENABLE_SAMSUNG_HEALTH: true,
+    ENABLE_SAMSUNG_HEALTH: false,
 
     // Integración con Huawei Health
-    ENABLE_HUAWEI_HEALTH: true,
+    ENABLE_HUAWEI_HEALTH: false,
 
     // Integración con Garmin (futuro)
     ENABLE_GARMIN: false,

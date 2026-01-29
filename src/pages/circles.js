@@ -10,7 +10,8 @@ import { loadSuggestedUsers } from '../utils/socialSuggestions.js';
 // Estado local para la navegación interna (Tabs)
 let currentTab = 'discover'; // 'discover' | 'circles'
 
-export function renderCircles() {
+export function renderCircles(tab = 'discover') {
+    currentTab = tab;
     return `
         <!-- Header Standard -->
         <div class="flex items-center justify-between mb-6">
@@ -42,17 +43,11 @@ export function renderCircles() {
     `;
 }
 
+import { navigateTo } from '../router.js';
+
 // Router Interno para cambiar pestañas
 window.switchSocialTab = function (tab) {
-    currentTab = tab;
-    // Re-renderizamos toda la vista para actualizar los tabs activos y el contenido
-    const mainContent = document.getElementById('mainContent');
-    mainContent.innerHTML = renderCircles();
-
-    // Initialize components if switching to discover tab
-    if (tab === 'discover') {
-        initDiscoverView();
-    }
+    navigateTo('circles', tab);
 };
 
 export function initCircles() {
