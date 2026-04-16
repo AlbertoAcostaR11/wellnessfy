@@ -16,6 +16,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Estilos Compartidos -->
     <link rel="stylesheet" href="styles.css">
@@ -73,9 +77,9 @@
                 <span class="font-medium text-sm">Mis Desafíos</span>
             </a>
 
-            <a href="javascript:void(0)" onclick="showSection('badges'); return false;"
+            <a href="javascript:void(0)" onclick="showSection('badges'); return false;" id="navBtnBadges"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/70 hover:text-white transition-colors">
-                <span class="material-symbols-outlined">workspace_premium</span>
+                <span class="material-symbols-outlined">military_tech</span>
                 <span class="font-medium text-sm">Insignias & Premios</span>
             </a>
 
@@ -257,7 +261,7 @@
                 </div>
 
                 <!-- Lista de Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="challengesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     <!-- Los retos aparecerán aquí dinámicamente -->
 
@@ -610,25 +614,11 @@
 
         <!-- SECCIÓN: Gamificación (Insignias & Premios) -->
         <div id="badgesSection" class="hidden animate-fade-in">
-            <!-- Header & Tabs -->
+            <!-- Header -->
             <header class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
                 <div>
-                    <h1 class="text-3xl font-outfit font-black mb-1">Gamificación & Premios</h1>
-                    <p class="text-white/60">Gestiona las insignias digitales y tu catálogo de recompensas físicas.</p>
-                </div>
-
-                <!-- Tab Switching Logic -->
-                <div class="flex p-1 bg-white/5 rounded-xl border border-white/10">
-                    <button onclick="switchGamificationTab('badges')" id="tabBtnBadges"
-                        class="px-6 py-2 rounded-lg text-sm font-bold bg-white/10 text-white shadow-sm transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">military_tech</span>
-                        Insignias Digitales
-                    </button>
-                    <button onclick="switchGamificationTab('rewards')" id="tabBtnRewards"
-                        class="px-6 py-2 rounded-lg text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">redeem</span>
-                        Biblioteca de Recompensas
-                    </button>
+                    <h1 class="text-3xl font-outfit font-black mb-1">Insignias Digitales</h1>
+                    <p class="text-white/60">Gestiona las insignias digitales para tu comunidad.</p>
                 </div>
             </header>
 
@@ -667,7 +657,7 @@
                             Colección de Insignias
                         </h3>
 
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div id="badgesGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <!-- Create New Placeholder -->
                             <button onclick="openNewBadgeModal()"
                                 class="glass-card p-4 flex flex-col items-center justify-center text-center gap-3 border-dashed border-2 border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all text-white/40 hover:text-white">
@@ -699,119 +689,13 @@
                             </table>
                         </div>
 
-                        <!-- Mini Promo to switch tabs -->
-                        <div onclick="switchGamificationTab('rewards')"
-                            class="p-5 rounded-2xl bg-gradient-to-br from-purple-900/50 to-blue-900/50 border border-white/10 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
-                            <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12">🎁</div>
-                            <h4 class="font-bold text-white mb-2">Recompensas Físicas</h4>
-                            <p class="text-xs text-white/60 mb-2">Configura premios reales para tus insignias.</p>
-                            <span class="text-xs font-bold text-white underline">Ir a Biblioteca &rarr;</span>
-                        </div>
+                        <!-- Rewards Promo Removed -->
                     </div>
                 </div>
             </div>
 
             <!-- VISTA 2: RECOMPENSAS (Nuevo) -->
-            <div id="viewRewards" class="hidden animate-fade-in">
-                <!-- Actions Bar -->
-                <div class="flex justify-end mb-6">
-                    <button onclick="openCreateRewardModal()" class="btn-primary flex items-center gap-2">
-                        <span class="material-symbols-outlined">add_card</span>
-                        Nueva Recompensa
-                    </button>
-                </div>
-
-                <div id="rewardsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
-                    <!-- Reward Card 1 -->
-                    <div
-                        class="glass-card p-0 overflow-hidden group hover:border-neon-teal/50 transition-colors relative">
-                        <div class="h-20 bg-purple-900/20 relative">
-                            <div
-                                class="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold">
-                                ACTIVO</div>
-                            <div
-                                class="absolute -bottom-5 left-4 h-10 w-10 rounded-lg bg-navy-900 border border-white/10 flex items-center justify-center text-xl shadow-lg">
-                                🎁</div>
-                        </div>
-                        <div class="p-4 pt-6">
-                            <h3 class="font-bold text-sm mb-1 leading-tight">Descuento 20% Online</h3>
-                            <p class="text-[10px] text-white/50 line-clamp-2 mb-3 leading-relaxed">Válido en todo el
-                                catálogo.</p>
-                            <div
-                                class="flex items-center justify-between text-[10px] font-mono bg-black/20 p-1.5 rounded mb-3">
-                                <span class="text-white/40">CÓDIGO:</span>
-                                <span class="text-neon-teal font-bold">SUMMER2026</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-white/5 pt-3">
-                                <div>
-                                    <p class="text-[8px] text-white/40 font-bold uppercase">Stock</p>
-                                    <p class="text-xs font-bold text-white">∞ Ilimitado</p>
-                                </div>
-                                <div>
-                                    <p class="text-[8px] text-white/40 font-bold uppercase">Canjeados</p>
-                                    <p class="text-xs font-bold text-white">45</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Reward Card 2 -->
-                    <div
-                        class="glass-card p-0 overflow-hidden group hover:border-neon-teal/50 transition-colors relative">
-                        <div class="h-20 bg-blue-900/20 relative">
-                            <div
-                                class="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold">
-                                ACTIVO</div>
-                            <div
-                                class="absolute -bottom-5 left-4 h-10 w-10 rounded-lg bg-navy-900 border border-white/10 flex items-center justify-center text-xl shadow-lg">
-                                🧢</div>
-                        </div>
-                        <div class="p-4 pt-6">
-                            <h3 class="font-bold text-sm mb-1 leading-tight">Kit Bienvenida Premium</h3>
-                            <p class="text-[10px] text-white/50 line-clamp-2 mb-3 leading-relaxed">Incluye botella,
-                                toalla y gorra.</p>
-                            <div
-                                class="flex items-center justify-between text-[10px] font-mono bg-black/20 p-1.5 rounded mb-3">
-                                <span class="text-white/40">TIPO:</span>
-                                <span class="text-blue-400 font-bold">CSV ÚNICO</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-white/5 pt-3">
-                                <div>
-                                    <p class="text-[8px] text-white/40 font-bold uppercase">Stock</p>
-                                    <p class="text-xs font-bold text-white">50</p>
-                                </div>
-                                <div>
-                                    <p class="text-[8px] text-white/40 font-bold uppercase">Canjeados</p>
-                                    <p class="text-xs font-bold text-white">12</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Create New -->
-                    <button onclick="openCreateRewardModal()"
-                        class="glass-card p-4 border-2 border-dashed border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center text-center gap-3 group h-full min-h-[200px]">
-                        <div
-                            class="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-glow">
-                            <span class="material-symbols-outlined text-2xl text-neon-teal">add_card</span>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-sm group-hover:text-neon-teal transition-colors">Crear Recompensa
-                            </h3>
-                            <p class="text-[10px] text-white/50 mt-0.5">Añade un nuevo incentivo</p>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- Disclaimer -->
-                <div class="border-t border-white/10 pt-8 flex gap-4 opacity-50 hover:opacity-100 transition-opacity">
-                    <span class="material-symbols-outlined text-white/40 text-2xl">gavel</span>
-                    <p class="text-xs text-white/60 leading-relaxed max-w-4xl">
-                        <strong class="text-white">Aviso Legal:</strong> Wellnessfy actúa exclusivamente como plataforma
-                        de gestión...
-                    </p>
-                </div>
-            </div>
+            <!-- View Rewards Removed -->
 
         </div>
 
@@ -1062,10 +946,105 @@
 
                 <!-- Columna Lateral: Resumen y Tipo -->
                 <div class="space-y-8">
-                    <!-- 4. Tipo y Privacidad -->
+                    <!-- 4. Alcance y Ubicación (NEW STRATEGIC SECTION) -->
                     <div class="glass-card p-6">
                         <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">4.
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">
+                            4. Alcance y Ubicación
+                        </label>
+
+                        <div class="space-y-6">
+                            <!-- Tipo de Alcance -->
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase text-white/50">Nivel de
+                                    Visibilidad</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button type="button" onclick="setScope('local')" id="scopeLocal"
+                                        class="py-2 rounded-lg border border-neon-teal bg-neon-teal/10 text-neon-teal text-[10px] font-black uppercase">Local</button>
+                                    <button type="button" onclick="setScope('national')" id="scopeNational"
+                                        class="py-2 rounded-lg border border-white/5 bg-white/5 text-white/30 text-[10px] font-black uppercase relative group hover:border-indigo-500/50">
+                                        Nacional
+                                        <span
+                                            class="absolute -top-2 -right-1 bg-indigo-500 text-white text-[7px] px-1 rounded">PRO</span>
+                                    </button>
+                                    <button type="button" onclick="setScope('global')" id="scopeGlobal"
+                                        class="py-2 rounded-lg border border-white/5 bg-white/5 text-white/30 text-[10px] font-black uppercase relative">
+                                        Global
+                                        <span
+                                            class="absolute -top-2 -right-1 bg-indigo-500 text-white text-[7px] px-1 rounded">PRO</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="ccScope" value="local">
+                            </div>
+
+                            <!-- Configuración Local (Condicional) -->
+                            <div id="localSettings" class="space-y-6 animate-fade-in">
+                                <!-- Ubicación Centro y Mapa -->
+                                <div class="space-y-3">
+                                    <label class="text-[10px] font-bold uppercase text-white/50 flex justify-between">
+                                        Punto de Origen
+                                        <span id="locStatus" class="text-neon-teal lowercase font-normal italic">No
+                                            detectada</span>
+                                    </label>
+
+                                    <!-- Buscador de Dirección -->
+                                    <div class="relative group">
+                                        <span
+                                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">search</span>
+                                        <input type="text" id="addressSearch"
+                                            placeholder="Buscar dirección (ej: Santa Fe, CDMX)"
+                                            class="input-field pl-10 text-xs"
+                                            onkeyup="if(event.key==='Enter') searchAddress()">
+                                        <button type="button" onclick="searchAddress()"
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-neon-teal text-[10px] font-bold uppercase px-2 py-1 hover:bg-neon-teal/10 rounded">Buscar</button>
+                                    </div>
+
+                                    <!-- Mapa -->
+                                    <div id="challengeMap"
+                                        class="w-full h-48 rounded-xl border border-white/10 bg-[#020617] relative z-10 overflow-hidden">
+                                        <div
+                                            class="absolute inset-0 flex items-center justify-center text-white/10 flex-col gap-2">
+                                            <span class="material-symbols-outlined text-4xl">map</span>
+                                            <p class="text-[10px] uppercase font-bold tracking-widest">El mapa aparecerá
+                                                aquí</p>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" onclick="detectChallengeLocation()"
+                                        class="w-full py-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all group">
+                                        <span
+                                            class="material-symbols-outlined text-neon-teal text-sm group-hover:rotate-12 transition-transform">location_on</span>
+                                        <span class="text-[10px] font-bold text-white/70">O usar mi ubicación
+                                            actual</span>
+                                    </button>
+                                    <input type="hidden" id="ccLat" value="">
+                                    <input type="hidden" id="ccLng" value="">
+                                </div>
+
+                                <!-- Radio -->
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-end">
+                                        <label class="text-[10px] font-bold uppercase text-white/50">Radio de
+                                            Impacto</label>
+                                        <span id="ccRadiusDisplay" class="text-lg font-black text-neon-teal">20
+                                            km</span>
+                                    </div>
+                                    <input type="range" id="ccRadius" min="1" max="50" step="1" value="20"
+                                        class="w-full accent-neon-teal" oninput="updateRadiusLabel(this.value)">
+                                    <div class="flex justify-between text-[8px] text-white/30 font-bold uppercase">
+                                        <span>1 km</span>
+                                        <span>25 km</span>
+                                        <span>50 km (Límite Free)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Tipo y Privacidad (Renumbered) -->
+                    <div class="glass-card p-6">
+                        <label
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">5.
                             Tipo y Privacidad</label>
 
                         <div class="space-y-3">
@@ -1093,83 +1072,59 @@
                         </div>
                     </div>
 
-                    <!-- 5. Premio (Insignia & Recompensa) -->
+                    <!-- 6. Premio (Insignia & Recompensa) (Renumbered) -->
                     <div class="glass-card p-6">
                         <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">5.
+                            class="text-neon-teal font-black uppercase tracking-widest text-xs mb-6 block border-l-4 border-neon-teal pl-3">6.
                             Premios & Reconocimiento</label>
 
-                        <!-- Insignia Digital (Default) -->
-                        <div class="space-y-4 mb-6">
+                        <!-- Insignia Digital de Librería -->
+                        <div class="space-y-6">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Insignia
-                                    Digital</label>
+                                <label class="text-xs font-bold uppercase tracking-wider text-white/50">Insignia de
+                                    Recompensa</label>
                                 <span
-                                    class="text-[10px] bg-neon-teal/20 text-neon-teal px-2 py-0.5 rounded border border-neon-teal/30">AUTOMÁTICO</span>
+                                    class="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Librería
+                                    Premium</span>
                             </div>
 
-                            <div class="flex items-center gap-4">
-                                <!-- Icon Selector -->
-                                <div class="relative group cursor-pointer">
-                                    <div
-                                        class="h-16 w-16 rounded-full bg-gradient-to-br from-neon-teal to-blue-500 p-[2px]">
-                                        <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center text-2xl"
-                                            id="badgeIconDisplay">🏆</div>
-                                    </div>
-                                    <!-- Simple Emoji Selector -->
-                                    <select id="ccBadgeIcon"
-                                        onchange="document.getElementById('badgeIconDisplay').textContent = this.value"
-                                        class="absolute inset-0 opacity-0 cursor-pointer">
-                                        <option value="🏆">🏆</option>
-                                        <option value="🥇">🥇</option>
-                                        <option value="🏃">🏃</option>
-                                        <option value="🧘">🧘</option>
-                                        <option value="💪">💪</option>
-                                        <option value="🔥">🔥</option>
-                                        <option value="🌟">🌟</option>
-                                    </select>
+                            <!-- Big Preview Card -->
+                            <div class="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <div id="challengeBadgePreview"
+                                    class="h-24 w-24 rounded-full flex items-center justify-center transition-all duration-500 relative ring-4 ring-white/5 shadow-2xl"
+                                    style="background: #333;">
+                                    <span class="material-symbols-outlined text-4xl text-white/20">question_mark</span>
                                 </div>
-                                <div class="flex-1 space-y-2">
-                                    <input type="text" id="ccBadgeName" placeholder="Nombre de la Insignia"
-                                        class="input-field text-sm font-bold">
-                                    <p class="text-[10px] text-white/40">Se generará esta insignia para los ganadores.
+                                <div class="flex-1 space-y-1">
+                                    <p id="challengeBadgeNameDisplay" class="text-lg font-black text-white italic">
+                                        Selecciona una insignia</p>
+                                    <p class="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed">
+                                        Esta insignia se otorgará automáticamente al completar el desafío.
                                     </p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Divider -->
-                        <div class="h-px bg-white/5 my-6"></div>
-
-                        <!-- Recompensa de Biblioteca -->
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-3">
-                                <button type="button" onclick="toggleLinkedReward(this)" id="btnToggleReward"
-                                    class="w-10 h-5 rounded-full bg-white/10 relative transition-colors">
-                                    <div
-                                        class="h-3 w-3 rounded-full bg-white absolute top-1 left-1 transition-transform">
-                                    </div>
-                                </button>
-                                <label class="text-xs font-bold uppercase tracking-wider text-white/70 cursor-pointer"
-                                    onclick="toggleLinkedReward(document.getElementById('btnToggleReward'))">Vincular
-                                    Recompensa de la Biblioteca</label>
-                            </div>
-
-                            <div id="linkedRewardSection" class="hidden pl-2 border-l-2 border-white/5 mt-4">
-                                <p class="text-[10px] text-white/40 mb-3">Selecciona un beneficio de tu biblioteca para
-                                    otorgar a quien complete el reto.</p>
-
-                                <div id="linkedRewardContainer">
-                                    <!-- Empty State -->
-                                    <button onclick="openRewardSelectorModal()"
-                                        class="w-full p-4 rounded-xl border border-dashed border-white/20 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-white/50 hover:text-white">
-                                        <span class="material-symbols-outlined">add_circle</span>
-                                        Seleccionar de la Biblioteca
-                                    </button>
+                            <!-- Catalog List Grid -->
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[10px] font-bold text-white/30 uppercase tracking-widest">Tus
+                                        Insignias Guardadas</label>
+                                    <button onclick="window.showSection('badges')"
+                                        class="text-[10px] text-neon-teal font-bold hover:underline">+
+                                        Configuración</button>
                                 </div>
-                                <input type="hidden" id="ccRewardId">
+                                <div id="badgeCatalogList"
+                                    class="grid grid-cols-4 gap-3 max-h-[180px] overflow-y-auto pr-2 no-scrollbar">
+                                    <!-- Se llena dinámicamente -->
+                                    <div class="col-span-full py-6 text-center animate-pulse text-white/20">Cargando
+                                        librería...</div>
+                                </div>
                             </div>
                         </div>
+
+                        <input type="hidden" id="ccSelectedBadgeId" value="">
+
+                        <!-- Linked Reward Section Removed -->
                     </div>
 
                     <!-- Botón de Creación -->
@@ -1617,372 +1572,16 @@
 
 
 
-        <!-- CREATE REWARD MODAL -->
-        <div id="createRewardModal" class="modal-overlay hidden">
-            <div
-                class="modal-content glass-card p-0 relative max-w-3xl w-full mx-4 overflow-hidden flex flex-col h-[90vh]">
-                <button onclick="closeCreateRewardModal()"
-                    class="absolute top-4 right-4 z-50 text-white/40 hover:text-white">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-
-                <div class="p-8 border-b border-white/10 bg-navy-900/50">
-                    <h3 class="text-2xl font-bold flex items-center gap-2">
-                        <span class="material-symbols-outlined text-neon-teal">add_card</span>
-                        Nueva Ficha de Recompensa
-                    </h3>
-                </div>
-
-                <div class="p-8 overflow-y-auto flex-1 space-y-8">
-
-                    <!-- 1. Información General -->
-                    <div class="space-y-4">
-                        <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">1.
-                            Detalles del Premio</label>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="md:col-span-2 space-y-2">
-                                <label class="text-xs font-bold uppercase text-white/50">Nombre del Premio</label>
-                                <input id="rewardNameInput" type="text" placeholder="Ej: Gift Card $50 USD"
-                                    class="input-field font-bold text-lg">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase text-white/50">Icono / Emoji</label>
-                                <div class="relative group">
-                                    <input id="rewardIconInput" type="text" value="🎁" readonly
-                                        onclick="toggleRewardEmojiPicker()"
-                                        class="input-field text-center text-2xl cursor-pointer hover:bg-white/5 transition-colors focus:ring-2 focus:ring-neon-teal border-dashed border-white/20">
-
-                                    <div id="rewardEmojiPicker"
-                                        class="hidden absolute top-full right-0 mt-2 w-[320px] bg-navy-900/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-50 max-h-[300px] overflow-y-auto p-4 animate-fade-in custom-scrollbar">
-                                        <div
-                                            class="flex justify-between items-center mb-2 sticky top-0 bg-navy-900/95 z-10 py-2 border-b border-white/10">
-                                            <span class="text-[10px] font-bold uppercase text-white/50">Selecciona un
-                                                icono</span>
-                                            <button onclick="toggleRewardEmojiPicker()"
-                                                class="text-white/40 hover:text-white p-1 rounded hover:bg-white/10"><span
-                                                    class="material-symbols-outlined text-sm">close</span></button>
-                                        </div>
-                                        <div id="rewardEmojiContainer"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-span-full space-y-2">
-                                <label class="text-xs font-bold uppercase text-white/50">Descripción Atractiva</label>
-                                <textarea id="rewardDescInput" rows="2" placeholder="Describe qué gana el usuario..."
-                                    class="input-field resize-none"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Gestión de Stock -->
-                    <div class="space-y-4">
-                        <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">2.
-                            Inventario y Códigos</label>
-
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <button onclick="setStockType('unlimited')" id="btnStockUnlimited"
-                                class="p-4 rounded-xl border border-neon-teal bg-neon-teal/10 flex flex-col items-center gap-2 transition-all">
-                                <span class="material-symbols-outlined text-neon-teal">all_inclusive</span>
-                                <span class="text-xs font-bold">Ilimitado / Genérico</span>
-                            </button>
-                            <button onclick="setStockType('limited')" id="btnStockLimited"
-                                class="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center gap-2 transition-all opacity-60 hover:opacity-100">
-                                <span class="material-symbols-outlined">inventory_2</span>
-                                <span class="text-xs font-bold">Limitado / Códigos Únicos</span>
-                            </button>
-                        </div>
-
-                        <!-- Config: Ilimitado -->
-                        <div id="stockUnlimitedConfig"
-                            class="space-y-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase text-white/50">Código Genérico</label>
-                                <input id="rewardCodeInput" type="text" placeholder="Ej: WINNER2026"
-                                    class="input-field font-mono text-neon-teal font-bold">
-                                <p class="text-[10px] text-white/40">Este mismo código se mostrará a todos los
-                                    ganadores.</p>
-                            </div>
-
-                            <!-- Alerta de Stock (Simulado para ilimitado) -->
-                            <div class="flex items-center gap-2 mt-2">
-                                <input type="checkbox" id="stockAlert"
-                                    class="rounded bg-white/10 border-white/20 text-neon-teal focus:ring-neon-teal">
-                                <label for="stockAlert" class="text-xs text-white/70">Alertarme si los canjes
-                                    superan:</label>
-                                <input type="number" placeholder="500"
-                                    class="w-16 bg-black/20 border border-white/10 rounded px-2 py-1 text-xs">
-                            </div>
-                        </div>
-
-                        <!-- Config: Limitado -->
-                        <div id="stockLimitedConfig"
-                            class="hidden space-y-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                            <div
-                                class="flex justify-between items-center bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg">
-                                <div class="flex items-center gap-3">
-                                    <span class="material-symbols-outlined text-amber-400">upload_file</span>
-                                    <div>
-                                        <p class="text-sm font-bold text-amber-200">Importar CSV</p>
-                                        <p class="text-[10px] text-white/50">Sube tu lista de códigos únicos</p>
-                                    </div>
-                                </div>
-                                <button class="btn-secondary text-xs">Seleccionar Archivo</button>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold uppercase text-white/50">Límite Total de Premios</label>
-                                <input type="number" placeholder="0" class="input-field font-mono font-bold" disabled
-                                    value="0">
-                                <p class="text-[10px] text-white/40">Se actualizará automáticamente al subir el CSV.
-                                    Este número se incluirá en los Términos.</p>
-                            </div>
-
-                            <!-- New Distribution Mode Selector -->
-                            <div class="pt-2 border-t border-white/5">
-                                <label class="text-[10px] font-bold uppercase text-white/50 mb-2 block">Modo de
-                                    Entrega</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <label
-                                        class="flex items-start gap-3 p-3 rounded-lg border border-white/10 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors">
-                                        <input type="radio" name="distributionMode" value="pool" checked
-                                            class="mt-1 accent-neon-teal">
-                                        <div>
-                                            <span class="block text-xs font-bold text-white">Bolsa General (Mix)</span>
-                                            <span class="block text-[10px] text-white/50 mt-1">Cualquier código
-                                                disponible se asigna al ganador. Ideal para "Todos ganan".</span>
-                                        </div>
-                                    </label>
-                                    <label
-                                        class="flex items-start gap-3 p-3 rounded-lg border border-white/10 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors">
-                                        <input type="radio" name="distributionMode" value="sequential"
-                                            class="mt-1 accent-neon-teal">
-                                        <div>
-                                            <span class="block text-xs font-bold text-white">Ranking Secuencial</span>
-                                            <span class="block text-[10px] text-white/50 mt-1">Fila 1 = 1er Lugar, Fila
-                                                2 = 2do Lugar, etc. Estricto orden del CSV.</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Términos Legales -->
-                    <div class="space-y-4">
-                        <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">3.
-                            Términos y Condiciones</label>
-                        <textarea rows="4" class="input-field text-xs text-white/70 resize-none"
-                            placeholder="Escribe aquí las restricciones, vigencia, sucursales válidas, etc."></textarea>
-                        <p class="text-[10px] text-white/30 text-right">Estos términos aparecerán obligatoriamente al
-                            usuario antes de aceptar el reto.</p>
-                    </div>
-
-                </div>
-
-                <div class="p-6 border-t border-white/10 bg-navy-900/50 flex justify-end gap-3">
-                    <button onclick="closeCreateRewardModal()" class="btn-secondary text-sm">Cancelar</button>
-                    <button onclick="saveReward()" class="btn-primary text-sm flex items-center gap-2">
-                        <span class="material-symbols-outlined">save</span>
-                        Guardar en Biblioteca
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- CREATE REWARD MODAL REMOVED -->
 
 
-        <div id="redemptionModal" class="modal-overlay hidden">
-            <div class="modal-content glass-card p-0 relative max-w-2xl w-full mx-4 overflow-hidden flex flex-col">
-                <button onclick="closeRedemptionModal()"
-                    class="absolute top-4 right-4 z-50 text-white/40 hover:text-white">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-
-                <!-- Header -->
-                <div class="p-8 border-b border-white/10 bg-navy-900/50">
-                    <div class="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
-                        <span class="material-symbols-outlined text-purple-400 text-2xl">redeem</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white">Configuración de Canjes</h3>
-                    <p class="text-white/60 text-sm mt-1">Define cómo se validarán las recompensas en tus puntos de
-                        venta.</p>
-                </div>
-
-                <!-- Body -->
-                <div class="p-8 overflow-y-auto max-h-[60vh] space-y-8">
-
-                    <!-- Step 1: Integration Method -->
-                    <div class="space-y-4">
-                        <label
-                            class="text-neon-teal font-black uppercase tracking-widest text-xs border-l-4 border-neon-teal pl-3">
-                            Método de Validación</label>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Option 1: Manual -->
-                            <div onclick="selectRedemptionType('manual')" id="cardTypeManual"
-                                class="p-4 rounded-xl border border-neon-teal bg-neon-teal/10 cursor-pointer hover:bg-neon-teal/20 transition-all group">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="material-symbols-outlined text-neon-teal">qr_code_scanner</span>
-                                    <div
-                                        class="h-4 w-4 rounded-full border border-neon-teal flex items-center justify-center">
-                                        <div class="h-2 w-2 rounded-full bg-neon-teal"></div>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-sm text-white">Escaneo Manual</h4>
-                                <p class="text-[10px] text-white/50 mt-1">Usa la App "Wellnessfy Business" para
-                                    escanear el QR del cliente.</p>
-                            </div>
-
-                            <!-- Option 2: Promo Codes -->
-                            <div onclick="selectRedemptionType('codes')" id="cardTypeCodes"
-                                class="p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-all group">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span
-                                        class="material-symbols-outlined text-white/50 group-hover:text-white">confirmation_number</span>
-                                    <div
-                                        class="h-4 w-4 rounded-full border border-white/20 flex items-center justify-center">
-                                        <div class="h-2 w-2 rounded-full bg-transparent"></div>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-sm text-white/70 group-hover:text-white">Códigos Promocionales
-                                </h4>
-                                <p class="text-[10px] text-white/40 mt-1">Genera códigos (Ej: RUN20) que funcionen en tu
-                                    POS actual.</p>
-                            </div>
-
-                            <!-- Option 3: API Integration -->
-                            <div onclick="selectRedemptionType('api')" id="cardTypeApi"
-                                class="p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-all group col-span-full">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span
-                                        class="material-symbols-outlined text-white/50 group-hover:text-white">webhook</span>
-                                    <div
-                                        class="h-4 w-4 rounded-full border border-white/20 flex items-center justify-center">
-                                        <div class="h-2 w-2 rounded-full bg-transparent"></div>
-                                    </div>
-                                </div>
-                                <h4 class="font-bold text-sm text-white/70 group-hover:text-white">API / Webhook
-                                    (Enterprise)</h4>
-                                <p class="text-[10px] text-white/40 mt-1">Conecta Wellnessfy directamente con tu ERP,
-                                    Salesforce o Shopify para validación en tiempo real.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Configuration Area (Dynamic) -->
-                    <div id="configArea" class="p-6 rounded-xl bg-black/20 border border-white/5 space-y-4">
-
-                        <!-- Manual Config -->
-                        <div id="configManual">
-                            <h4 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-neon-teal text-sm">check_circle</span>
-                                Listo para usar
-                            </h4>
-                            <p class="text-xs text-white/50">No requiere configuración técnica. Solo descarga la App
-                                Business en los teléfonos de tu staff.</p>
-                            <div class="mt-4 flex gap-2">
-                                <button class="btn-secondary text-xs py-1.5">Descargar iOS</button>
-                                <button class="btn-secondary text-xs py-1.5">Descargar Android</button>
-                            </div>
-                        </div>
-
-                        <!-- Codes Config -->
-                        <div id="configCodes" class="hidden space-y-4">
-                            <h4 class="font-bold text-sm text-white mb-2">Configuración de Códigos</h4>
-
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase text-white/50">Tipo de Código</label>
-                                <select class="input-field text-sm">
-                                    <option>Código Único (Estático)</option>
-                                    <option>Lista de Códigos (Un solo uso)</option>
-                                </select>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase text-white/50">Código a Mostrar</label>
-                                <input type="text" placeholder="Ej: VERANO2026"
-                                    class="input-field font-mono text-neon-teal font-bold">
-                                <p class="text-[10px] text-white/30">Este código aparecerá en la pantalla del usuario
-                                    tras ganar.</p>
-                            </div>
-                        </div>
-
-                        <!-- API Config -->
-                        <div id="configApi" class="hidden space-y-4">
-                            <h4 class="font-bold text-sm text-white mb-2">Configuración Webhook</h4>
-
-                            <div class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg flex gap-3 mb-4">
-                                <span class="material-symbols-outlined text-amber-400 text-sm">warning</span>
-                                <p class="text-[10px] text-amber-200">Requiere un equipo de desarrollo para implementar.
-                                </p>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase text-white/50">Endpoint URL</label>
-                                <input type="text" placeholder="https://api.tutienda.com/webhooks/wellnessfy"
-                                    class="input-field font-mono text-xs">
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase text-white/50">API Key Secreta</label>
-                                <div class="flex gap-2">
-                                    <input type="password" value="sk_live_..." class="input-field font-mono text-xs"
-                                        disabled>
-                                    <button class="btn-secondary px-3"><span
-                                            class="material-symbols-outlined text-sm">visibility</span></button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Footer -->
-                <div class="p-6 border-t border-white/10 bg-navy-900/50 flex justify-end gap-3">
-                    <button onclick="closeRedemptionModal()" class="btn-secondary text-sm">Cancelar</button>
-                    <button onclick="saveRedemptionConfig()" class="btn-primary text-sm flex items-center gap-2">
-                        <span class="material-symbols-outlined">save</span>
-                        Guardar Configuración
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- REDEMPTION MODAL REMOVED -->
 
 
 
-        <!-- SELECCIONAR RECOMPENSA MODAL -->
-        <div id="selectRewardModal"
-            class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
-            <div
-                class="bg-navy-900 border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-fade-in relative">
-                <div
-                    class="p-6 border-b border-white/10 flex justify-between items-center bg-navy-900 sticky top-0 z-10 rounded-t-xl">
-                    <h3 class="font-bold text-lg text-white font-outfit">Seleccionar Recompensa</h3>
-                    <button onclick="closeRewardSelectorModal()"
-                        class="text-white/40 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-                <div class="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4 custom-scrollbar"
-                    id="rewardSelectorGrid">
-                    <!-- Content populated by JS -->
-                </div>
-                <div class="p-4 border-t border-white/10 bg-navy-900/50 flex justify-between items-center rounded-b-xl">
-                    <p class="text-[10px] text-white/40">Selecciona una para vincular</p>
-                    <button onclick="closeRewardSelectorModal(); openCreateRewardModal()"
-                        class="text-xs font-bold text-neon-teal hover:underline flex items-center gap-1">
-                        <span class="material-symbols-outlined text-sm">add</span> Crear Nueva
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- SELECT REWARD MODAL REMOVED -->
 
-        <script type="module" src="dashboard.js"></script>
+        <script type="module" src="dashboard.js?v=3"></script>
 </body>
 
 </html>

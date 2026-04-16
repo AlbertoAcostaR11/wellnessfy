@@ -129,32 +129,37 @@ export const ExploreModule = {
             const isParticipant = c.participantsList && c.participantsList.includes(uid);
             if (isParticipant) return false;
 
-            // 1. Filtro Privacidad
+            // 1. Filtro de Visibilidad Estratégica (NUEVO)
+            const vis = c.visibility || {};
+            const scope = vis.scope || 'global'; // Fallback a global si no tiene visibilidad definida
+
+            if (scope === 'local') {
+                const center = vis.location || c.location || {};
+                if (!center.lat || !center.lng) return false; // Si es local pero no tiene centro, se oculta
+
+                const dist = this.getDistanceFromLatLonInKm(this.userLocation.lat, this.userLocation.lng, center.lat, center.lng);
+                c.distanceKm = dist; // Actualizar para ordenamiento
+
+                if (dist > (vis.radius || this.radius)) return false;
+            } else if (scope === 'national' || scope === 'global') {
+                // Desafíos Omnipresentes (Premium/Pro)
+                c.distanceKm = 0; // Se muestran arriba
+            } else {
+                // Fallback para desafíos de usuarios normales (Geolocalizados por default)
+                if (c.distanceKm > this.radius) return false;
+            }
+
+            // 2. Filtro Privacidad
             if (c.challengePrivacy === 'private' || c.privacy === 'private') {
-                // Si es privado y NO soy miembro (ya filtrado arriba), no debería verlo en explorar
-                // Salvo que tenga invitación o sea visible... por ahora ocultamos privados en explorar
                 return false;
             }
 
-            // 2. Filtro de Distancia
-            // Si el radio es muy grande (>5000), mostramos todo (Global)
-            const isGlobalSearch = this.radius >= 5000;
-
-            if (!isGlobalSearch) {
-                if (c.distanceKm > this.radius) return false;
-                // Si no tiene ubicación (9999) y buscamos localmente, se oculta
-                if (c.distanceKm > 9000) return false;
-            }
-
             // 3. Filtro de Deporte (Multideporte support)
-            // Si activeSports está vacío -> Muestra todo
             if (this.activeSports.length === 0) return true;
 
-            // Si el desafío tiene 'allowedSports' (nuevo formato), checar intersección
             if (c.allowedSports && Array.isArray(c.allowedSports)) {
                 return c.allowedSports.some(s => this.activeSports.includes(s));
             }
-            // Fallback formato antiguo (category o id implícito)
             const cat = (c.category || '').toLowerCase();
             return this.activeSports.includes(cat);
 

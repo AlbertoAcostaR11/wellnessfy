@@ -1,6 +1,7 @@
 import { db, auth } from './src/config/firebaseInit.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { collection, addDoc, setDoc, doc, serverTimestamp, getDoc, getDocs, query, where, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, addDoc, setDoc, doc, serverTimestamp, getDoc, getDocs, query, where, limit, deleteDoc, updateDoc, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
 
 // Auth Guard
 onAuthStateChanged(auth, async (user) => {
@@ -22,7 +23,7 @@ let ORG_ID = "DEMO_CORP_001";
  */
 
 // Estado Global
-let state = {
+let dshstate = {
     organization: {
         id: ORG_ID,
         name: "Mi Empresa",
@@ -32,9 +33,18 @@ let state = {
         sports: [],
         cover: ''
     },
-    rewardsLibrary: [],
-    currentUser: null
+
+    currentUser: null,
+    loadedBadges: [], // All badges available for this Org
+    loadedChallenges: [],
+    editingChallengeId: null
 };
+window.dshstate = dshstate;
+
+// Geografía del Desafío
+let challengeMap = null;
+let challengeMarker = null;
+let challengeCircle = null;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
@@ -54,20 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupNavigation() {
     window.showSection = (sectionId) => {
         // Intercept 'rewards' -> Redirect to Gamification Tab
-        if (sectionId === 'rewards') {
-            document.querySelectorAll('main > div[id$="Section"]').forEach(el => {
-                el.classList.add('hidden');
-            });
-            const target = document.getElementById('badgesSection');
-            if (target) {
-                target.classList.remove('hidden');
-                document.querySelector('main').scrollTop = 0;
-            }
-            if (window.switchGamificationTab) window.switchGamificationTab('rewards');
-            updateSidebarActiveState('rewards');
-            return;
+
+
+        if (sectionId === 'challenges') {
+            renderBadgeCatalogSelect();
+            loadChallenges(dshstate.organization.id);
+            // Delay map init slightly to ensure DOM is ready
+            setTimeout(initChallengeMap, 100);
         }
 
+        // Reset form if creating NEW challenge
+        if (sectionId === 'createChallenge' && dshstate.editingChallengeId === null) {
+            resetChallengeForm();
+        }
+
+        // Default behavior for other sections
         // Ocultar todas las secciones
         document.querySelectorAll('main > div[id$="Section"]').forEach(el => {
             el.classList.add('hidden');
@@ -127,16 +138,16 @@ window.toggleSport = (btn, sportId) => {
         btn = document.querySelector(`button[data-sport="${sportId}"]`);
     }
 
-    const index = state.newChallenge.sports.indexOf(sportId);
+    const index = dshstate.newChallenge.sports.indexOf(sportId);
 
     if (index === -1) {
         // Add
-        state.newChallenge.sports.push(sportId);
+        dshstate.newChallenge.sports.push(sportId);
         btn.classList.add('border-neon-teal', 'text-neon-teal', 'bg-neon-teal/10');
         btn.classList.remove('border-white/10', 'text-gray-400', 'bg-white/5');
     } else {
         // Remove (Prevent removing last one logic if desired, but allowing empty for now to re-select)
-        state.newChallenge.sports.splice(index, 1);
+        dshstate.newChallenge.sports.splice(index, 1);
         btn.classList.remove('border-neon-teal', 'text-neon-teal', 'bg-neon-teal/10');
         btn.classList.add('border-white/10', 'text-gray-400', 'bg-white/5');
     }
@@ -169,7 +180,7 @@ window.selectCover = (el, type) => {
     el.classList.add('border-neon-teal', 'opacity-100');
 
     // Store URL
-    state.newChallenge.cover = el.dataset.url;
+    dshstate.newChallenge.cover = el.dataset.url;
 };
 
 /**
@@ -241,7 +252,7 @@ window.createChallenge = async () => {
     const name = document.getElementById('ccName').value.trim();
     if (!name) return showToast('El nombre es obligatorio', 'error');
 
-    const sports = state.newChallenge.sports;
+    const sports = dshstate.newChallenge.sports;
     if (sports.length === 0) return showToast('Selecciona al menos un deporte', 'error');
 
     const start = document.getElementById('ccStart').value;
@@ -270,7 +281,7 @@ window.createChallenge = async () => {
     const challengeData = {
         name: name,
         description: document.getElementById('ccDesc').value || 'Sin descripción',
-        imageGradient: `url('${state.newChallenge.cover}')`, // Format used in main app
+        imageGradient: `url('${dshstate.newChallenge.cover}')`, // Format used in main app
         category: sports.length > 1 ? 'Mix' : sports[0].charAt(0).toUpperCase() + sports[0].slice(1),
         allowedSports: sports,
         metric: metric,
@@ -287,46 +298,78 @@ window.createChallenge = async () => {
         type: document.getElementById('ccType').value,
         privacy: document.getElementById('ccPrivacy').value,
 
-        // Reward (New!)
-        reward: {
-            type: 'badge',
-            name: document.getElementById('ccBadgeName').value || `${name} Finisher`,
-            icon: document.getElementById('ccBadgeIcon').value || '🏆',
-            description: `Otorgada por completar ${name}`
+        // 🟢 Visibility Analytics (Strategic Integration)
+        visibility: {
+            scope: document.getElementById('ccScope').value,
+            location: {
+                lat: parseFloat(document.getElementById('ccLat').value) || null,
+                lng: parseFloat(document.getElementById('ccLng').value) || null
+            },
+            radius: parseInt(document.getElementById('ccRadius').value) || 20
         },
+
+        // Reward (from Library)
+        reward: (() => {
+            const badgeId = document.getElementById('ccSelectedBadgeId').value;
+            const badge = dshstate.loadedBadges.find(b => b.id === badgeId);
+
+            if (!badge) return {
+                type: 'badge',
+                name: `${name} Finisher`,
+                icon: '🏆',
+                description: `Otorgada por completar ${name}`
+            };
+
+            return {
+                badgeId: badge.id,
+                type: 'badge',
+                name: badge.name,
+                icon: (badge.type === 'emoji' || !badge.type) ? (badge.content || badge.emoji || '🏆') : 'image',
+                image: badge.type === 'image' ? (badge.content || badge.image) : null,
+                style: badge.style,
+                description: badge.description || `Otorgada por completar ${name}`
+            };
+        })(),
 
         // Creator (Brand Identity)
         creator: {
-            name: state.organization.name,
-            username: state.organization.handle,
+            name: dshstate.organization.name,
+            username: dshstate.organization.handle,
             isBrand: true,
-            id: state.organization.id
+            id: dshstate.organization.id
         },
 
         createdAt: Date.now(),
+        createdBy: auth.currentUser?.uid || null,
         isPro: true // Brand challenges are Pro by default
     };
 
     // 3. Enviar a Firebase
     try {
-        btn.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Lanzando...`;
+        const isEditing = dshstate.editingChallengeId !== null;
+        btn.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> ${isEditing ? 'Actualizando...' : 'Lanzando...'}`;
         btn.disabled = true;
 
-        const docRef = await addDoc(collection(db, "challenges"), challengeData);
-        console.log("Challenge created with ID: ", docRef.id);
-
-        showToast('¡Desafío Lanzado con Éxito!', 'success');
+        if (isEditing) {
+            await updateDoc(doc(db, "challenges", dshstate.editingChallengeId), challengeData);
+            showToast('¡Desafío Actualizado!', 'success');
+        } else {
+            const docRef = await addDoc(collection(db, "challenges"), challengeData);
+            console.log("Challenge created with ID: ", docRef.id);
+            showToast('¡Desafío Lanzado con Éxito!', 'success');
+        }
 
         // Reset & Redirect
         setTimeout(() => {
             btn.innerHTML = `<span class="material-symbols-outlined">rocket_launch</span> Lanzar Desafío`;
             btn.disabled = false;
+            dshstate.editingChallengeId = null; // Important: Clear editing state
+            loadChallenges(dshstate.organization.id); // Refresh list
             window.showSection('challenges');
-            // Aquí podríamos recargar la lista de desafíos si fuera dinámica real
         }, 1500);
 
     } catch (e) {
-        console.error("Error adding document: ", e);
+        console.error("Error adding/updating document: ", e);
         showToast('Error al conectar con servidor', 'error');
         btn.disabled = false;
         btn.innerHTML = `<span class="material-symbols-outlined">error</span> Reintentar`;
@@ -453,8 +496,8 @@ async function bootstrapDashboard(user) {
         // 1. Cargar Perfil de Usuario
         const userSnap = await getDoc(doc(db, 'users', user.uid));
         if (userSnap.exists()) {
-            state.currentUser = { uid: user.uid, ...userSnap.data() };
-            updateUserSidebar(state.currentUser);
+            dshstate.currentUser = { uid: user.uid, ...userSnap.data() };
+            updateUserSidebar(dshstate.currentUser);
         }
 
         // 2. Buscar Empresa del Usuario
@@ -466,19 +509,24 @@ async function bootstrapDashboard(user) {
             const companyData = companyDoc.data();
             ORG_ID = companyDoc.id;
 
-            state.organization = {
+            dshstate.organization = {
                 id: ORG_ID,
                 name: companyData.name,
                 handle: companyData.handle || companyData.name.toLowerCase().replace(/\s+/g, '_'),
                 ...companyData
             };
 
-            console.log("🏢 Dashboard vinculado a:", state.organization.name);
+            console.log("🏢 Dashboard vinculado a:", dshstate.organization.name, "ID:", dshstate.organization.id);
             updateOrganizationUI();
-            loadTeamMembers(ORG_ID);
+            loadTeamMembers(dshstate.organization.id);
+            loadBadges(dshstate.organization.id);
+            loadChallenges(dshstate.organization.id);
+
         } else {
             console.warn("⚠️ No se encontró empresa vinculada. Usando modo DEMO.");
             loadTeamMembers(ORG_ID); // Load demo team or empty
+            loadBadges(ORG_ID);
+            loadChallenges(ORG_ID);
         }
 
     } catch (error) {
@@ -497,7 +545,7 @@ function updateUserSidebar(user) {
 }
 
 function updateOrganizationUI() {
-    const org = state.organization;
+    const org = dshstate.organization;
 
     // 1. Inputs de Perfil
     const brandNameInput = document.getElementById('brandName');
@@ -773,10 +821,10 @@ window.saveNewBadge = async () => {
         content: badgeState.contentType === 'emoji' ? badgeState.emoji : badgeState.image,
         style: {
             bgType: badgeState.bgType,
-            bgGradient: badgeState.bgGradient,
-            bgSolid: badgeState.bgSolid
+            bgSolid: badgeState.bgSolid,
+            bgGradient: badgeState.bgGradient
         },
-        orgId: "DEMO_CORP_001", // Hardcoded for Demo
+        orgId: dshstate.organization.id || "DEMO_CORP_001",
         createdAt: serverTimestamp()
     };
 
@@ -786,31 +834,18 @@ window.saveNewBadge = async () => {
         closeNewBadgeModal();
         showToast('¡Insignia creada exitosamente!', 'success');
 
-        // Optimistic UI Update
-        const badgesSection = document.getElementById('badgesSection');
-        if (badgesSection) {
-            const grid = badgesSection.querySelector('.grid');
-            if (grid) {
-                const newCard = document.createElement('div');
-                newCard.className = "glass-card p-4 flex flex-col items-center text-center gap-3 hover:border-neon-teal/50 transition-colors group cursor-pointer relative animate-fade-in";
-
-                const currentBg = document.getElementById('previewBadgeContainer').style.background;
-                const contentHtml = badgeState.contentType === 'emoji'
-                    ? `<div class="h-full w-full rounded-full flex items-center justify-center text-3xl">${badgeState.emoji}</div>`
-                    : `<img src="${badgeState.image}" class="h-full w-full object-contain p-2">`;
-
-                newCard.innerHTML = `
-                    <div class="h-16 w-16 rounded-full p-[2px] group-hover:scale-110 transition-transform shadow-glow" style="background: ${currentBg}">
-                        <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center overflow-hidden">
-                             ${contentHtml}
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white text-sm">${name}</h4>
-                        <p class="text-[10px] text-white/50">Nueva</p>
-                    </div>
-                 `;
-                grid.insertBefore(newCard, grid.firstChild); // Prepend
+        // Optimistic UI Update (using corrected ID)
+        const grid = document.getElementById('badgesGrid');
+        if (grid) {
+            // Construct complete object for renderer
+            const fullBadgeData = { ...badgeData, id: docRef.id };
+            const newCard = createBadgeCard(fullBadgeData);
+            // Insert AFTER the "Create New" button (which should be first child)
+            // If grid has children, insert before the second child (which is effectively after first) -> actually simpler: insertBefore 2nd child works, or if only 1 child, append.
+            if (grid.children.length > 0) {
+                grid.insertBefore(newCard, grid.children[1]); // Index 1 is the second element
+            } else {
+                grid.appendChild(newCard);
             }
         }
     } catch (e) {
@@ -818,6 +853,97 @@ window.saveNewBadge = async () => {
         showToast('Error al guardar en base de datos', 'error');
     }
 };
+
+
+window.deleteBadge = async (badgeId, cardElement) => {
+    if (!confirm('¿Estás seguro de eliminar esta insignia?')) return;
+
+    try {
+        await deleteDoc(doc(db, 'badges', badgeId));
+        if (cardElement) cardElement.remove(); // Optimistic UI removal
+        showToast('Insignia eliminada', 'success');
+    } catch (e) {
+        console.error('Error deleting badge:', e);
+        showToast('Error al eliminar insignia', 'error');
+    }
+};
+
+async function loadBadges(orgId) {
+    const grid = document.getElementById('badgesGrid');
+    if (!grid) return;
+
+    // Clear existing dynamic badges (Keep the "Create New" button which is static)
+    // We assume the static button doesn't have the 'glass-card' AND 'animate-fade-in' combo or we filter by something else.
+    // Easier: Store the create button, plain innerHTML reset, restore button.
+    // Or: Remove all elements that are NOT the create button.
+
+    // Strategy: Remove all children starting from index 1
+    while (grid.children.length > 1) {
+        grid.removeChild(grid.lastChild);
+    }
+
+    try {
+        const q = query(collection(db, 'badges'), where('orgId', '==', orgId));
+        const querySnapshot = await getDocs(q);
+        console.log("💎 [Firestore] Cargando insignias:", querySnapshot.size);
+
+        dshstate.loadedBadges = []; // Reset local list
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const badgeObj = { id: doc.id, ...data };
+            dshstate.loadedBadges.push(badgeObj);
+
+            const card = createBadgeCard(badgeObj);
+            grid.appendChild(card);
+        });
+
+        console.log("📦 Catálogo actualizado con:", dshstate.loadedBadges.length, "insignias");
+        // Always refresh the catalog select in challenges if it's there
+        renderBadgeCatalogSelect();
+
+    } catch (err) {
+        console.error("Error loading badges:", err);
+    }
+}
+
+function createBadgeCard(badge) {
+    const card = document.createElement('div');
+    card.className = "glass-card p-4 flex flex-col items-center text-center gap-3 hover:border-neon-teal/50 transition-colors group cursor-pointer relative animate-fade-in";
+
+    // Background Logic
+    let bgStyle = '#333';
+    if (badge.style) {
+        if (badge.style.bgType === 'gradient' && badge.style.bgGradient) {
+            bgStyle = `linear-gradient(${badge.style.bgGradient.angle}deg, ${badge.style.bgGradient.c1}, ${badge.style.bgGradient.c2})`;
+        } else if (badge.style.bgSolid) {
+            bgStyle = badge.style.bgSolid;
+        }
+    }
+
+    const contentHtml = (badge.type === 'emoji' || !badge.type) // Default to emoji
+        ? `<div class="h-full w-full rounded-full flex items-center justify-center text-3xl pb-1">${badge.content || badge.emoji || '🏆'}</div>`
+        : `<img src="${badge.content || badge.image}" class="h-full w-full object-contain p-2">`;
+
+    card.innerHTML = `
+        <div class="h-16 w-16 rounded-full p-[2px] group-hover:scale-110 transition-transform shadow-glow" style="background: ${bgStyle}">
+            <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center overflow-hidden">
+                 ${contentHtml}
+            </div>
+        </div>
+        
+        <button onclick="event.stopPropagation(); deleteBadge('${badge.id}', this.closest('.glass-card'))" 
+            class="absolute top-2 right-2 h-7 w-7 rounded-lg bg-black/40 hover:bg-red-500/80 text-white/50 hover:text-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center backdrop-blur-sm"
+            title="Eliminar Insignia">
+            <span class="material-symbols-outlined text-sm">delete</span>
+        </button>
+        <div>
+            <h4 class="font-bold text-white text-sm truncate max-w-[120px]">${badge.name}</h4>
+            <p class="text-[10px] text-white/50">${badge.description || 'Insignia'}</p>
+        </div>
+    `;
+    return card;
+}
+
 
 // ==========================================
 // 5. GESTIÓN DE CANJES (Integration Hub)
@@ -829,8 +955,322 @@ let redemptionParams = {
 };
 
 // ==========================================
-// 6. LINKED REWARDS LOGIC (Challenge Creation)
+// 6. GESTIÓN DE DESAFÍOS (Business View)
 // ==========================================
+
+async function loadChallenges(orgId) {
+    const grid = document.getElementById('challengesGrid');
+    if (!grid) return;
+
+    // Reset grid but keep the "Create New" button (which is at the end or we can re-add it)
+    grid.innerHTML = '';
+
+    try {
+        console.log("🕒 Cargando desafíos para ORG:", orgId);
+        const q = query(
+            collection(db, "challenges"),
+            where("creator.id", "==", orgId),
+            orderBy("createdAt", "desc")
+        );
+
+        const querySnapshot = await getDocs(q);
+        console.log("✅ Desafíos recuperados:", querySnapshot.size);
+
+        if (querySnapshot.empty) {
+            // Placeholder si no hay retos
+            grid.innerHTML = `
+                <div class="col-span-full py-20 text-center opacity-30 select-none pointer-events-none">
+                    <span class="material-symbols-outlined text-6xl mb-4">emoji_events</span>
+                    <p class="text-xl font-bold">No has lanzado desafíos aún</p>
+                    <p class="text-sm">Tus retos para la comunidad aparecerán aquí.</p>
+                </div>
+            `;
+        }
+
+        dshstate.loadedChallenges = []; // Reset local list
+        querySnapshot.forEach((doc) => {
+            const data = { id: doc.id, ...doc.data() };
+            dshstate.loadedChallenges.push(data);
+            const card = createBusinessChallengeCard(data);
+            grid.appendChild(card);
+        });
+
+        // Siempre añadir el botón de "Crear Nuevo" al final
+        const createBtn = document.createElement('button');
+        createBtn.onclick = () => showSection('createChallenge');
+        createBtn.className = "glass-card p-6 border-2 border-dashed border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center text-center gap-4 group h-full min-h-[300px]";
+        createBtn.innerHTML = `
+            <div class="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-glow">
+                <span class="material-symbols-outlined text-3xl text-neon-teal">add</span>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg group-hover:text-neon-teal transition-colors">Crear Nuevo</h3>
+                <p class="text-xs text-white/50 mt-1">Lanza un nuevo reto para tu audiencia</p>
+            </div>
+        `;
+        grid.appendChild(createBtn);
+
+    } catch (err) {
+        console.error("Error loading challenges:", err);
+        // Fallback for missing index
+        if (err.message.includes("index")) {
+            console.warn("⚠️ Indice faltante, reintentando sin orden...");
+            const qFallback = query(collection(db, "challenges"), where("creator.id", "==", orgId));
+            const snap = await getDocs(qFallback);
+            grid.innerHTML = '';
+            snap.forEach(doc => {
+                const card = createBusinessChallengeCard({ id: doc.id, ...doc.data() });
+                grid.appendChild(card);
+            });
+        }
+    }
+}
+
+function createBusinessChallengeCard(challenge) {
+    const card = document.createElement('div');
+    card.className = "glass-card overflow-hidden group hover:border-neon-teal/30 transition-all animate-fade-in";
+
+    // Reward Icon logic
+    const rewardIcon = challenge.reward?.icon || '🏆';
+    const rewardBg = challenge.reward?.style?.bgGradient ?
+        `linear-gradient(${challenge.reward.style.bgGradient.angle}deg, ${challenge.reward.style.bgGradient.c1}, ${challenge.reward.style.bgGradient.c2})` :
+        (challenge.reward?.style?.bgSolid || '#333');
+
+    card.innerHTML = `
+        <!-- Header Image -->
+        <div class="h-32 w-full bg-cover bg-center relative" style="background-image: ${challenge.imageGradient || 'linear-gradient(135deg, #00f5d4, #00d2ff)'}">
+            <div class="absolute inset-0 bg-black/40"></div>
+            <div class="absolute top-3 right-3 flex gap-2">
+                 <span class="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[9px] font-bold text-white uppercase tracking-widest border border-white/10">
+                    ${challenge.category}
+                </span>
+            </div>
+            
+            <!-- Floating Reward Icon -->
+            <div class="absolute -bottom-6 left-6 h-12 w-12 rounded-full p-[2px] shadow-lg" style="background: ${rewardBg}">
+                <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center text-xl overflow-hidden">
+                    ${challenge.reward?.image ? `<img src="${challenge.reward.image}" class="h-full w-full object-contain p-1">` : rewardIcon}
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 pt-10">
+            <h3 class="text-xl font-bold text-white group-hover:text-neon-teal transition-colors truncate">${challenge.name}</h3>
+            <p class="text-xs text-white/50 mb-4 line-clamp-2 h-8">${challenge.description}</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Meta</p>
+                    <p class="text-sm font-black text-neon-teal italic">${challenge.metric}</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Participantes</p>
+                    <p class="text-sm font-black text-white italic">${challenge.participants || 0}</p>
+                </div>
+            </div>
+
+            <!-- Footer Stats -->
+            <div class="flex items-center justify-between text-[10px] text-white/30 font-bold uppercase tracking-wider">
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">calendar_today</span>
+                    ${challenge.period}
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="hover:text-white transition-colors" onclick="editBusinessChallenge('${challenge.id}')">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                    </button>
+                    <button class="hover:text-red-400 transition-colors" onclick="deleteChallengeItem('${challenge.id}')">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+window.deleteChallengeItem = async (id) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este desafío?')) return;
+    try {
+        await deleteDoc(doc(db, "challenges", id));
+        showToast('Desafío eliminado');
+        loadChallenges(dshstate.organization.id);
+    } catch (e) {
+        console.error(e);
+        showToast('Error al eliminar', 'error');
+    }
+};
+
+window.editBusinessChallenge = (id) => {
+    const challenge = dshstate.loadedChallenges.find(c => c.id === id);
+    if (!challenge) return showToast('No se encontró el desafío', 'error');
+
+    dshstate.editingChallengeId = id;
+
+    // Fill basic info
+    document.getElementById('ccName').value = challenge.name;
+    document.getElementById('ccDesc').value = challenge.description || '';
+
+    // Dates
+    if (challenge.startDate) document.getElementById('ccStart').value = challenge.startDate.split('T')[0];
+    if (challenge.endDate) document.getElementById('ccEnd').value = challenge.endDate.split('T')[0];
+
+    // Goal
+    document.getElementById('ccGoalType').value = challenge.goalType || 'cumulative';
+    window.setGoalType(challenge.goalType || 'cumulative');
+
+    if (challenge.goalType === 'cumulative') {
+        const [val, unit] = challenge.metric.split(' ');
+        document.getElementById('ccGoalValue').value = val;
+        document.getElementById('ccUnit').value = unit || 'Km';
+    } else {
+        const [days] = challenge.metric.split(' ');
+        document.getElementById('ccDays').value = days;
+        document.getElementById('ccDailyMin').value = challenge.dailyThreshold || '';
+    }
+
+    // Category / Sports
+    dshstate.newChallenge.sports = challenge.allowedSports || [];
+    // Reset visual sports selection
+    document.querySelectorAll('.sport-pill').forEach(pill => {
+        const sport = pill.dataset.sport;
+        if (dshstate.newChallenge.sports.includes(sport)) {
+            pill.classList.add('active', 'border-neon-teal', 'bg-neon-teal/10', 'text-neon-teal');
+        } else {
+            pill.classList.remove('active', 'border-neon-teal', 'bg-neon-teal/10', 'text-neon-teal');
+        }
+    });
+
+    // Visibility
+    if (challenge.visibility) {
+        const vis = challenge.visibility;
+        window.setScope(vis.scope || 'local');
+        document.getElementById('ccLat').value = vis.location?.lat || '';
+        document.getElementById('ccLng').value = vis.location?.lng || '';
+        document.getElementById('ccRadius').value = vis.radius || 20;
+        updateRadiusLabel(vis.radius || 20);
+
+        if (vis.location?.lat && vis.location?.lng) {
+            updateChallengeCoords(vis.location.lat, vis.location.lng);
+        }
+    }
+
+    // Badge
+    if (challenge.reward?.badgeId) {
+        document.getElementById('ccSelectedBadgeId').value = challenge.reward.badgeId;
+        // Trigger preview update
+        renderBadgeCatalogSelect();
+    }
+
+    showSection('createChallenge');
+
+    // Update button text
+    const btn = document.getElementById('btnCreate');
+    if (btn) {
+        btn.innerHTML = `<span class="material-symbols-outlined">save</span> Guardar Cambios`;
+    }
+};
+
+// ==========================================
+// 6. RECOMPENSAS VINCULADAS (Desafíos)
+// ==========================================
+
+window.renderBadgeCatalogSelect = () => {
+    const container = document.getElementById('badgeCatalogList');
+    if (!container) return;
+
+    if (dshstate.loadedBadges.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full py-8 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                <p class="text-xs text-white/40 mb-3">No tienes insignias en tu librería</p>
+                <button onclick="window.showSection('badges')" class="text-neon-teal text-[10px] font-bold uppercase tracking-widest hover:underline">
+                    + Crear mi primera insignia
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = dshstate.loadedBadges.map(badge => {
+        let bgStyle = '#333';
+        if (badge.style) {
+            if (badge.style.bgType === 'gradient' && badge.style.bgGradient) {
+                bgStyle = `linear-gradient(${badge.style.bgGradient.angle}deg, ${badge.style.bgGradient.c1}, ${badge.style.bgGradient.c2})`;
+            } else if (badge.style.bgSolid) {
+                bgStyle = badge.style.bgSolid;
+            }
+        }
+
+        const iconHtml = (badge.type === 'emoji' || !badge.type)
+            ? `<span class="text-xl">${badge.content || badge.emoji || '🏆'}</span>`
+            : `<img src="${badge.content || badge.image}" class="h-6 w-6 object-contain">`;
+
+        return `
+            <div onclick="selectBadgeForChallenge('${badge.id}')" 
+                class="badge-select-item flex flex-col items-center gap-2 p-3 rounded-xl border border-white/10 bg-white/5 hover:border-neon-teal/50 hover:bg-neon-teal/5 transition-all cursor-pointer group"
+                id="select-badge-${badge.id}">
+                <div class="h-12 w-12 rounded-full p-[1px]" style="background: ${bgStyle}">
+                    <div class="h-full w-full rounded-full bg-navy-900 flex items-center justify-center overflow-hidden">
+                        ${iconHtml}
+                    </div>
+                </div>
+                <p class="text-[9px] font-bold text-white/60 group-hover:text-white truncate w-full text-center">${badge.name}</p>
+            </div>
+        `;
+    }).join('');
+};
+
+window.selectBadgeForChallenge = (badgeId) => {
+    const badge = dshstate.loadedBadges.find(b => b.id === badgeId);
+    if (!badge) return;
+
+    // UI Update (Visual selection)
+    const allItems = document.querySelectorAll('.badge-select-item');
+    allItems.forEach(item => {
+        item.classList.remove('border-neon-teal', 'bg-neon-teal/10');
+        item.classList.add('border-white/10', 'bg-white/5');
+    });
+
+    const selectedItem = document.getElementById(`select-badge-${badgeId}`);
+    if (selectedItem) {
+        selectedItem.classList.remove('border-white/10', 'bg-white/5');
+        selectedItem.classList.add('border-neon-teal', 'bg-neon-teal/10');
+    }
+
+    // Persistent State
+    document.getElementById('ccSelectedBadgeId').value = badgeId;
+
+    // Update Big Preview
+    updateChallengeBadgePreview(badge);
+    showToast(`Insignia "${badge.name}" seleccionada`);
+};
+
+function updateChallengeBadgePreview(badge) {
+    const previewContainer = document.getElementById('challengeBadgePreview');
+    const nameDisplay = document.getElementById('challengeBadgeNameDisplay');
+    if (!previewContainer) return;
+
+    let bgStyle = '#333';
+    if (badge.style) {
+        if (badge.style.bgType === 'gradient' && badge.style.bgGradient) {
+            bgStyle = `linear-gradient(${badge.style.bgGradient.angle}deg, ${badge.style.bgGradient.c1}, ${badge.style.bgGradient.c2})`;
+        } else if (badge.style.bgSolid) {
+            bgStyle = badge.style.bgSolid;
+        }
+    }
+
+    const contentHtml = (badge.type === 'emoji' || !badge.type)
+        ? `<span class="text-4xl filter drop-shadow-md">${badge.content || badge.emoji || '🏆'}</span>`
+        : `<img src="${badge.content || badge.image}" class="h-12 w-12 object-contain filter drop-shadow-md">`;
+
+    previewContainer.style.background = bgStyle;
+    previewContainer.innerHTML = contentHtml;
+    if (nameDisplay) nameDisplay.innerText = badge.name;
+
+    // Add shine effect
+    previewContainer.classList.add('shadow-glow');
+}
 
 window.toggleLinkedReward = (btn) => {
     const section = document.getElementById('linkedRewardSection');
@@ -860,17 +1300,17 @@ window.openRewardSelectorModal = () => {
     // Ensure latest state
     const savedRewards = localStorage.getItem('wellnessfy_rewards_demo');
     if (savedRewards) {
-        try { state.rewardsLibrary = JSON.parse(savedRewards); } catch (e) { }
+        try { dshstate.rewardsLibrary = JSON.parse(savedRewards); } catch (e) { }
     }
 
-    if (state.rewardsLibrary.length === 0) {
+    if (dshstate.rewardsLibrary.length === 0) {
         grid.innerHTML = `
             <div class="col-span-full flex flex-col items-center justify-center py-12 text-center text-white/40">
                 <span class="material-symbols-outlined text-4xl mb-2">sentiment_dissatisfied</span>
                 <p>No tienes recompensas creadas.</p>
             </div>`;
     } else {
-        state.rewardsLibrary.forEach(reward => {
+        dshstate.rewardsLibrary.forEach(reward => {
             const el = document.createElement('div');
             // Check stock
             const hasStock = reward.stockType === 'unlimited' || reward.stock > 0;
@@ -1125,7 +1565,7 @@ window.setRewardEmoji = (emoji) => {
 
 
 window.openCreateRewardModal = () => {
-    state.editingRewardId = null;
+    dshstate.editingRewardId = null;
 
     // Clear Inputs
     document.getElementById('rewardNameInput').value = '';
@@ -1146,10 +1586,10 @@ window.openCreateRewardModal = () => {
 };
 
 window.editReward = (id) => {
-    const reward = state.rewardsLibrary.find(r => r.id === id);
+    const reward = dshstate.rewardsLibrary.find(r => r.id === id);
     if (!reward) return;
 
-    state.editingRewardId = id;
+    dshstate.editingRewardId = id;
 
     // Fill Inputs
     document.getElementById('rewardNameInput').value = reward.title;
@@ -1175,291 +1615,115 @@ window.editReward = (id) => {
     }
 };
 
-window.deleteReward = (id) => {
+window.deleteReward = async (id) => {
     if (!confirm('¿Estás seguro de que deseas eliminar esta recompensa?')) return;
 
-    const index = state.rewardsLibrary.findIndex(r => r.id === id);
-    if (index !== -1) {
-        state.rewardsLibrary.splice(index, 1);
-        localStorage.setItem('wellnessfy_rewards_demo', JSON.stringify(state.rewardsLibrary));
-        renderRewardsLibrary();
-        showToast('Recompensa eliminada', 'success');
+    try {
+        await deleteDoc(doc(db, 'rewards', id));
+
+        const index = dshstate.rewardsLibrary.findIndex(r => r.id === id);
+        if (index !== -1) {
+            dshstate.rewardsLibrary.splice(index, 1);
+            renderRewardsLibrary();
+            showToast('Recompensa eliminada', 'success');
+        }
+    } catch (e) {
+        console.error("Error deleting reward:", e);
+        showToast('Error al eliminar recompensa', 'error');
     }
 };
 
-window.saveReward = () => {
-    const btn = document.querySelector('#createRewardModal .btn-primary');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="animate-spin material-symbols-outlined">sync</span> Guardando...';
-    btn.disabled = true;
 
-    // Simulate Network Request
-    setTimeout(() => {
-        // 1. Get Values
-        const title = document.getElementById('rewardNameInput').value;
-        const icon = document.getElementById('rewardIconInput').value;
-        const desc = document.getElementById('rewardDescInput').value;
-
-        // Stock Logic
-        const isUnlimited = document.getElementById('btnStockUnlimited').classList.contains('border-neon-teal');
-        const stockType = isUnlimited ? 'unlimited' : 'limited';
-        const code = document.getElementById('rewardCodeInput').value;
-
-        // Validation
-        if (!title) {
-            alert('Por favor añade un nombre a la recompensa');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            return;
-        }
-
-        if (state.editingRewardId) {
-            // EDIT EXISTING
-            const index = state.rewardsLibrary.findIndex(r => r.id === state.editingRewardId);
-            if (index !== -1) {
-                state.rewardsLibrary[index] = {
-                    ...state.rewardsLibrary[index],
-                    title: title,
-                    icon: icon,
-                    description: desc,
-                    stockType: stockType,
-                    codes: stockType === 'unlimited' ? [code] : state.rewardsLibrary[index].codes, // Keep codes if limited mode
-                    // Preserve other fields
-                };
-            }
-        } else {
-            // CREATE NEW
-            const newReward = {
-                id: 'reward_' + Date.now(),
-                title: title,
-                type: stockType === 'unlimited' ? 'virtual_code' : 'physical_pickup', // simplistic mapping
-                stockType: stockType,
-                stock: stockType === 'unlimited' ? 9999 : 0,
-                distributed: 0,
-                codes: stockType === 'unlimited' ? [code] : [],
-                description: desc || 'Sin descripción',
-                terms: 'Aplican restricciones',
-                status: 'active',
-                icon: icon || '🎁'
-            };
-            state.rewardsLibrary.push(newReward);
-        }
-
-        // Save Persistence
-        localStorage.setItem('wellnessfy_rewards_demo', JSON.stringify(state.rewardsLibrary));
-
-        // Update UI
-        renderRewardsLibrary();
-
-        // Reset and Close
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-
-        // Assuming closeCreateRewardModal exists or we use toggle logic
-        if (typeof closeCreateRewardModal === 'function') closeCreateRewardModal();
-        else document.getElementById('createRewardModal').classList.add('hidden');
-
-        // Clear State
-        state.editingRewardId = null;
-
-        showToast(state.editingRewardId ? 'Recompensa actualizada' : 'Recompensa añadida', 'success');
-    }, 1000);
-};
-
-window.renderRewardsLibrary = () => {
-    const grid = document.getElementById('rewardsGrid');
-    if (!grid) return;
-
-    // Clear current content but keep the reference to recreate
-    grid.innerHTML = '';
-
-    // Render Cards
-    state.rewardsLibrary.forEach(reward => {
-        const isUnlimited = reward.stockType === 'unlimited';
-        const stockText = isUnlimited ? '∞ Ilimitado' : reward.stock;
-        const typeLabel = isUnlimited ? 'CÓDIGO:' : 'TIPO:';
-        const typeValue = isUnlimited ? (reward.codes[0] || '---') : 'CSV ÚNICO';
-
-        // Random bg color logic based on id char or simple toggle
-        // Use a consistent color mapping based on index or ID
-        const bgColors = ['bg-purple-900/20', 'bg-blue-900/20', 'bg-emerald-900/20', 'bg-rose-900/20'];
-        const randomIdx = (reward.title.length + reward.id.length) % bgColors.length;
-        const bgClass = bgColors[randomIdx];
-
-        const html = `
-        <div class="glass-card p-0 overflow-hidden group hover:border-neon-teal/50 transition-colors relative flex flex-col h-full">
-            <div class="h-20 ${bgClass} relative">
-                <!-- Status Badge (Left) -->
-                <div class="absolute top-2 left-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold">ACTIVO</div>
-                
-                <!-- Actions (Right) -->
-                <div class="absolute top-2 right-2 flex gap-1.5 z-30">
-                     <button onclick="event.stopPropagation(); editReward('${reward.id}')" class="h-7 w-7 flex items-center justify-center rounded-lg bg-black/20 hover:bg-white/20 text-white transition-colors backdrop-blur-md" title="Editar">
-                        <span class="material-symbols-outlined text-sm">edit</span>
-                    </button>
-                    <button onclick="event.stopPropagation(); deleteReward('${reward.id}')" class="h-7 w-7 flex items-center justify-center rounded-lg bg-black/20 hover:bg-red-500/20 hover:text-red-400 text-white/70 transition-colors backdrop-blur-md border border-transparent hover:border-red-500/30" title="Eliminar">
-                        <span class="material-symbols-outlined text-sm">delete</span>
-                    </button>
-                </div>
-
-                <div class="absolute -bottom-5 left-4 h-10 w-10 rounded-lg bg-navy-900 border border-white/10 flex items-center justify-center text-xl shadow-lg">${reward.icon || '🎁'}</div>
-            </div>
-            <div class="p-4 pt-6 flex-1 flex flex-col">
-                <h3 class="font-bold text-sm mb-1 leading-tight line-clamp-1" title="${reward.title}">${reward.title}</h3>
-                <p class="text-[10px] text-white/50 line-clamp-2 mb-3 leading-relaxed flex-1">${reward.description}</p>
-                <div class="flex items-center justify-between text-[10px] font-mono bg-black/20 p-1.5 rounded mb-3">
-                    <span class="text-white/40">${typeLabel}</span>
-                    <span class="text-neon-teal font-bold truncate max-w-[80px]">${typeValue}</span>
-                </div>
-                <div class="flex items-center justify-between border-t border-white/5 pt-3 mt-auto">
-                    <div>
-                        <p class="text-[8px] text-white/40 font-bold uppercase">Stock</p>
-                        <p class="text-xs font-bold text-white">${stockText}</p>
-                    </div>
-                    <div>
-                        <p class="text-[8px] text-white/40 font-bold uppercase">Canjeados</p>
-                        <p class="text-xs font-bold text-white text-right">${reward.distributed}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        grid.insertAdjacentHTML('beforeend', html);
-    });
-
-    // Append "Create New" Button as the last item
-    const createBtnHtml = `
-    <button onclick="openCreateRewardModal()" class="glass-card p-4 border-2 border-dashed border-white/10 hover:border-neon-teal/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center text-center gap-3 group h-full min-h-[200px]">
-        <div class="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-glow">
-            <span class="material-symbols-outlined text-2xl text-neon-teal">add_card</span>
-        </div>
-        <div>
-            <h3 class="font-bold text-sm group-hover:text-neon-teal transition-colors">Crear Recompensa</h3>
-            <p class="text-[10px] text-white/50 mt-0.5">Añade un nuevo incentivo</p>
-        </div>
-    </button>
-    `;
-    grid.insertAdjacentHTML('beforeend', createBtnHtml);
-};
+// Funciones de Recompensa ELIMINADAS
 
 
 // Ensure render on load
 document.addEventListener('DOMContentLoaded', () => {
-    const savedRewards = localStorage.getItem('wellnessfy_rewards_demo');
-    if (savedRewards) {
-        try {
-            state.rewardsLibrary = JSON.parse(savedRewards);
-        } catch (e) {
+    // LocalStorage loading REMOVED to prioritize Firestore source of truth.
+    // Logic moved to bootstrapDashboard -> loadRewards
+});
+
+// 6.b LOGIC FOR REWARDS PERSISTENCE
+async function loadRewards(orgId) {
+    try {
+        const q = query(collection(db, 'rewards'), where('orgId', '==', orgId), orderBy('updatedAt', 'desc')); // Updated ordering
+        const querySnapshot = await getDocs(q);
+        console.log("🔥 [DEBUG] loadRewards Query Results:", querySnapshot.size, "docs found for OrgID:", orgId);
+
+        dshstate.rewardsLibrary = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            console.log("   -> Doc:", doc.id, data);
+            dshstate.rewardsLibrary.push({ id: doc.id, ...data });
+        });
+        renderRewardsLibrary();
+    } catch (e) {
+        // Fallback for missing index error
+        if (e.message.includes("The query requires an index")) {
+            console.warn("⚠️ Firestore Index Missing via orderBy. Falling back to unordered.");
+            const qFallback = query(collection(db, 'rewards'), where('orgId', '==', orgId));
+            const snap = await getDocs(qFallback);
+            console.log("🔥 [FALLBACK] Recuperados:", snap.size, "docs (Sin Orden)");
+            dshstate.rewardsLibrary = [];
+            snap.forEach(d => {
+                const data = d.data();
+                console.log("   -> [FB] Doc:", d.id, data);
+                dshstate.rewardsLibrary.push({ id: d.id, ...data });
+            });
+            renderRewardsLibrary();
+        } else {
             console.error("Error loading rewards:", e);
         }
     }
-    renderRewardsLibrary();
+}
+
+function renderRewardsLibrary() {
+    const list = document.getElementById('rewardsList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    dshstate.rewardsLibrary.forEach((reward, index) => {
+        const item = document.createElement('div');
+        item.className = "p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3 group hover:border-white/10 transition-colors animate-fade-in";
+        item.innerHTML = `
+            <div class="h-10 w-10 rounded-lg bg-[#0f172a] flex items-center justify-center text-xl">
+                ${reward.icon || '🎁'}
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-white text-sm">${reward.name}</p>
+                <p class="text-[10px] text-white/40 truncate">${reward.description || 'Sin descripción'}</p>
+            </div>
+            <button class="text-white/20 hover:text-red-400 transition-colors" onclick="deleteReward('${reward.id}', ${index})">
+                <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+        `;
+        list.appendChild(item);
+    });
+}
+
+window.deleteReward = async (id, index) => {
+    if (!confirm('¿Eliminar esta recompensa?')) return;
+    try {
+        await deleteDoc(doc(db, 'rewards', id));
+        dshstate.rewardsLibrary.splice(index, 1);
+        renderRewardsLibrary();
+        showToast('Recompensa eliminada');
+    } catch (e) {
+        console.error(e);
+        showToast('Error al eliminar', 'error');
+    }
+};
+
+window.renderRewardsLibrary = renderRewardsLibrary; // Expose globally
+
+// Init listener changed
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing init code ...
 });
 
 
-// Update Sidebar Link Overwrite
-// This is a "hack" for the demo to hijack the badges link
-const updateSidebarLink = () => {
-    const navLinks = document.querySelectorAll('aside nav a');
-    navLinks.forEach(link => {
-        if (link.innerText.includes('Insignias')) {
-            link.onclick = (e) => {
-                // e.preventDefault(); // removed to allow default styling logic within showSection if needed, but here we override action
-                window.showSection('rewards');
-                // Manually set active state since 'rewards' isn't in original list
-                updateSidebarActiveState('rewards');
+// Navigation Hacks Removed - Restoring clean flow
 
-                // Visual fix for the button state
-                link.className = "flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-white border border-white/5 transition-all";
-                const icon = link.querySelector('.material-symbols-outlined');
-                if (icon) icon.classList.add('text-neon-teal');
-            };
-            // Update text to reflect new section name
-            const textSpan = link.querySelector('span.font-medium');
-            if (textSpan) textSpan.innerText = "Insignias & Premios";
-        }
-    });
-};
-// Add to init
-document.addEventListener('DOMContentLoaded', updateSidebarLink);
-
-
-// ==========================================
-// 7. NAVEGACIÓN DE PESTAÑAS (Gamificación)
-// ==========================================
-
-window.switchGamificationTab = (tab) => {
-    const btnBadges = document.getElementById('tabBtnBadges');
-    const btnRewards = document.getElementById('tabBtnRewards');
-    const viewBadges = document.getElementById('viewBadges');
-    const viewRewards = document.getElementById('viewRewards');
-
-    if (tab === 'badges') {
-        // Active Tab Style
-        btnBadges.className = "px-6 py-2 rounded-lg text-sm font-bold bg-white/10 text-white shadow-sm transition-all flex items-center gap-2";
-        btnRewards.className = "px-6 py-2 rounded-lg text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2";
-
-        // Show Content
-        viewBadges.classList.remove('hidden');
-        viewRewards.classList.add('hidden');
-    } else {
-        // Active Tab Style
-        btnRewards.className = "px-6 py-2 rounded-lg text-sm font-bold bg-white/10 text-white shadow-sm transition-all flex items-center gap-2";
-        btnBadges.className = "px-6 py-2 rounded-lg text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2";
-
-        // Show Content
-        viewRewards.classList.remove('hidden');
-        viewBadges.classList.add('hidden');
-    }
-};
-
-// AUTO-FIX: Restore Navigation Logic 
-// Since we combined sections, 'rewards' section logic needs to point to badgesSection + tab switch
-const originalShowSection = window.showSection;
-window.showSection = (sectionId) => {
-    // Intercept 'rewards' to show 'badgesSection' but switch tab
-    if (sectionId === 'rewards') {
-        // Call original to hide others and show badgesSection (we map 'rewards' -> 'badges' visually)
-        // Check if 'badges' section exists or if we need to show 'badgesSection' explicitly
-        // Logic in original showSection likely hides everything not matching ID.
-
-        // Let's assume original showSection expects ID. 
-        // We will call showSection('badges') and then switch tab.
-
-        // First, find if badgesSection is the ID. Yes, we kept ID="badgesSection"
-
-        // Manually trigger the sections visibility if 'originalShowSection' isn't easily accessible 
-        // or just use logic:
-        document.querySelectorAll('div[id$="Section"]').forEach(el => el.classList.add('hidden'));
-        const target = document.getElementById('badgesSection');
-        if (target) target.classList.remove('hidden');
-
-        switchGamificationTab('rewards');
-        window.scrollTo(0, 0);
-        return;
-    }
-
-    if (sectionId === 'badges') {
-        document.querySelectorAll('div[id$="Section"]').forEach(el => el.classList.add('hidden'));
-        const target = document.getElementById('badgesSection');
-        if (target) target.classList.remove('hidden');
-
-        switchGamificationTab('badges');
-        window.scrollTo(0, 0);
-        return;
-    }
-
-    // Default behavior for other sections
-    // Re-implementing simplified version since we can't easily call "super"
-    document.querySelectorAll('div[id$="Section"]').forEach(el => {
-        if (el.id === sectionId + 'Section') {
-            el.classList.remove('hidden');
-        } else {
-            el.classList.add('hidden');
-        }
-    });
-    window.scrollTo(0, 0);
-};
 
 // ==========================================
 // 7. GESTIÓN DE PORTADA (Challenge Creator)
@@ -1557,7 +1821,7 @@ window.saveReward = async () => {
             name,
             description: desc,
             icon,
-            orgId: ORG_ID,
+            orgId: dshstate.organization.id || ORG_ID,
             createdAt: serverTimestamp(),
             active: true
         });
@@ -1598,20 +1862,20 @@ window.saveBrandProfile = async () => {
         };
 
         // Incluir imágenes si hay cambios pendientes
-        if (state.pendingLogo) updateData.logoURL = state.pendingLogo;
-        if (state.pendingCover) updateData.coverURL = state.pendingCover;
+        if (dshstate.pendingLogo) updateData.logoURL = dshstate.pendingLogo;
+        if (dshstate.pendingCover) updateData.coverURL = dshstate.pendingCover;
 
         await setDoc(companyRef, updateData, { merge: true });
 
         // Actualizar estado local
-        state.organization = {
-            ...state.organization,
+        dshstate.organization = {
+            ...dshstate.organization,
             ...updateData
         };
 
         // Limpiar pendientes
-        delete state.pendingLogo;
-        delete state.pendingCover;
+        delete dshstate.pendingLogo;
+        delete dshstate.pendingCover;
 
         showToast('Perfil actualizado correctamente', 'success');
         updateOrganizationUI();
@@ -1640,7 +1904,7 @@ window.handleBrandImageUpload = async (event, type) => {
         });
 
         if (type === 'logo') {
-            state.pendingLogo = base64;
+            dshstate.pendingLogo = base64;
             const preview = document.getElementById('logoPreview');
             const placeholder = document.getElementById('logoPlaceholder');
             if (preview) {
@@ -1666,3 +1930,182 @@ window.handleBrandImageUpload = async (event, type) => {
     }
 };
 
+
+
+
+
+// ==========================================
+// 10. VISIBILIDAD Y ALCANCE ESTRATÉGICO
+// ==========================================
+
+window.setScope = (scope) => {
+    document.getElementById('ccScope').value = scope;
+    const settings = document.getElementById('localSettings');
+
+    // UI Feedback for Scope buttons
+    ['Local', 'National', 'Global'].forEach(s => {
+        const btn = document.getElementById(`scope${s}`);
+        if (s.toLowerCase() === scope) {
+            btn.classList.add('border-neon-teal', 'bg-neon-teal/10', 'text-neon-teal');
+            btn.classList.remove('border-white/5', 'bg-white/5', 'text-white/30');
+        } else {
+            btn.classList.remove('border-neon-teal', 'bg-neon-teal/10', 'text-neon-teal');
+            btn.classList.add('border-white/5', 'bg-white/5', 'text-white/30');
+        }
+    });
+
+    if (scope === 'local') {
+        settings.classList.remove('hidden');
+        setTimeout(() => { if (challengeMap) challengeMap.invalidateSize(); }, 300);
+    } else {
+        settings.classList.add('hidden');
+        if (scope !== 'local') {
+            showToast(`Modo ${scope.toUpperCase()} seleccionado (Plan Pro)`, 'info');
+        }
+    }
+};
+
+window.initChallengeMap = () => {
+    if (challengeMap) return;
+    const mapContainer = document.getElementById('challengeMap');
+    if (!mapContainer) return;
+
+    // CDMX Default
+    const defaultPos = [19.4326, -99.1332];
+
+    challengeMap = L.map('challengeMap', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView(defaultPos, 11);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+    }).addTo(challengeMap);
+
+    challengeMarker = L.marker(defaultPos, { draggable: true }).addTo(challengeMap);
+    challengeCircle = L.circle(defaultPos, {
+        color: '#00f5d4',
+        fillColor: '#00f5d4',
+        fillOpacity: 0.1,
+        radius: 20000 // 20km default
+    }).addTo(challengeMap);
+
+    challengeMarker.on('dragend', function (e) {
+        const pos = e.target.getLatLng();
+        updateChallengeCoords(pos.lat, pos.lng);
+    });
+
+    challengeMap.on('click', function (e) {
+        updateChallengeCoords(e.latlng.lat, e.latlng.lng);
+    });
+};
+
+function updateChallengeCoords(lat, lng) {
+    document.getElementById('ccLat').value = lat;
+    document.getElementById('ccLng').value = lng;
+
+    if (challengeMarker) challengeMarker.setLatLng([lat, lng]);
+    if (challengeCircle) challengeCircle.setLatLng([lat, lng]);
+    if (challengeMap) challengeMap.panTo([lat, lng]);
+
+    document.getElementById('locStatus').innerText = "✓ Punto en mapa";
+}
+
+window.searchAddress = async () => {
+    const query = document.getElementById('addressSearch').value;
+    if (!query) return;
+
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            updateChallengeCoords(lat, lon);
+            challengeMap.setZoom(13);
+            showToast('Ubicación encontrada');
+        } else {
+            showToast('No se encontró la dirección', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Error en la búsqueda', 'error');
+    }
+};
+
+window.detectChallengeLocation = () => {
+    const status = document.getElementById('locStatus');
+    status.innerText = "Localizando...";
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+            updateChallengeCoords(pos.coords.latitude, pos.coords.longitude);
+            status.innerText = "✓ Ubicación lista";
+            showToast('Ubicación detectada correctamente');
+        }, (err) => {
+            status.innerText = "Error GPS";
+            showToast('No se pudo obtener la ubicación', 'error');
+        });
+    } else {
+        showToast('Geolocalización no soportada', 'error');
+    }
+};
+
+window.updateRadiusLabel = (val) => {
+    const km = parseInt(val);
+    document.getElementById('ccRadiusDisplay').innerText = `${km} km`;
+    if (challengeCircle) {
+        challengeCircle.setRadius(km * 1000);
+    }
+};
+
+window.resetChallengeForm = () => {
+    dshstate.editingChallengeId = null;
+    dshstate.newChallenge.sports = [];
+
+    // Basic Info
+    const fields = ['ccName', 'ccDesc', 'ccStart', 'ccEnd', 'ccGoalValue', 'ccDays', 'ccDailyMin', 'ccLat', 'ccLng', 'addressSearch', 'ccSelectedBadgeId'];
+    fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = '';
+    });
+
+    // Sports Selection UI
+    document.querySelectorAll('.sport-pill').forEach(pill => {
+        pill.classList.remove('active', 'border-neon-teal', 'bg-neon-teal/10', 'text-neon-teal');
+    });
+
+    // Goal Type UI
+    document.getElementById('ccGoalType').value = 'cumulative';
+    window.setGoalType('cumulative');
+
+    // Visibility UI
+    window.setScope('local');
+    updateRadiusLabel(20);
+    document.getElementById('ccRadius').value = 20;
+    document.getElementById('locStatus').innerText = 'No detectada';
+    if (challengeMap) {
+        const defaultPos = [19.4326, -99.1332];
+        updateChallengeCoords(defaultPos[0], defaultPos[1]);
+        challengeMap.setView(defaultPos, 11);
+    }
+
+    // Badge Preview UI
+    const previewContainer = document.getElementById('challengeBadgePreview');
+    const nameDisplay = document.getElementById('challengeBadgeNameDisplay');
+    if (previewContainer) {
+        previewContainer.style.background = '#333';
+        previewContainer.innerHTML = '<span class="material-symbols-outlined text-4xl text-white/20">question_mark</span>';
+    }
+    if (nameDisplay) nameDisplay.innerText = 'Selecciona una insignia';
+
+    // Button Reset
+    const btn = document.getElementById('btnCreate');
+    if (btn) {
+        btn.innerHTML = `<span class="material-symbols-outlined">rocket_launch</span> Lanzar Desafío`;
+    }
+
+    // Refresh catalog selection visuals
+    renderBadgeCatalogSelect();
+};

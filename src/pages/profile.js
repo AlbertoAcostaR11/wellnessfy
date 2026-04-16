@@ -695,22 +695,37 @@ function renderBadgesSection(user) {
     // Estado VACÍO (Placeholder de motivación)
     if (badges.length === 0) {
         return `
-        <div class="mb-4 px-4 animate-fade-in relative z-10 opacity-50 grayscale">
+        <div class="mb-8 px-4 animate-fade-in relative z-10">
             <div class="flex items-center justify-between mb-4 px-2">
                 <h3 class="text-white/80 font-bold text-sm tracking-wide flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#ffd700] text-lg">military_tech</span>
-                    Insignias
+                    <span class="material-symbols-outlined text-[#00f5d4] text-lg">military_tech</span>
+                    Insignias & Logros
                 </h3>
             </div>
             
-            <div class="flex justify-center gap-3 flex-wrap">
-                ${[1, 2, 3, 4, 5].map(() => `
-                    <div class="w-14 h-14 rounded-full border border-dashed border-white/20 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white/10 text-xl">lock</span>
-                    </div>
-                `).join('')}
+            <div class="glass-card p-6 rounded-3xl border border-white/5 bg-gradient-to-b from-white/[0.05] to-transparent relative overflow-hidden group">
+                <!-- Sutil resplandor de fondo -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#00f5d4]/10 rounded-full blur-3xl group-hover:bg-[#00f5d4]/20 transition-all duration-700"></div>
+                
+                <div class="flex justify-center gap-3 mb-4">
+                    ${[1, 2, 3, 4, 5].map((_, i) => `
+                        <div class="w-12 h-12 rounded-full border border-white/5 bg-white/[0.03] flex items-center justify-center relative overflow-hidden group/item shadow-inner">
+                            <span class="material-symbols-outlined text-white/5 text-lg group-hover/item:text-white/10 transition-colors">lock</span>
+                            <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50"></div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="text-center relative z-10">
+                    <p class="text-xs font-bold text-white/60 mb-1 tracking-tight">¡Tu vitrina está vacía!</p>
+                    <p class="text-[10px] text-white/30 leading-relaxed max-w-[200px] mx-auto italic">
+                        Completa desafíos para desbloquear insignias exclusivas de marca.
+                    </p>
+                    <button onclick="window.navigateTo('challenges')" class="mt-4 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-[#00f5d4] uppercase tracking-widest hover:bg-[#00f5d4]/10 hover:border-[#00f5d4]/30 transition-all active:scale-[0.98]">
+                        Explorar Desafíos
+                    </button>
+                </div>
             </div>
-            <p class="text-center text-[9px] text-white/30 mt-2">Aún no hay insignias desbloqueadas</p>
         </div>
         `;
     }

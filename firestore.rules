@@ -73,15 +73,18 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       
-      // Permitir actualizar SOLO si eres el creador O si te estás uniendo (agregando tu ID a participantes)
+      // Permitir actualizar si eres el creador, el dueño de la marca que lo creó, o si te estás uniendo
       allow update: if isAuthenticated() && (
         resource.data.createdBy == request.auth.uid || 
-        // Permitir unirse (la lógica de validación compleja debería ir en Cloud Functions preferiblemente)
+        (resource.data.creator.id != null && get(/databases/$(database)/documents/companies/$(resource.data.creator.id)).data.ownerId == request.auth.uid) ||
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'stats'])
       );
       
-      // SOLO el creador puede borrar el desafío
-      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+      // Solo el creador o el dueño de la marca puede borrar
+      allow delete: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.creator.id != null && get(/databases/$(database)/documents/companies/$(resource.data.creator.id)).data.ownerId == request.auth.uid)
+      );
     }
     
     // Activities collection
@@ -134,6 +137,28 @@ service cloud.firestore {
       // Bloqueamos update/delete para evitar manipulación, solo el dueño podría borrar (marcar leída se hace con update)
       allow create: if request.auth != null;
       allow update: if request.auth != null && request.auth.uid == userId; // Para marcar como leída
+    }
+
+    // Badges collection (Business Features)
+    match /badges/{badgeId} {
+      allow read: if true;
+      // Solo permitir crear si el usuario es dueño de la organización destino
+      allow create: if isAuthenticated();
+      
+      // Permitir update/delete SOLO si el usuario es el dueño de la organización asociada
+      allow update, delete: if isAuthenticated() && 
+        get(/databases/$(database)/documents/companies/$(resource.data.orgId)).data.ownerId == request.auth.uid;
+    }
+
+    // Rewards collection (Business Features)
+    match /rewards/{rewardId} {
+      allow read: if true;
+      // Solo permitir crear si el usuario es dueño de la organización destino
+      allow create: if isAuthenticated();
+      
+      // Permitir update/delete SOLO si el usuario es el dueño de la organización asociada
+      allow update, delete: if isAuthenticated() && 
+        get(/databases/$(database)/documents/companies/$(resource.data.orgId)).data.ownerId == request.auth.uid;
     }
   }
 }
