@@ -160,5 +160,8 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && 
         get(/databases/$(database)/documents/companies/$(resource.data.orgId)).data.ownerId == request.auth.uid;
     }
+    match /totalpass_users/{docId} {
+      allow read, write: if true;
+    }
   }
 }
